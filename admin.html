@@ -1,1 +1,212 @@
-TOO_LARGE_USE_LOCAL
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#00A854"/>
+<title>IDUS Admin</title>
+<style>
+:root{--bg:#0f0f1a;--card:#1a1a2e;--accent:#00A854;--text:#eee;--muted:#888;--danger:#ef4444;--border:#333}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+#loginScreen{display:none!important}
+#app{display:block}
+.top{background:var(--card);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.top h2{font-size:16px;color:var(--accent)}
+.nav{display:flex;gap:6px;padding:10px;flex-wrap:wrap;background:#151525}
+.nav button{padding:8px 12px;font-size:12px;background:var(--card);color:#fff;border:none;border-radius:8px;cursor:pointer}
+.nav button.on,.nav button:hover{background:var(--accent)}
+.panel{display:none;padding:14px}.panel.on{display:block}
+.card{background:var(--card);padding:14px;border-radius:10px;margin-bottom:12px}
+.card h3{margin-bottom:10px;color:var(--accent);font-size:15px}
+input,select,textarea{width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid var(--border);background:#111;color:#fff;font-size:14px}
+button.primary{padding:10px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer}
+button.sm{padding:6px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:#222;color:#fff;cursor:pointer;margin:2px}
+button.danger{color:var(--danger);border-color:var(--danger)}
+.item{padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.muted{color:var(--muted);font-size:12px}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top"><h2>IDUS Admin</h2><span class="muted">Accès libre</span></div>
+  <div class="nav">
+    <button class="on" onclick="show('dash')">Dashboard</button>
+    <button onclick="show('products')">Produits</button>
+    <button onclick="show('orders')">Commandes</button>
+    <button onclick="show('categories')">Catégories</button>
+    <button onclick="show('add')">+ Produit</button>
+  </div>
+  <div id="panel-dash" class="panel on"><div class="card"><h3>Dashboard</h3><p id="stats">…</p></div></div>
+  <div id="panel-products" class="panel"><div class="card">
+    <div class="row"><input id="prodSearch" placeholder="Rechercher…" oninput="renderProdList()" style="flex:1"/>
+    <select id="prodCat" onchange="renderProdList()"><option value="">Toutes cat.</option></select>
+    <select id="prodSort" onchange="renderProdList()"><option value="new">Récents</option><option value="pa">Prix ↑</option><option value="pd">Prix ↓</option></select></div>
+    <div id="prodList"></div>
+  </div></div>
+  <div id="panel-orders" class="panel"><div class="card"><h3>Commandes</h3><div id="orderList"></div></div></div>
+  <div id="panel-categories" class="panel"><div class="card"><h3>Catégories</h3><div id="catList"></div>
+    <div class="row"><input id="newCat" placeholder="Nouvelle catégorie" style="flex:1"/><button class="primary" onclick="addCat()">Ajouter</button></div>
+  </div></div>
+  <div id="panel-add" class="panel"></div>
+</div>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getFirestore, collection, doc, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+const firebaseConfig={apiKey:"AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",authDomain:"idus-a87a6.firebaseapp.com",projectId:"idus-a87a6",storageBucket:"idus-a87a6.firebasestorage.app",messagingSenderId:"284785552985",appId:"1:284785552985:web:4cb12a71465a0e167bcb48",measurementId:"G-M0EKXCDV3R"};
+const db=getFirestore(initializeApp(firebaseConfig));
+let products=[], categories=[], editGroups=[], editImages=[''], editId=null;
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function show(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));
+  document.getElementById('panel-'+id)?.classList.add('on');
+  if(typeof event!=='undefined'&&event?.target?.classList) event.target.classList.add('on');
+  if(id==='dash')loadStats();
+  if(id==='products')loadProducts();
+  if(id==='orders')loadOrders();
+  if(id==='categories')loadCats();
+  if(id==='add'){editId=null;editGroups=[];editImages=[''];openForm();}
+}
+async function loadStats(){
+  try{
+    const [ps,os,cs]=await Promise.all([getDocs(collection(db,'products')),getDocs(collection(db,'orders')),getDocs(collection(db,'categories'))]);
+    document.getElementById('stats').innerHTML=`Produits: <b>${ps.size}</b><br>Commandes: <b>${os.size}</b><br>Catégories: <b>${cs.size}</b>`;
+  }catch(e){document.getElementById('stats').textContent=e.message}
+}
+async function loadCats(){
+  try{
+    const s=await getDocs(collection(db,'categories'));
+    categories=s.docs.map(d=>({id:d.id,...d.data()}));
+    document.getElementById('catList').innerHTML=categories.map(c=>`<div class="item">${esc(c.name)} <button class="sm danger" onclick="delCat('${c.id}')">Suppr</button></div>`).join('')||'<div class="muted">Aucune</div>';
+    const sel=document.getElementById('prodCat');
+    if(sel) sel.innerHTML='<option value="">Toutes cat.</option>'+categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  }catch(e){document.getElementById('catList').textContent=e.message}
+}
+window.addCat=async function(){
+  const name=document.getElementById('newCat').value.trim();if(!name)return;
+  await addDoc(collection(db,'categories'),{name,order:0,createdAt:serverTimestamp()});
+  document.getElementById('newCat').value='';loadCats();
+};
+window.delCat=async function(id){if(!confirm('Supprimer ?'))return;await deleteDoc(doc(db,'categories',id));loadCats();};
+async function loadProducts(){
+  try{
+    const s=await getDocs(collection(db,'products'));
+    products=s.docs.map(d=>({id:d.id,...d.data()}));
+    await loadCats();renderProdList();
+  }catch(e){document.getElementById('prodList').textContent=e.message}
+}
+window.renderProdList=function(){
+  const q=(document.getElementById('prodSearch')?.value||'').toLowerCase();
+  const cat=document.getElementById('prodCat')?.value||'';
+  const sort=document.getElementById('prodSort')?.value||'new';
+  let list=[...products];
+  if(q) list=list.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.description||'').toLowerCase().includes(q));
+  if(cat) list=list.filter(p=>p.categoryId===cat);
+  if(sort==='pa') list.sort((a,b)=>(a.price||0)-(b.price||0));
+  if(sort==='pd') list.sort((a,b)=>(b.price||0)-(a.price||0));
+  const cn=id=>(categories.find(c=>c.id===id)||{}).name||'—';
+  document.getElementById('prodList').innerHTML=list.map(p=>`<div class="item">
+    <b>${esc(p.name)}</b> · ${p.price||0} F · stock ${p.stock??0} · ${esc(cn(p.categoryId))}
+    ${(p.variantGroups||[]).length?`<span class="muted"> · ${p.variantGroups.length} variante(s)</span>`:''}<br/>
+    <button class="sm" onclick="editProd('${p.id}')">Modifier</button>
+    <button class="sm danger" onclick="delProd('${p.id}')">Supprimer</button>
+  </div>`).join('')||'<div class="muted">Aucun produit</div>';
+};
+window.delProd=async function(id){if(!confirm('Supprimer ce produit ?'))return;await deleteDoc(doc(db,'products',id));loadProducts();};
+window.editProd=function(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  editId=id;editGroups=JSON.parse(JSON.stringify(p.variantGroups||[]));
+  editImages=[...(p.images||[])];if(!editImages.length)editImages=[''];
+  show('add');
+  setTimeout(()=>{
+    document.getElementById('pName').value=p.name||'';
+    document.getElementById('pPrice').value=p.price||0;
+    document.getElementById('pPromo').value=p.promoPrice||'';
+    document.getElementById('pStock').value=p.stock??0;
+    document.getElementById('pDesc').value=p.description||'';
+    document.getElementById('pCat').value=p.categoryId||'';
+    document.getElementById('pPub').checked=p.published!==false;
+    renderImgs();renderVars();
+  },80);
+};
+function openForm(){
+  const catOpts=categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  document.getElementById('panel-add').innerHTML=`<div class="card">
+    <h3>${editId?'Modifier':'Nouveau'} produit</h3>
+    <label>Nom *</label><input id="pName"/>
+    <div class="row"><div style="flex:1"><label>Prix de base *</label><input id="pPrice" type="number"/></div>
+    <div style="flex:1"><label>Prix promo</label><input id="pPromo" type="number"/></div></div>
+    <label>Stock</label><input id="pStock" type="number" value="10"/>
+    <label>Catégorie</label><select id="pCat"><option value="">— Choisir —</option>${catOpts}</select>
+    <label>Description</label><textarea id="pDesc" rows="2"></textarea>
+    <label>Images (URLs)</label><div id="imgList"></div>
+    <button class="sm" onclick="editImages.push('');renderImgs()">+ Image</button>
+    <label style="margin-top:12px">Variantes (couleur, taille, RAM…)</label>
+    <div id="varList" style="background:#111;padding:10px;border-radius:8px;margin:6px 0"></div>
+    <button class="sm" onclick="editGroups.push({name:'',options:[{label:'',priceDelta:0,image:''}]});renderVars()">+ Groupe de variantes</button>
+    <p class="muted" style="margin:8px 0">Prix client = prix de base + sommes des options choisies. Chaque option peut avoir une image.</p>
+    <label><input type="checkbox" id="pPub" checked/> Publié</label>
+    <div style="margin-top:12px"><button class="primary" onclick="saveProd()">Enregistrer</button></div>
+  </div>`;
+  renderImgs();renderVars();
+}
+window.renderImgs=function(){
+  document.getElementById('imgList').innerHTML=editImages.map((u,i)=>`<div class="row"><input value="${esc(u)}" placeholder="https://…" style="flex:1" onchange="editImages[${i}]=this.value"/><button class="sm danger" onclick="editImages.splice(${i},1);renderImgs()">✕</button></div>`).join('');
+};
+window.renderVars=function(){
+  const el=document.getElementById('varList');
+  if(!editGroups.length){el.innerHTML='<p class="muted">Aucun groupe</p>';return;}
+  el.innerHTML=editGroups.map((g,gi)=>`<div style="border:1px solid #333;padding:8px;border-radius:8px;margin-bottom:8px">
+    <div class="row"><input placeholder="Nom groupe (ex: Couleur)" value="${esc(g.name)}" style="flex:1;font-weight:600" onchange="editGroups[${gi}].name=this.value"/>
+    <button class="sm danger" onclick="editGroups.splice(${gi},1);renderVars()">Suppr groupe</button></div>
+    ${(g.options||[]).map((o,oi)=>`<div class="row">
+      <input placeholder="Option" value="${esc(o.label||'')}" style="flex:1" onchange="editGroups[${gi}].options[${oi}].label=this.value"/>
+      <input type="number" placeholder="+prix" value="${o.priceDelta||0}" style="width:80px" onchange="editGroups[${gi}].options[${oi}].priceDelta=parseFloat(this.value)||0"/>
+      <input placeholder="URL image" value="${esc(o.image||'')}" style="flex:1" onchange="editGroups[${gi}].options[${oi}].image=this.value"/>
+      <button class="sm" onclick="editGroups[${gi}].options.splice(${oi},1);renderVars()">✕</button>
+    </div>`).join('')}
+    <button class="sm" onclick="editGroups[${gi}].options.push({label:'',priceDelta:0,image:''});renderVars()">+ Option</button>
+  </div>`).join('');
+};
+window.saveProd=async function(){
+  const name=document.getElementById('pName').value.trim();
+  const price=parseFloat(document.getElementById('pPrice').value)||0;
+  if(!name||price<0){alert('Nom et prix requis');return;}
+  const images=editImages.map(u=>u.trim()).filter(Boolean);
+  const variantGroups=editGroups.filter(g=>g.name&&(g.options||[]).some(o=>o.label)).map(g=({
+    name:g.name.trim(),
+    options:(g.options||[]).filter(o=>o.label).map(o=>({label:o.label.trim(),priceDelta:parseFloat(o.priceDelta)||0,image:(o.image||'').trim()}))
+  }));
+  const data={name,price,promoPrice:parseFloat(document.getElementById('pPromo').value)||null,
+    stock:parseInt(document.getElementById('pStock').value)||0,description:document.getElementById('pDesc').value.trim(),
+    categoryId:document.getElementById('pCat').value||null,images,variantGroups,
+    published:document.getElementById('pPub').checked,updatedAt:serverTimestamp()};
+  try{
+    if(editId) await updateDoc(doc(db,'products',editId),data);
+    else { data.createdAt=serverTimestamp(); data.sold=0; await addDoc(collection(db,'products'),data); }
+    alert('Enregistré');editId=null;show('products');
+  }catch(e){alert(e.message)}
+};
+async function loadOrders(){
+  try{
+    const s=await getDocs(collection(db,'orders'));
+    const list=s.docs.map(d=>({id:d.id,...d.data()}));
+    document.getElementById('orderList').innerHTML=list.map(o=>{
+      const c=o.customer||{};
+      const client=[c.name,c.phone,c.email,c.address,c.city].filter(Boolean).map(esc).join('<br/>')||'—';
+      const items=(o.items||[]).map(i=>{
+        const v=i.variants?Object.entries(i.variants).map(([k,v])=>k+': '+v).join(', '):'';
+        return `${i.qty}× ${esc(i.name)}${v?' ('+esc(v)+')':''} — ${i.price||0}F`;
+      }).join('<br/>');
+      return `<div class="item"><b>#${esc(o.orderNumber||o.id.slice(0,8))}</b> · ${o.status||'pending'} · <b>${o.total||0} F</b><br/>
+        <span class="muted">Client:</span><br/>${client}<br/><span class="muted">Articles:</span><br/>${items||'—'}</div>`;
+    }).join('')||'<div class="muted">Aucune commande</div>';
+  }catch(e){document.getElementById('orderList').textContent=e.message}
+}
+loadStats();loadCats();
+</script>
+</body>
+</html>
