@@ -1,1 +1,481 @@
-PLACEHOLDER_WILL_FAIL
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#0f0f1a"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Admin - Vente en Ligne</title>
+<style>
+:root{--primary:#ff4747;--primary-dark:#e63e3e;--sidebar:#0f0f1a;--sidebar-hover:#1a1a2e;--bg:#f0f2f5;--card:#fff;--text:#1a1a2e;--text-light:#6b7280;--border:#e5e7eb;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text)}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:15px}
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 50%,#16213e 100%)}
+.login-card{background:#fff;padding:32px;border-radius:16px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-card h1{font-size:1.4rem;margin-bottom:4px}
+.login-card .sub{color:var(--text-light);font-size:14px;margin-bottom:24px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#555}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;outline:none}
+.form-group input:focus{border-color:var(--primary)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:8px;font-weight:600;font-size:14px}
+.btn-primary{background:var(--primary);color:#fff;width:100%}
+.btn-primary:disabled{opacity:.6}
+.btn-outline{border:1.5px solid var(--border);background:#fff}
+.btn-sm{padding:7px 12px;font-size:13px}
+.error-msg{color:var(--danger);font-size:13px;margin-top:10px}
+.app{display:none;min-height:100vh}.app.show{display:flex}
+.sidebar{width:240px;background:var(--sidebar);color:#fff;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .25s}
+.sidebar .brand{padding:18px 16px;font-weight:800;font-size:1.1rem;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar nav{flex:1;padding:12px 8px;overflow-y:auto}
+.sidebar nav button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border-radius:8px;color:rgba(255,255,255,.75);font-size:14px;text-align:left;margin-bottom:2px}
+.sidebar nav button:hover,.sidebar nav button.active{background:var(--sidebar-hover);color:#fff}
+.sidebar .user-info{padding:14px 16px;border-top:1px solid rgba(255,255,255,.1);font-size:13px}
+.sidebar .user-info .role{opacity:.6;font-size:11px;text-transform:uppercase}
+.main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.topbar h2{font-size:1.15rem}
+.menu-toggle{display:none;font-size:1.4rem;padding:4px 8px}
+.content{padding:20px;flex:1}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.stat-card .label{font-size:12px;color:var(--text-light);margin-bottom:4px}
+.stat-card .value{font-size:1.5rem;font-weight:800}
+.stat-card .value.green{color:var(--success)}.stat-card .value.orange{color:var(--warning)}.stat-card .value.red{color:var(--danger)}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.card-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+.card-header h3{font-size:1rem}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f9fafb;font-weight:600;color:#555;white-space:nowrap}
+tr:hover td{background:#fafafa}
+.thumb{width:40px;height:40px;object-fit:cover;border-radius:6px}
+.badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;text-transform:uppercase}
+.badge.pending{background:#fef3c7;color:#92400e}.badge.confirmed{background:#d1fae5;color:#065f46}.badge.preparing{background:#dbeafe;color:#1e40af}.badge.shipped{background:#e0e7ff;color:#3730a3}.badge.delivered{background:#d1fae5;color:#065f46}.badge.cancelled{background:#fee2e2;color:#991b1b}.badge.published{background:#d1fae5;color:#065f46}.badge.draft{background:#f3f4f6;color:#6b7280}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:640px){.modal-overlay{align-items:center}}
+.modal{background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;padding:20px}
+@media(min-width:640px){.modal{border-radius:16px}}
+.modal h3{margin-bottom:16px;font-size:1.15rem}
+.modal-actions{display:flex;gap:10px;margin-top:20px}.modal-actions .btn{flex:1}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.form-row{grid-template-columns:1fr}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f0f1a;color:#fff;padding:12px 20px;border-radius:24px;font-size:14px;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none}.toast.show{opacity:1}
+.spinner{width:36px;height:36px;border:3px solid #eee;border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:40px 20px;color:var(--text-light)}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.menu-toggle{display:block}.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}.sidebar-backdrop.show{display:block}}
+</style>
+</head>
+<body>
+<div class="login-screen" id="loginScreen">
+<div class="login-card">
+<h1>🛠 Administration</h1>
+<p class="sub">Vente en Ligne — Back-office</p>
+<div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="admin@exemple.com" autocomplete="email"/></div>
+<div class="form-group"><label>Mot de passe</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"/></div>
+<button class="btn btn-primary" id="loginBtn" onclick="doAdminLogin()">Se connecter</button>
+<div class="error-msg" id="loginError" style="display:none"></div>
+<div id="setupAdminBox" style="display:none;margin-top:20px;padding-top:18px;border-top:1px solid #eee">
+<p style="font-size:13px;color:#333;margin-bottom:8px;font-weight:700">🚀 Premier démarrage</p>
+<p style="font-size:12px;color:#666;margin-bottom:12px">Aucun administrateur détecté. Créez le compte superadmin.</p>
+<div class="form-group"><label>Nom</label><input type="text" id="setupName" placeholder="Votre nom"/></div>
+<div class="form-group"><label>Email admin</label><input type="email" id="setupEmail" placeholder="admin@exemple.com"/></div>
+<div class="form-group"><label>Mot de passe (min 6)</label><input type="password" id="setupPass" placeholder="••••••••"/></div>
+<button class="btn btn-primary" id="setupBtn" onclick="createFirstAdmin()" style="background:#10b981">Créer le compte admin</button>
+<div class="error-msg" id="setupError" style="display:none"></div>
+</div>
+<p style="margin-top:16px;font-size:12px;color:#999;text-align:center" id="loginHint">Accès réservé aux administrateurs.</p>
+</div>
+</div>
+<div class="app" id="adminApp">
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+<div class="brand">🛒 Admin</div>
+<nav>
+<button data-view="dashboard" class="active" onclick="showView('dashboard')">📊 Tableau de bord</button>
+<button data-view="products" onclick="showView('products')">📦 Produits</button>
+<button data-view="orders" onclick="showView('orders')">🧾 Commandes</button>
+<button data-view="stores" onclick="showView('stores')">🏪 Boutiques</button>
+<button data-view="categories" onclick="showView('categories')">🏷 Catégories</button>
+<button data-view="stock" onclick="showView('stock')">📥 Stocks</button>
+<button data-view="customers" onclick="showView('customers')">👥 Clients</button>
+<button data-view="settings" onclick="showView('settings')">⚙️ Paramètres</button>
+</nav>
+<div class="user-info">
+<div id="adminName">Admin</div>
+<div class="role" id="adminRole">admin</div>
+<button style="color:#f87171;margin-top:8px;font-size:13px" onclick="doAdminLogout()">Déconnexion</button>
+</div>
+</aside>
+<div class="main">
+<div class="topbar">
+<div style="display:flex;align-items:center;gap:10px">
+<button class="menu-toggle" onclick="openSidebar()">☰</button>
+<h2 id="viewTitle">Tableau de bord</h2>
+</div>
+<div id="topbarActions"></div>
+</div>
+<div class="content" id="viewContent"></div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, serverTimestamp, writeBatch } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAJFiGElnEbpZo7_Bp8mPI-Kp_glYmfDB",
+  authDomain: "vente-en-ligne-5388c.firebaseapp.com",
+  projectId: "vente-en-ligne-5388c",
+  storageBucket: "vente-en-ligne-5388c.firebasestorage.app",
+  messagingSenderId: "1044747983298",
+  appId: "1:1044747983298:web:79a9be354ac3d0cb229e5b",
+  measurementId: "G-XBP2WEVHEC"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+let currentUser = null, userProfile = null;
+let settings = { currency: 'XOF', shippingFee: 1500, name: 'Vente en Ligne' };
+
+function $(id) { return document.getElementById(id); }
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+function formatPrice(n) { if (settings.currency === 'EUR') return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n || 0); return new Intl.NumberFormat('fr-FR').format(n || 0) + ' F'; }
+function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"'); }
+function statusLabel(s) { const m = { pending:'En attente', confirmed:'Confirmée', preparing:'En préparation', shipped:'Expédiée', delivered:'Livrée', cancelled:'Annulée' }; return m[s] || s || '—'; }
+
+window.openSidebar = () => { $('sidebar').classList.add('open'); $('sidebarBackdrop').classList.add('show'); };
+window.closeSidebar = () => { $('sidebar').classList.remove('open'); $('sidebarBackdrop').classList.remove('show'); };
+
+window.doAdminLogin = async function() {
+  const email = $('loginEmail').value.trim(), pass = $('loginPass').value;
+  if (!email || !pass) return;
+  const btn = $('loginBtn'); btn.disabled = true; $('loginError').style.display = 'none';
+  try { await signInWithEmailAndPassword(auth, email, pass); } catch(e) {
+    $('loginError').style.display = 'block';
+    $('loginError').textContent = e.code === 'auth/invalid-credential' ? 'Identifiants incorrects' : e.message;
+    btn.disabled = false;
+  }
+};
+window.doAdminLogout = async function() { await signOut(auth); };
+
+async function checkFirstAdmin() {
+  try {
+    const snap = await getDocs(query(collection(db, 'users'), where('role', 'in', ['admin', 'superadmin']), limit(1)));
+    if (snap.empty) {
+      const box = $('setupAdminBox'); if (box) box.style.display = 'block';
+      const hint = $('loginHint'); if (hint) hint.textContent = 'Aucun administrateur trouvé. Créez le premier compte ci-dessous.';
+    }
+  } catch(e) { const box = $('setupAdminBox'); if (box) box.style.display = 'block'; }
+}
+setTimeout(checkFirstAdmin, 600);
+
+window.createFirstAdmin = async function() {
+  const name = ($('setupName')?.value || '').trim();
+  const email = ($('setupEmail')?.value || '').trim();
+  const pass = $('setupPass')?.value || '';
+  const errEl = $('setupError');
+  if (!email || pass.length < 6) { errEl.style.display = 'block'; errEl.textContent = 'Email et mot de passe (min 6 caractères) requis.'; return; }
+  try {
+    const snap = await getDocs(query(collection(db, 'users'), where('role', 'in', ['admin', 'superadmin']), limit(1)));
+    if (!snap.empty) { errEl.style.display = 'block'; errEl.textContent = 'Un administrateur existe déjà. Connectez-vous.'; $('setupAdminBox').style.display = 'none'; return; }
+  } catch(e) {}
+  const btn = $('setupBtn'); btn.disabled = true; btn.textContent = 'Création…'; errEl.style.display = 'none';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    if (name) await updateProfile(cred.user, { displayName: name });
+    await setDoc(doc(db, 'users', cred.user.uid), { email, displayName: name || 'Admin', role: 'superadmin', createdAt: serverTimestamp() });
+    toast('Compte superadmin créé !');
+  } catch(e) {
+    errEl.style.display = 'block';
+    errEl.textContent = e.code === 'auth/email-already-in-use' ? 'Cet email est déjà utilisé' : e.message;
+    btn.disabled = false; btn.textContent = 'Créer le compte admin';
+  }
+};
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    currentUser = null; userProfile = null;
+    $('loginScreen').style.display = 'flex'; $('adminApp').classList.remove('show');
+    return;
+  }
+  currentUser = user;
+  try { const snap = await getDoc(doc(db, 'users', user.uid)); userProfile = snap.exists() ? snap.data() : {}; } catch(e) { userProfile = {}; }
+  const role = userProfile.role || 'customer';
+  if (!['superadmin', 'admin', 'manager', 'stock', 'orders'].includes(role)) {
+    await signOut(auth);
+    $('loginError').style.display = 'block';
+    $('loginError').textContent = 'Accès refusé. Compte sans droits administrateur.';
+    $('loginBtn').disabled = false;
+    return;
+  }
+  $('loginScreen').style.display = 'none'; $('adminApp').classList.add('show');
+  $('adminName').textContent = userProfile.displayName || user.email;
+  $('adminRole').textContent = role;
+  await loadSettings();
+  showView('dashboard');
+});
+
+async function loadSettings() { try { const snap = await getDoc(doc(db, 'settings', 'general')); if (snap.exists()) settings = { ...settings, ...snap.data() }; } catch(e){} }
+
+const titles = { dashboard: 'Tableau de bord', products: 'Produits', orders: 'Commandes', stores: 'Boutiques', categories: 'Catégories', stock: 'Stocks', customers: 'Clients', settings: 'Paramètres' };
+
+window.showView = function(view) {
+  closeSidebar();
+  document.querySelectorAll('.sidebar nav button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  $('viewTitle').textContent = titles[view] || view;
+  $('topbarActions').innerHTML = '';
+  $('viewContent').innerHTML = '<div class="spinner"></div>';
+  if (view === 'dashboard') renderDashboard();
+  else if (view === 'products') renderProducts();
+  else if (view === 'orders') renderOrders();
+  else if (view === 'stores') renderStores();
+  else if (view === 'categories') renderCategories();
+  else if (view === 'stock') renderStock();
+  else if (view === 'customers') renderCustomers();
+  else if (view === 'settings') renderSettings();
+};
+
+async function renderDashboard() {
+  try {
+    const [ordersSnap, productsSnap, storesSnap, usersSnap] = await Promise.all([
+      getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(100))),
+      getDocs(collection(db, 'products')),
+      getDocs(collection(db, 'stores')),
+      getDocs(query(collection(db, 'users'), where('role', '==', 'customer'), limit(50)))
+    ]);
+    const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const products = productsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const revenue = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + (o.total || 0), 0);
+    const pending = orders.filter(o => o.status === 'pending').length;
+    const lowStock = products.filter(p => (p.stock ?? 0) <= (p.alertThreshold ?? 5)).length;
+    $('viewContent').innerHTML = `<div class="stats-grid"><div class="stat-card"><div class="label">Chiffre d'affaires</div><div class="value green">${formatPrice(revenue)}</div></div><div class="stat-card"><div class="label">Commandes</div><div class="value">${orders.length}</div></div><div class="stat-card"><div class="label">En attente</div><div class="value orange">${pending}</div></div><div class="stat-card"><div class="label">Produits</div><div class="value">${products.length}</div></div><div class="stat-card"><div class="label">Stock bas</div><div class="value red">${lowStock}</div></div><div class="stat-card"><div class="label">Boutiques</div><div class="value">${storesSnap.size}</div></div><div class="stat-card"><div class="label">Clients</div><div class="value">${usersSnap.size}</div></div></div><div class="card"><div class="card-header"><h3>Dernières commandes</h3></div><div class="table-wrap"><table><thead><tr><th>N°</th><th>Client</th><th>Total</th><th>Statut</th><th>Date</th></tr></thead><tbody>${orders.slice(0,10).map(o => `<tr><td>${escapeHtml(o.orderNumber||o.id.slice(0,8))}</td><td>${escapeHtml(o.customer?.name||'—')}</td><td>${formatPrice(o.total)}</td><td><span class="badge ${o.status}">${statusLabel(o.status)}</span></td><td>${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('fr-FR'):'—'}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Aucune commande</td></tr>'}</tbody></table></div></div>`;
+  } catch(e) { $('viewContent').innerHTML = `<div class="empty">Erreur : ${e.message}</div>`; }
+}
+
+async function renderProducts() {
+  $('topbarActions').innerHTML = `<button class="btn btn-primary btn-sm" onclick="openProductModal()">+ Nouveau produit</button>`;
+  try {
+    const snap = await getDocs(query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(100)));
+    const products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    $('viewContent').innerHTML = `<div class="card"><div class="card-header"><h3>${products.length} produit(s)</h3></div><div class="table-wrap"><table><thead><tr><th></th><th>Nom</th><th>Prix</th><th>Stock</th><th>Statut</th><th>Actions</th></tr></thead><tbody>${products.map(p => `<tr><td><img class="thumb" src="${(p.images&&p.images[0])||'https://via.placeholder.com/40'}" onerror="this.src='https://via.placeholder.com/40'"/></td><td>${escapeHtml(p.name)}<br/><small style="color:#999">${escapeHtml(p.storeName||'')}</small></td><td>${formatPrice(p.promoPrice||p.price)}</td><td style="${(p.stock??0)<=(p.alertThreshold??5)?'color:var(--danger);font-weight:700':''}">${p.stock??0}</td><td><span class="badge ${p.published?'published':'draft'}">${p.published?'Publié':'Brouillon'}</span></td><td><button class="btn btn-outline btn-sm" onclick="openProductModal('${p.id}')">Modifier</button> <button class="btn btn-sm" style="color:var(--danger)" onclick="deleteProduct('${p.id}')">Suppr.</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">Aucun produit</td></tr>'}</tbody></table></div></div>`;
+  } catch(e) {
+    try {
+      const snap = await getDocs(collection(db, 'products'));
+      const products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      $('viewContent').innerHTML = `<div class="card"><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Prix</th><th>Stock</th><th>Actions</th></tr></thead><tbody>${products.map(p => `<tr><td>${escapeHtml(p.name)}</td><td>${formatPrice(p.price)}</td><td>${p.stock??0}</td><td><button class="btn btn-outline btn-sm" onclick="openProductModal('${p.id}')">Modifier</button></td></tr>`).join('')}</tbody></table></div></div>`;
+    } catch(e2) { $('viewContent').innerHTML = `<div class="empty">${e2.message}</div>`; }
+  }
+}
+
+window.openProductModal = async function(id) {
+  let product = { name:'', price:0, promoPrice:null, stock:0, description:'', features:'', categoryId:'', storeId:'', published:true, images:[], variants:{}, alertThreshold:5 };
+  let stores=[], categories=[];
+  try {
+    const [sSnap,cSnap] = await Promise.all([getDocs(collection(db,'stores')), getDocs(collection(db,'categories'))]);
+    stores = sSnap.docs.map(d=>({id:d.id,...d.data()}));
+    categories = cSnap.docs.map(d=>({id:d.id,...d.data()}));
+    if (id) { const snap = await getDoc(doc(db,'products',id)); if (snap.exists()) product = {id:snap.id,...snap.data()}; }
+  } catch(e) {}
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay'; overlay.id = 'productModal';
+  overlay.innerHTML = `<div class="modal"><h3>${id?'Modifier':'Nouveau'} produit</h3>
+  <div class="form-group"><label>Nom *</label><input id="pName" value="${escapeHtml(product.name)}"/></div>
+  <div class="form-row"><div class="form-group"><label>Prix *</label><input id="pPrice" type="number" min="0" value="${product.price||0}"/></div>
+  <div class="form-group"><label>Prix promo</label><input id="pPromo" type="number" min="0" value="${product.promoPrice||''}"/></div></div>
+  <div class="form-row"><div class="form-group"><label>Stock *</label><input id="pStock" type="number" min="0" value="${product.stock??0}"/></div>
+  <div class="form-group"><label>Seuil alerte</label><input id="pAlert" type="number" min="0" value="${product.alertThreshold??5}"/></div></div>
+  <div class="form-group"><label>Description</label><textarea id="pDesc" rows="3">${escapeHtml(product.description||'')}</textarea></div>
+  <div class="form-group"><label>Caractéristiques</label><textarea id="pFeatures" rows="2">${escapeHtml(product.features||'')}</textarea></div>
+  <div class="form-row"><div class="form-group"><label>Catégorie</label><select id="pCat"><option value="">—</option>${categories.map(c=>`<option value="${c.id}" ${product.categoryId===c.id?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}</select></div>
+  <div class="form-group"><label>Boutique</label><select id="pStore"><option value="">—</option>${stores.map(s=>`<option value="${s.id}" ${product.storeId===s.id?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}</select></div></div>
+  <div class="form-group"><label>Images (URLs, séparées par virgules)</label><input id="pImages" value="${(product.images||[]).join(', ')}"/><input type="file" id="pImageFile" accept="image/*" multiple style="margin-top:8px"/></div>
+  <div class="form-group"><label><input type="checkbox" id="pPublished" ${product.published!==false?'checked':''}/> Publié</label></div>
+  <div class="form-group"><label>Variantes JSON (ex: {"Couleur":["Rouge","Bleu"]})</label><textarea id="pVariants" rows="2">${product.variants?JSON.stringify(product.variants):''}</textarea></div>
+  <div class="modal-actions"><button class="btn btn-outline" onclick="document.getElementById('productModal').remove()">Annuler</button>
+  <button class="btn btn-primary" id="saveProductBtn" onclick="saveProduct('${id||''}')">Enregistrer</button></div></div>`;
+  document.body.appendChild(overlay);
+};
+
+window.saveProduct = async function(id) {
+  const name = $('pName').value.trim(), price = parseFloat($('pPrice').value)||0;
+  if (!name || price<=0) { toast('Nom et prix requis'); return; }
+  const btn = $('saveProductBtn'); btn.disabled = true; btn.textContent = 'Enregistrement…';
+  try {
+    let images = ($('pImages').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const files = $('pImageFile').files;
+    if (files && files.length) {
+      for (const file of files) {
+        const path = `products/${Date.now()}_${file.name}`;
+        await uploadBytes(ref(storage, path), file);
+        images.push(await getDownloadURL(ref(storage, path)));
+      }
+    }
+    let variants = {};
+    try { const v = $('pVariants').value.trim(); if (v) variants = JSON.parse(v); } catch(e){}
+    const storeId = $('pStore').value; let storeName = '';
+    if (storeId) { const s = await getDoc(doc(db,'stores',storeId)); if (s.exists()) storeName = s.data().name||''; }
+    const data = { name, price, promoPrice: parseFloat($('pPromo').value)||null, stock: parseInt($('pStock').value)||0, alertThreshold: parseInt($('pAlert').value)||5, description: $('pDesc').value.trim(), features: $('pFeatures').value.trim(), categoryId: $('pCat').value||null, storeId: storeId||null, storeName, images, variants, published: $('pPublished').checked, updatedAt: serverTimestamp() };
+    if (id) { await updateDoc(doc(db,'products',id), data); toast('Produit mis à jour'); }
+    else { data.createdAt = serverTimestamp(); data.sold = 0; await addDoc(collection(db,'products'), data); toast('Produit créé'); }
+    document.getElementById('productModal')?.remove(); renderProducts();
+  } catch(e) { toast('Erreur : '+e.message); btn.disabled = false; btn.textContent = 'Enregistrer'; }
+};
+
+window.deleteProduct = async function(id) {
+  if (!confirm('Supprimer ce produit ?')) return;
+  try { await deleteDoc(doc(db,'products',id)); toast('Supprimé'); renderProducts(); } catch(e) { toast(e.message); }
+};
+
+async function renderOrders() {
+  try {
+    const snap = await getDocs(query(collection(db,'orders'), orderBy('createdAt','desc'), limit(50)));
+    const orders = snap.docs.map(d=>({id:d.id,...d.data()}));
+    $('viewContent').innerHTML = `<div class="card"><div class="card-header"><h3>${orders.length} commande(s)</h3>
+    <select id="orderFilter" onchange="filterOrders()" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border)">
+    <option value="">Tous</option><option value="pending">En attente</option><option value="confirmed">Confirmée</option><option value="preparing">Préparation</option><option value="shipped">Expédiée</option><option value="delivered">Livrée</option><option value="cancelled">Annulée</option></select></div>
+    <div class="table-wrap"><table><thead><tr><th>N°</th><th>Client</th><th>Articles</th><th>Total</th><th>Statut</th><th>Actions</th></tr></thead>
+    <tbody id="ordersBody">${orders.map(o=>orderRow(o)).join('')||'<tr><td colspan="6" class="empty">Aucune commande</td></tr>'}</tbody></table></div></div>`;
+  } catch(e) { $('viewContent').innerHTML = `<div class="empty">${e.message}</div>`; }
+}
+function orderRow(o) {
+  return `<tr data-status="${o.status}"><td>${escapeHtml(o.orderNumber||o.id.slice(0,8))}</td><td>${escapeHtml(o.customer?.name||'—')}<br/><small>${escapeHtml(o.customer?.phone||'')}</small></td><td>${(o.items||[]).map(i=>`${i.qty}× ${escapeHtml(i.name)}`).join('<br/>')}</td><td>${formatPrice(o.total)}</td><td><span class="badge ${o.status}">${statusLabel(o.status)}</span></td><td><select onchange="updateOrderStatus('${o.id}',this.value)" style="padding:4px 6px;border-radius:4px;border:1px solid var(--border);font-size:12px"><option value="">Changer…</option><option value="confirmed">Confirmer</option><option value="preparing">Préparation</option><option value="shipped">Expédier</option><option value="delivered">Livrée</option><option value="cancelled">Annuler</option></select></td></tr>`;
+}
+window.filterOrders = function() { const f=$('orderFilter').value; document.querySelectorAll('#ordersBody tr').forEach(r=>{r.style.display=(!f||r.dataset.status===f)?'':'none';}); };
+window.updateOrderStatus = async function(orderId, newStatus) {
+  if (!newStatus) return;
+  try {
+    const orderRef = doc(db,'orders',orderId);
+    const snap = await getDoc(orderRef); if (!snap.exists()) return;
+    const order = snap.data();
+    const history = order.statusHistory||[];
+    history.push({ status: newStatus, at: new Date().toISOString(), by: currentUser.uid });
+    if (newStatus==='cancelled' && order.status!=='cancelled') {
+      const batch = writeBatch(db);
+      for (const item of (order.items||[])) {
+        const pRef = doc(db,'products',item.productId);
+        const pSnap = await getDoc(pRef);
+        if (pSnap.exists()) {
+          const ns = (pSnap.data().stock||0) + item.qty;
+          batch.update(pRef, { stock: ns });
+          batch.set(doc(collection(db,'inventoryMovements')), { productId:item.productId, productName:item.name, type:'return', quantity:item.qty, stockAfter:ns, orderId, createdAt:serverTimestamp(), by:currentUser.uid });
+        }
+      }
+      await batch.commit();
+    }
+    await updateDoc(orderRef, { status:newStatus, statusHistory:history, updatedAt:serverTimestamp() });
+    toast('Statut mis à jour'); renderOrders();
+  } catch(e) { toast(e.message); }
+};
+
+async function renderStores() {
+  $('topbarActions').innerHTML = `<button class="btn btn-primary btn-sm" onclick="openStoreModal()">+ Boutique</button>`;
+  try {
+    const snap = await getDocs(collection(db,'stores'));
+    const stores = snap.docs.map(d=>({id:d.id,...d.data()}));
+    $('viewContent').innerHTML = `<div class="card"><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Description</th><th>Actif</th><th>Actions</th></tr></thead><tbody>${stores.map(s=>`<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml((s.description||'').slice(0,60))}</td><td>${s.active!==false?'✅':'❌'}</td><td><button class="btn btn-outline btn-sm" onclick="openStoreModal('${s.id}')">Modifier</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Aucune boutique</td></tr>'}</tbody></table></div></div>`;
+  } catch(e) { $('viewContent').innerHTML = `<div class="empty">${e.message}</div>`; }
+}
+window.openStoreModal = async function(id) {
+  let store = { name:'', description:'', active:true, logo:'' };
+  if (id) { const snap = await getDoc(doc(db,'stores',id)); if (snap.exists()) store = {id:snap.id,...snap.data()}; }
+  const overlay = document.createElement('div'); overlay.className='modal-overlay'; overlay.id='storeModal';
+  overlay.innerHTML = `<div class="modal"><h3>${id?'Modifier':'Nouvelle'} boutique</h3>
+  <div class="form-group"><label>Nom *</label><input id="sName" value="${escapeHtml(store.name)}"/></div>
+  <div class="form-group"><label>Description</label><textarea id="sDesc" rows="3">${escapeHtml(store.description||'')}</textarea></div>
+  <div class="form-group"><label>Logo (URL)</label><input id="sLogo" value="${escapeHtml(store.logo||'')}"/></div>
+  <div class="form-group"><label><input type="checkbox" id="sActive" ${store.active!==false?'checked':''}/> Active</label></div>
+  <div class="modal-actions"><button class="btn btn-outline" onclick="document.getElementById('storeModal').remove()">Annuler</button>
+  <button class="btn btn-primary" onclick="saveStore('${id||''}')">Enregistrer</button></div></div>`;
+  document.body.appendChild(overlay);
+};
+window.saveStore = async function(id) {
+  const name = $('sName').value.trim(); if (!name) { toast('Nom requis'); return; }
+  const data = { name, description:$('sDesc').value.trim(), logo:$('sLogo').value.trim(), active:$('sActive').checked, updatedAt:serverTimestamp() };
+  try { if (id) await updateDoc(doc(db,'stores',id), data); else { data.createdAt=serverTimestamp(); await addDoc(collection(db,'stores'), data); } toast('Boutique enregistrée'); document.getElementById('storeModal')?.remove(); renderStores(); } catch(e) { toast(e.message); }
+};
+
+async function renderCategories() {
+  $('topbarActions').innerHTML = `<button class="btn btn-primary btn-sm" onclick="openCatModal()">+ Catégorie</button>`;
+  try {
+    const snap = await getDocs(collection(db,'categories'));
+    const cats = snap.docs.map(d=>({id:d.id,...d.data()}));
+    $('viewContent').innerHTML = `<div class="card"><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Ordre</th><th>Actions</th></tr></thead><tbody>${cats.map(c=>`<tr><td>${escapeHtml(c.name)}</td><td>${c.order??0}</td><td><button class="btn btn-outline btn-sm" onclick="openCatModal('${c.id}')">Modifier</button> <button class="btn btn-sm" style="color:var(--danger)" onclick="deleteCat('${c.id}')">Suppr.</button></td></tr>`).join('')||'<tr><td colspan="3" class="empty">Aucune catégorie</td></tr>'}</tbody></table></div></div>`;
+  } catch(e) { $('viewContent').innerHTML = `<div class="empty">${e.message}</div>`; }
+}
+window.openCatModal = async function(id) {
+  let cat = { name:'', order:0 };
+  if (id) { const snap = await getDoc(doc(db,'categories',id)); if (snap.exists()) cat = {id:snap.id,...snap.data()}; }
+  const overlay = document.createElement('div'); overlay.className='modal-overlay'; overlay.id='catModal';
+  overlay.innerHTML = `<div class="modal"><h3>${id?'Modifier':'Nouvelle'} catégorie</h3>
+  <div class="form-group"><label>Nom *</label><input id="cName" value="${escapeHtml(cat.name)}"/></div>
+  <div class="form-group"><label>Ordre</label><input id="cOrder" type="number" value="${cat.order??0}"/></div>
+  <div class="modal-actions"><button class="btn btn-outline" onclick="document.getElementById('catModal').remove()">Annuler</button>
+  <button class="btn btn-primary" onclick="saveCat('${id||''}')">Enregistrer</button></div></div>`;
+  document.body.appendChild(overlay);
+};
+window.saveCat = async function(id) {
+  const name = $('cName').value.trim(); if (!name) return;
+  const data = { name, order: parseInt($('cOrder').value)||0, updatedAt:serverTimestamp() };
+  try { if (id) await updateDoc(doc(db,'categories',id), data); else { data.createdAt=serverTimestamp(); await addDoc(collection(db,'categories'), data); } toast('Enregistré'); document.getElementById('catModal')?.remove(); renderCategories(); } catch(e) { toast(e.message); }
+};
+window.deleteCat = async function(id) { if (!confirm('Supprimer ?')) return; await deleteDoc(doc(db,'categories',id)); toast('Supprimé'); renderCategories(); };
+
+async function renderStock() {
+  try {
+    const snap = await getDocs(collection(db,'products'));
+    const products = snap.docs.map(d=>({id:d.id,...d.data()}));
+    $('viewContent').innerHTML = `<div class="card"><div class="card-header"><h3>Stocks</h3></div><div class="table-wrap"><table><thead><tr><th>Produit</th><th>Stock</th><th>Seuil</th><th>Ajuster</th></tr></thead><tbody>${products.map(p=>`<tr><td>${escapeHtml(p.name)}</td><td style="${(p.stock??0)<=(p.alertThreshold??5)?'color:var(--danger);font-weight:700':''}">${p.stock??0}</td><td>${p.alertThreshold??5}</td><td><input type="number" id="adj_${p.id}" style="width:70px;padding:4px;border:1px solid var(--border);border-radius:4px" placeholder="+/-"/> <button class="btn btn-outline btn-sm" onclick="adjustStock('${p.id}','${escapeHtml(p.name)}')">OK</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Aucun produit</td></tr>'}</tbody></table></div></div>`;
+  } catch(e) { $('viewContent').innerHTML = `<div class="empty">${e.message}</div>`; }
+}
+window.adjustStock = async function(productId, productName) {
+  const delta = parseInt(document.getElementById('adj_'+productId).value); if (!delta) return;
+  try {
+    const pRef = doc(db,'products',productId);
+    const snap = await getDoc(pRef); if (!snap.exists()) return;
+    const ns = Math.max(0, (snap.data().stock||0)+delta);
+    await updateDoc(pRef, { stock:ns, updatedAt:serverTimestamp() });
+    await addDoc(collection(db,'inventoryMovements'), { productId, productName, type:delta>0?'in':'out', quantity:delta, stockAfter:ns, reason:'Ajustement manuel', createdAt:serverTimestamp(), by:currentUser.uid });
+    toast('Stock mis à jour'); renderStock();
+  } catch(e) { toast(e.message); }
+};
+
+async function renderCustomers() {
+  try {
+    const snap = await getDocs(query(collection(db,'users'), where('role','==','customer'), limit(100)));
+    const users = snap.docs.map(d=>({id:d.id,...d.data()}));
+    $('viewContent').innerHTML = `<div class="card"><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Ville</th></tr></thead><tbody>${users.map(u=>`<tr><td>${escapeHtml(u.displayName||'—')}</td><td>${escapeHtml(u.email||'—')}</td><td>${escapeHtml(u.phone||'—')}</td><td>${escapeHtml(u.city||'—')}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Aucun client</td></tr>'}</tbody></table></div></div>`;
+  } catch(e) {
+    try {
+      const snap = await getDocs(collection(db,'users'));
+      const users = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role==='customer'||!u.role);
+      $('viewContent').innerHTML = `<div class="card"><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Email</th></tr></thead><tbody>${users.map(u=>`<tr><td>${escapeHtml(u.displayName||'—')}</td><td>${escapeHtml(u.email||'—')}</td></tr>`).join('')}</tbody></table></div></div>`;
+    } catch(e2) { $('viewContent').innerHTML = `<div class="empty">${e2.message}</div>`; }
+  }
+}
+
+async function renderSettings() {
+  $('viewContent').innerHTML = `<div class="card" style="padding:20px;max-width:500px"><h3 style="margin-bottom:16px">Paramètres</h3>
+  <div class="form-group"><label>Nom du commerce</label><input id="setName" value="${escapeHtml(settings.name||'')}"/></div>
+  <div class="form-group"><label>Devise</label><select id="setCurrency"><option value="XOF" ${settings.currency==='XOF'?'selected':''}>XOF</option><option value="EUR" ${settings.currency==='EUR'?'selected':''}>EUR</option></select></div>
+  <div class="form-group"><label>Frais de livraison</label><input id="setShipping" type="number" min="0" value="${settings.shippingFee||0}"/></div>
+  <button class="btn btn-primary" onclick="saveSettings()">Enregistrer</button></div>`;
+}
+window.saveSettings = async function() {
+  const data = { name:$('setName').value.trim(), currency:$('setCurrency').value, shippingFee:parseFloat($('setShipping').value)||0, updatedAt:serverTimestamp() };
+  try { await setDoc(doc(db,'settings','general'), data, {merge:true}); settings={...settings,...data}; toast('Enregistré'); } catch(e) { toast(e.message); }
+};
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
