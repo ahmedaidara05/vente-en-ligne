@@ -27,17 +27,16 @@ service cloud.firestore {
          userDoc().role == 'stock' || 
          userDoc().role == 'orders');
     }
-    
-    function isStoreManager(storeId) {
-      return isSignedIn() && 
-        (isAdmin() || 
-         (userDoc().role == 'manager' && userDoc().storeId == storeId));
-    }
 
     match /users/{userId} {
       allow read: if isOwner(userId) || isStaff();
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isOwner(userId) || isAdmin();
+      // Create: only own doc, and role must be customer (or absent)
+      allow create: if isSignedIn() && request.auth.uid == userId
+        && (!('role' in request.resource.data) || request.resource.data.role == 'customer');
+      // Update: owner can update non-role fields; only admin can change role
+      allow update: if isOwner(userId) && 
+        (!('role' in request.resource.data) || request.resource.data.role == resource.data.role)
+        || isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -53,7 +52,7 @@ service cloud.firestore {
 
     match /stores/{storeId} {
       allow read: if resource.data.active == true || isStaff();
-      allow create, update, delete: if isAdmin() || isStoreManager(storeId);
+      allow create, update, delete: if isAdmin();
     }
 
     match /orders/{orderId} {
