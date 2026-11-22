@@ -3,67 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#1a1a2e" />
+  <meta name="theme-color" content="#00A854" />
   <title>IDUS Admin</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous"/>
   <style>
     :root { --bg:#0f0f1a; --card:#1a1a2e; --accent:#00A854; --text:#eee; --muted:#888; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-    .login-box { max-width: 380px; margin: 60px auto; background: var(--card); padding: 28px; border-radius: 12px; }
-    .login-box h1 { font-size: 22px; margin-bottom: 20px; color: var(--accent); }
-    input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff; }
-    button { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
-    .err { color: #f66; font-size: 13px; margin-top: 8px; display: none; }
-    #app { display: none; }
+    #loginScreen { display: none !important; }
+    #app { display: block; }
     .top { background: var(--card); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
     .top h2 { font-size: 16px; color: var(--accent); }
-    .nav { display: flex; gap: 8px; padding: 12px; flex-wrap: wrap; }
-    .nav button { width: auto; padding: 8px 14px; font-size: 13px; }
+    .nav { display: flex; gap: 8px; padding: 12px; flex-wrap: wrap; background: #151525; }
+    .nav button { width: auto; padding: 8px 14px; font-size: 13px; background: var(--card); color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+    .nav button:hover, .nav button.on { background: var(--accent); }
     .panel { display: none; padding: 16px; }
     .panel.on { display: block; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 8px; border-bottom: 1px solid #333; text-align: left; }
     .card { background: var(--card); padding: 16px; border-radius: 8px; margin-bottom: 12px; }
+    .card h3 { margin-bottom: 12px; color: var(--accent); }
+    input, select, textarea { width: 100%; padding: 10px 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff; font-size: 14px; }
+    button.primary { padding: 10px 16px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .item { padding: 10px 0; border-bottom: 1px solid #333; font-size: 13px; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .empty { color: var(--muted); padding: 20px 0; }
   </style>
 </head>
 <body>
-  <div id="loginScreen" class="login-box">
-    <h1>IDUS Admin</h1>
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Mot de passe" />
-    <button onclick="doLogin()">Connexion</button>
-    <div id="loginErr" class="err"></div>
-    <div id="bootstrap" style="margin-top:20px;display:none">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Aucun admin. Créer le premier compte :</p>
-      <input type="text" id="bootName" placeholder="Nom" />
-      <input type="email" id="bootEmail" placeholder="Email" />
-      <input type="password" id="bootPass" placeholder="Mot de passe (min 6)" />
-      <button onclick="createFirstAdmin()">Créer super-admin</button>
-      <div id="bootErr" class="err"></div>
-    </div>
-  </div>
+  <div id="loginScreen"></div>
   <div id="app">
     <div class="top">
       <h2>IDUS Admin</h2>
-      <button onclick="doLogout()" style="width:auto;padding:6px 12px;font-size:12px;background:#444">Déconnexion</button>
+      <span class="muted">Accès libre (sans connexion)</span>
     </div>
     <div class="nav">
-      <button onclick="showPanel('dash')">Dashboard</button>
+      <button class="on" onclick="showPanel('dash')">Dashboard</button>
       <button onclick="showPanel('products')">Produits</button>
       <button onclick="showPanel('orders')">Commandes</button>
       <button onclick="showPanel('categories')">Catégories</button>
+      <button onclick="showPanel('addproduct')">+ Produit</button>
     </div>
     <div id="panel-dash" class="panel on"><div class="card"><h3>Dashboard</h3><p id="stats">Chargement...</p></div></div>
     <div id="panel-products" class="panel"><div class="card"><h3>Produits</h3><div id="prodList">...</div></div></div>
-    <div id="panel-orders" class="panel"><div class="card"><h3>Commandes</h3><div id="orderList">...</div></div>
-    <div id="panel-categories" class="panel"><div class="card"><h3>Catégories</h3><div id="catList">...</div></div></div>
+    <div id="panel-orders" class="panel"><div class="card"><h3>Commandes</h3><div id="orderList">...</div></div></div>
+    <div id="panel-categories" class="panel"><div class="card"><h3>Catégories</h3><div id="catList">...</div>
+      <div style="margin-top:16px"><input id="newCatName" placeholder="Nouvelle catégorie" /><button class="primary" onclick="addCategory()">Ajouter</button></div>
+    </div></div>
+    <div id="panel-addproduct" class="panel"><div class="card"><h3>Ajouter un produit</h3>
+      <input id="pName" placeholder="Nom du produit" />
+      <input id="pPrice" type="number" placeholder="Prix (F)" />
+      <input id="pPromo" type="number" placeholder="Prix promo (optionnel)" />
+      <input id="pStock" type="number" placeholder="Stock" value="10" />
+      <input id="pImage" placeholder="URL image" />
+      <textarea id="pDesc" placeholder="Description" rows="3"></textarea>
+      <button class="primary" onclick="addProduct()">Enregistrer le produit</button>
+      <p id="addMsg" class="muted" style="margin-top:10px"></p>
+    </div></div>
   </div>
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, query, where, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-    import { getStorage } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+    import { getFirestore, collection, doc, getDocs, setDoc, addDoc, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",
@@ -78,57 +78,10 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    let currentUser = null;
-
-    async function checkAdminExists() {
-      try {
-        const s = await getDocs(query(collection(db, 'users'), where('role', '==', 'admin'), limit(1)));
-        return !s.empty;
-      } catch (e) { return true; }
-    }
-
-    async function init() {
-      const hasAdmin = await checkAdminExists();
-      if (!hasAdmin) document.getElementById('bootstrap').style.display = 'block';
-    }
-
-    window.createFirstAdmin = async function() {
-      const name = document.getElementById('bootName').value.trim();
-      const email = document.getElementById('bootEmail').value.trim();
-      const pass = document.getElementById('bootPass').value;
-      const err = document.getElementById('bootErr');
-      if (!email || pass.length < 6) { err.style.display='block'; err.textContent='Email + mot de passe (min 6)'; return; }
-      try {
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-        if (name) await updateProfile(cred.user, { displayName: name });
-        await setDoc(doc(db, 'users', cred.user.uid), { email, displayName: name || '', role: 'admin', createdAt: serverTimestamp() });
-        err.style.display='none';
-        alert('Super-admin créé. Rechargez si besoin.');
-      } catch (e) { err.style.display='block'; err.textContent = e.message; }
-    };
-
-    window.doLogin = async function() {
-      const email = document.getElementById('email').value.trim();
-      const pass = document.getElementById('password').value;
-      const err = document.getElementById('loginErr');
-      try {
-        const cred = await signInWithEmailAndPassword(auth, email, pass);
-        const u = await getDoc(doc(db, 'users', cred.user.uid));
-        if (!u.exists() || u.data().role !== 'admin') {
-          await signOut(auth);
-          err.style.display='block'; err.textContent='Compte non admin';
-          return;
-        }
-        err.style.display='none';
-      } catch (e) { err.style.display='block'; err.textContent = e.message; }
-    };
-
-    window.doLogout = () => signOut(auth);
 
     window.showPanel = function(id) {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+      document.querySelectorAll('.nav button').forEach(b => b.classList.remove('on'));
       const el = document.getElementById('panel-' + id);
       if (el) el.classList.add('on');
       if (id === 'dash') loadStats();
@@ -141,7 +94,8 @@
       try {
         const ps = await getDocs(query(collection(db, 'products'), limit(100)));
         const os = await getDocs(query(collection(db, 'orders'), limit(100)));
-        document.getElementById('stats').innerHTML = `Produits: ${ps.size}<br>Commandes: ${os.size}`;
+        const cs = await getDocs(query(collection(db, 'categories'), limit(50)));
+        document.getElementById('stats').innerHTML = `Produits: <strong>${ps.size}</strong><br>Commandes: <strong>${os.size}</strong><br>Catégories: <strong>${cs.size}</strong>`;
       } catch (e) { document.getElementById('stats').textContent = e.message; }
     }
 
@@ -149,15 +103,25 @@
       try {
         const s = await getDocs(query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(50)));
         const list = s.docs.map(d => ({ id: d.id, ...d.data() }));
-        document.getElementById('prodList').innerHTML = list.length ? list.map(p => `<div style="padding:8px 0;border-bottom:1px solid #333">${p.name || p.id} — ${p.price || 0} F (stock ${p.stock ?? '?'})</div>`).join('') : 'Aucun produit';
-      } catch (e) { document.getElementById('prodList').textContent = e.message; }
+        document.getElementById('prodList').innerHTML = list.length
+          ? list.map(p => `<div class="item"><strong>${p.name || p.id}</strong> — ${p.price || 0} F${p.promoPrice ? ' (promo ' + p.promoPrice + ' F)' : ''} · stock ${p.stock ?? '?'}</div>`).join('')
+          : '<div class="empty">Aucun produit</div>';
+      } catch (e) {
+        try {
+          const s = await getDocs(collection(db, 'products'));
+          const list = s.docs.map(d => ({ id: d.id, ...d.data() }));
+          document.getElementById('prodList').innerHTML = list.map(p => `<div class="item">${p.name || p.id} — ${p.price || 0} F</div>`).join('') || '<div class="empty">Aucun produit</div>';
+        } catch (e2) { document.getElementById('prodList').textContent = e2.message; }
+      }
     }
 
     async function loadOrders() {
       try {
         const s = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(30)));
         const list = s.docs.map(d => ({ id: d.id, ...d.data() }));
-        document.getElementById('orderList').innerHTML = list.length ? list.map(o => `<div style="padding:8px 0;border-bottom:1px solid #333">#${o.id.slice(0,8)} — ${o.status || 'pending'} — ${o.total || 0} F</div>`).join('') : 'Aucune commande';
+        document.getElementById('orderList').innerHTML = list.length
+          ? list.map(o => `<div class="item">#${o.id.slice(0,8)} — ${o.status || 'pending'} — ${o.total || 0} F</div>`).join('')
+          : '<div class="empty">Aucune commande</div>';
       } catch (e) { document.getElementById('orderList').textContent = e.message; }
     }
 
@@ -165,29 +129,48 @@
       try {
         const s = await getDocs(collection(db, 'categories'));
         const list = s.docs.map(d => ({ id: d.id, ...d.data() }));
-        document.getElementById('catList').innerHTML = list.length ? list.map(c => `<div style="padding:8px 0;border-bottom:1px solid #333">${c.name || c.id}</div>`).join('') : 'Aucune catégorie';
+        document.getElementById('catList').innerHTML = list.length
+          ? list.map(c => `<div class="item">${c.name || c.id}</div>`).join('')
+          : '<div class="empty">Aucune catégorie</div>';
       } catch (e) { document.getElementById('catList').textContent = e.message; }
     }
 
-    onAuthStateChanged(auth, async (user) => {
-      currentUser = user;
-      if (user) {
-        const u = await getDoc(doc(db, 'users', user.uid));
-        if (u.exists() && u.data().role === 'admin') {
-          document.getElementById('loginScreen').style.display = 'none';
-          document.getElementById('app').style.display = 'block';
-          loadStats();
-        } else {
-          document.getElementById('loginScreen').style.display = 'block';
-          document.getElementById('app').style.display = 'none';
-        }
-      } else {
-        document.getElementById('loginScreen').style.display = 'block';
-        document.getElementById('app').style.display = 'none';
-      }
-    });
+    window.addCategory = async function() {
+      const name = document.getElementById('newCatName').value.trim();
+      if (!name) return;
+      try {
+        await addDoc(collection(db, 'categories'), { name, order: 0, createdAt: serverTimestamp() });
+        document.getElementById('newCatName').value = '';
+        loadCategories();
+      } catch (e) { alert(e.message); }
+    };
 
-    init();
+    window.addProduct = async function() {
+      const name = document.getElementById('pName').value.trim();
+      const price = parseFloat(document.getElementById('pPrice').value) || 0;
+      const promo = parseFloat(document.getElementById('pPromo').value) || null;
+      const stock = parseInt(document.getElementById('pStock').value) || 0;
+      const image = document.getElementById('pImage').value.trim();
+      const description = document.getElementById('pDesc').value.trim();
+      const msg = document.getElementById('addMsg');
+      if (!name || !price) { msg.textContent = 'Nom et prix requis'; return; }
+      try {
+        await addDoc(collection(db, 'products'), {
+          name, price, promoPrice: promo && promo < price ? promo : null,
+          stock, description, images: image ? [image] : [],
+          published: true, sold: 0, createdAt: serverTimestamp()
+        });
+        msg.textContent = 'Produit ajouté ✓';
+        document.getElementById('pName').value = '';
+        document.getElementById('pPrice').value = '';
+        document.getElementById('pPromo').value = '';
+        document.getElementById('pImage').value = '';
+        document.getElementById('pDesc').value = '';
+      } catch (e) { msg.textContent = e.message; }
+    };
+
+    // Accès libre : ouvre directement le dashboard
+    loadStats();
   </script>
 </body>
 </html>
