@@ -1,1 +1,193 @@
-PLACEHOLDER2
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <title>IDUS Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous"/>
+  <style>
+    :root { --bg:#0f0f1a; --card:#1a1a2e; --accent:#00A854; --text:#eee; --muted:#888; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .login-box { max-width: 380px; margin: 60px auto; background: var(--card); padding: 28px; border-radius: 12px; }
+    .login-box h1 { font-size: 22px; margin-bottom: 20px; color: var(--accent); }
+    input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff; }
+    button { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .err { color: #f66; font-size: 13px; margin-top: 8px; display: none; }
+    #app { display: none; }
+    .top { background: var(--card); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+    .top h2 { font-size: 16px; color: var(--accent); }
+    .nav { display: flex; gap: 8px; padding: 12px; flex-wrap: wrap; }
+    .nav button { width: auto; padding: 8px 14px; font-size: 13px; }
+    .panel { display: none; padding: 16px; }
+    .panel.on { display: block; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 8px; border-bottom: 1px solid #333; text-align: left; }
+    .card { background: var(--card); padding: 16px; border-radius: 8px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div id="loginScreen" class="login-box">
+    <h1>IDUS Admin</h1>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Mot de passe" />
+    <button onclick="doLogin()">Connexion</button>
+    <div id="loginErr" class="err"></div>
+    <div id="bootstrap" style="margin-top:20px;display:none">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Aucun admin. Créer le premier compte :</p>
+      <input type="text" id="bootName" placeholder="Nom" />
+      <input type="email" id="bootEmail" placeholder="Email" />
+      <input type="password" id="bootPass" placeholder="Mot de passe (min 6)" />
+      <button onclick="createFirstAdmin()">Créer super-admin</button>
+      <div id="bootErr" class="err"></div>
+    </div>
+  </div>
+  <div id="app">
+    <div class="top">
+      <h2>IDUS Admin</h2>
+      <button onclick="doLogout()" style="width:auto;padding:6px 12px;font-size:12px;background:#444">Déconnexion</button>
+    </div>
+    <div class="nav">
+      <button onclick="showPanel('dash')">Dashboard</button>
+      <button onclick="showPanel('products')">Produits</button>
+      <button onclick="showPanel('orders')">Commandes</button>
+      <button onclick="showPanel('categories')">Catégories</button>
+    </div>
+    <div id="panel-dash" class="panel on"><div class="card"><h3>Dashboard</h3><p id="stats">Chargement...</p></div></div>
+    <div id="panel-products" class="panel"><div class="card"><h3>Produits</h3><div id="prodList">...</div></div></div>
+    <div id="panel-orders" class="panel"><div class="card"><h3>Commandes</h3><div id="orderList">...</div></div>
+    <div id="panel-categories" class="panel"><div class="card"><h3>Catégories</h3><div id="catList">...</div></div></div>
+  </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, query, where, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+    import { getStorage } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",
+      authDomain: "idus-a87a6.firebaseapp.com",
+      projectId: "idus-a87a6",
+      storageBucket: "idus-a87a6.firebasestorage.app",
+      messagingSenderId: "284785552985",
+      appId: "1:284785552985:web:4cb12a71465a0e167bcb48",
+      measurementId: "G-M0EKXCDV3R"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    let currentUser = null;
+
+    async function checkAdminExists() {
+      try {
+        const s = await getDocs(query(collection(db, 'users'), where('role', '==', 'admin'), limit(1)));
+        return !s.empty;
+      } catch (e) { return true; }
+    }
+
+    async function init() {
+      const hasAdmin = await checkAdminExists();
+      if (!hasAdmin) document.getElementById('bootstrap').style.display = 'block';
+    }
+
+    window.createFirstAdmin = async function() {
+      const name = document.getElementById('bootName').value.trim();
+      const email = document.getElementById('bootEmail').value.trim();
+      const pass = document.getElementById('bootPass').value;
+      const err = document.getElementById('bootErr');
+      if (!email || pass.length < 6) { err.style.display='block'; err.textContent='Email + mot de passe (min 6)'; return; }
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        if (name) await updateProfile(cred.user, { displayName: name });
+        await setDoc(doc(db, 'users', cred.user.uid), { email, displayName: name || '', role: 'admin', createdAt: serverTimestamp() });
+        err.style.display='none';
+        alert('Super-admin créé. Rechargez si besoin.');
+      } catch (e) { err.style.display='block'; err.textContent = e.message; }
+    };
+
+    window.doLogin = async function() {
+      const email = document.getElementById('email').value.trim();
+      const pass = document.getElementById('password').value;
+      const err = document.getElementById('loginErr');
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        const u = await getDoc(doc(db, 'users', cred.user.uid));
+        if (!u.exists() || u.data().role !== 'admin') {
+          await signOut(auth);
+          err.style.display='block'; err.textContent='Compte non admin';
+          return;
+        }
+        err.style.display='none';
+      } catch (e) { err.style.display='block'; err.textContent = e.message; }
+    };
+
+    window.doLogout = () => signOut(auth);
+
+    window.showPanel = function(id) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+      const el = document.getElementById('panel-' + id);
+      if (el) el.classList.add('on');
+      if (id === 'dash') loadStats();
+      if (id === 'products') loadProducts();
+      if (id === 'orders') loadOrders();
+      if (id === 'categories') loadCategories();
+    };
+
+    async function loadStats() {
+      try {
+        const ps = await getDocs(query(collection(db, 'products'), limit(100)));
+        const os = await getDocs(query(collection(db, 'orders'), limit(100)));
+        document.getElementById('stats').innerHTML = `Produits: ${ps.size}<br>Commandes: ${os.size}`;
+      } catch (e) { document.getElementById('stats').textContent = e.message; }
+    }
+
+    async function loadProducts() {
+      try {
+        const s = await getDocs(query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(50)));
+        const list = s.docs.map(d => ({ id: d.id, ...d.data() }));
+        document.getElementById('prodList').innerHTML = list.length ? list.map(p => `<div style="padding:8px 0;border-bottom:1px solid #333">${p.name || p.id} — ${p.price || 0} F (stock ${p.stock ?? '?'})</div>`).join('') : 'Aucun produit';
+      } catch (e) { document.getElementById('prodList').textContent = e.message; }
+    }
+
+    async function loadOrders() {
+      try {
+        const s = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(30)));
+        const list = s.docs.map(d => ({ id: d.id, ...d.data() }));
+        document.getElementById('orderList').innerHTML = list.length ? list.map(o => `<div style="padding:8px 0;border-bottom:1px solid #333">#${o.id.slice(0,8)} — ${o.status || 'pending'} — ${o.total || 0} F</div>`).join('') : 'Aucune commande';
+      } catch (e) { document.getElementById('orderList').textContent = e.message; }
+    }
+
+    async function loadCategories() {
+      try {
+        const s = await getDocs(collection(db, 'categories'));
+        const list = s.docs.map(d => ({ id: d.id, ...d.data() }));
+        document.getElementById('catList').innerHTML = list.length ? list.map(c => `<div style="padding:8px 0;border-bottom:1px solid #333">${c.name || c.id}</div>`).join('') : 'Aucune catégorie';
+      } catch (e) { document.getElementById('catList').textContent = e.message; }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (user) {
+        const u = await getDoc(doc(db, 'users', user.uid));
+        if (u.exists() && u.data().role === 'admin') {
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('app').style.display = 'block';
+          loadStats();
+        } else {
+          document.getElementById('loginScreen').style.display = 'block';
+          document.getElementById('app').style.display = 'none';
+        }
+      } else {
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('app').style.display = 'none';
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
