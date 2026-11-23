@@ -1,7 +1,3 @@
-/**
- * Worker soft-surf-b4e9 — R2 binding VIDEOS (bucket "videos")
- * Handles video AND image uploads (public read/write for now).
- */
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -13,6 +9,18 @@ function json(data, status = 200) {
     status,
     headers: { ...CORS, 'Content-Type': 'application/json' },
   });
+}
+function guessType(filename, declared) {
+  const f = (filename || '').toLowerCase();
+  if (declared && declared !== 'application/octet-stream') return declared;
+  if (/\.(jpg|jpeg)$/.test(f)) return 'image/jpeg';
+  if (/\.png$/.test(f)) return 'image/png';
+  if (/\.webp$/.test(f)) return 'image/webp';
+  if (/\.gif$/.test(f)) return 'image/gif';
+  if (/\.mp4$/.test(f)) return 'video/mp4';
+  if (/\.webm$/.test(f)) return 'video/webm';
+  if (/\.mov$/.test(f)) return 'video/quicktime';
+  return declared || 'application/octet-stream';
 }
 export default {
   async fetch(request, env) {
@@ -36,39 +44,29 @@ export default {
           }
           bytes = await file.arrayBuffer();
           filename = file.name || 'file.bin';
-          contentType = file.type || 'application/octet-stream';
+          contentType = file.type || '';
         } else {
           bytes = await request.arrayBuffer();
           filename = request.headers.get('X-File-Name') || 'file.bin';
-          contentType = request.headers.get('X-Content-Type') || ct || 'application/octet-stream';
+          contentType = request.headers.get('X-Content-Type') || ct || '';
         }
         if (!bytes || bytes.byteLength === 0) return json({ error: 'Fichier vide' }, 400);
         if (bytes.byteLength > 25 * 1024 * 1024) {
           return json({ error: 'Fichier trop volumineux (max ~25 Mo)' }, 413);
         }
-        const isVideo = contentType.startsWith('video/');
+        contentType = guessType(filename, contentType);
         const isImage = contentType.startsWith('image/');
-        if (!isVideo && !isImage) {
-          const lower = filename.toLowerCase();
-          if (!/\.(mp4|webm|mov|m4v|jpg|jpeg|png|webp|gif)$/.test(lower)) {
-            return json({ error: 'Type non supporté (image ou vidéo)' }, 400);
-          }
-        }
         const ext = (filename.split('.').pop() || (isImage ? 'jpg' : 'mp4'))
           .toLowerCase()
-          .replace(/[^a-z0-9]/g, '') || 'bin';
-        const folder = isImage || /\.(jpg|jpeg|png|webp|gif)$/i.test(filename) ? 'img' : 'v';
+          .replace(/[^a-z0-9]/g, '') || (isImage ? 'jpg' : 'mp4');
+        const folder = isImage ? 'img' : 'v';
         const key = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 10)}.${ext}`;
-        let metaType = contentType;
-        if (!metaType || metaType === 'application/octet-stream') {
-          metaType = folder === 'img' ? 'image/jpeg' : 'video/mp4';
-        }
         await env.VIDEOS.put(key, bytes, {
-          httpMetadata: { contentType: metaType },
+          httpMetadata: { contentType },
           customMetadata: { originalName: filename },
         });
         const publicUrl = `${url.origin}/file/${key}`;
-        return json({ ok: true, key, url: publicUrl, size: bytes.byteLength });
+        return json({ ok: true, key, url: publicUrl, size: bytes.byteLength, contentType });
       }
       if ((path.startsWith('/file/') || path.startsWith('/video/')) && request.method === 'GET') {
         const prefix = path.startsWith('/file/') ? '/file/' : '/video/';
@@ -77,7 +75,14 @@ export default {
         const obj = await env.VIDEOS.get(key);
         if (!obj) return json({ error: 'Fichier introuvable' }, 404);
         const headers = new Headers(CORS);
-        headers.set('Content-Type', obj.httpMetadata?.contentType || 'application/octet-stream');
+        let ctype = obj.httpMetadata?.contentType || 'application/octet-stream';
+        if (ctype.startsWith('video/') && /\.(jpg|jpeg|png|webp|gif)$/i.test(key)) {
+          ctype = key.toLowerCase().endsWith('.png') ? 'image/png'
+            : key.toLowerCase().endsWith('.webp') ? 'image/webp'
+            : key.toLowerCase().endsWith('.gif') ? 'image/gif'
+            : 'image/jpeg';
+        }
+        headers.set('Content-Type', ctype);
         headers.set('Accept-Ranges', 'bytes');
         headers.set('Cache-Control', 'public, max-age=31536000, immutable');
         if (obj.size != null) headers.set('Content-Length', String(obj.size));
