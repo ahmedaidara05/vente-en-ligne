@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vente-en-ligne-v1';
+const CACHE_NAME = 'vente-en-ligne-v2';
 const OFFLINE_URL = '/index.html';
 
 const PRECACHE_URLS = [
@@ -7,13 +7,14 @@ const PRECACHE_URLS = [
   '/admin.html',
   '/manifest.json',
   '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/icons/icon-512.png',
+  '/img-fix.js'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .then((cache) => cache.addAll(PRECACHE_URLS).catch(() => {}))
       .then(() => self.skipWaiting())
   );
 });
@@ -28,11 +29,21 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+function imageMimeFromPath(pathname) {
+  const p = (pathname || '').toLowerCase();
+  if (p.endsWith('.png')) return 'image/png';
+  if (p.endsWith('.webp')) return 'image/webp';
+  if (p.endsWith('.gif')) return 'image/gif';
+  if (p.endsWith('.jpg') || p.endsWith('.jpeg')) return 'image/jpeg';
+  return 'image/jpeg';
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
   if (request.method !== 'GET') return;
+
   if (url.hostname.includes('firestore.googleapis.com') ||
       url.hostname.includes('firebase') ||
       url.hostname.includes('googleapis.com') ||
@@ -40,7 +51,32 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (request.headers.get('accept')?.includes('text/html')) {
+  const isR2 = url.hostname.includes('workers.dev') &&
+    (url.pathname.includes('/video/') || url.pathname.includes('/file/'));
+  const isImagePath = /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url.pathname);
+
+  if (isR2 && isImagePath) {
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (!response.ok) return response;
+        const ct = (response.headers.get('content-type') || '').toLowerCase();
+        if (!ct.startsWith('image/')) {
+          const headers = new Headers(response.headers);
+          headers.set('Content-Type', imageMimeFromPath(url.pathname));
+          headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+          return new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: headers
+          });
+        }
+        return response;
+      })
+    );
+    return;
+  }
+
+  if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
     event.respondWith(
       fetch(request)
         .then((response) => {
