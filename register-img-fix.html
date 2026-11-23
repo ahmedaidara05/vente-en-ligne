@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Activation correction images IDUS</title>
+<style>
+body{font-family:system-ui;background:#111;color:#eee;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px}
+.box{max-width:400px;background:#1c1c1c;border-radius:16px;padding:24px;text-align:center}
+h1{font-size:18px;color:#00A854}
+p{font-size:14px;color:#aaa;line-height:1.5}
+.ok{color:#6f6;margin-top:12px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>Correction images IDUS</h1>
+<p>Cette page active la correction des photos (logo, bannière, produits) sans redéployer le worker.</p>
+<p id="st">Activation…</p>
+<div class="ok" id="ok" style="display:none">✓ Activé. Tu peux fermer et recharger l'app (Ctrl+F5).</div>
+</div>
+<script>
+(function(){
+  // Inject fix into this page + register SW for future visits
+  function fix(el){
+    if(!el||!el.src||el.dataset.fixed)return;
+    el.dataset.fixed='1';
+    fetch(el.src,{mode:'cors'}).then(function(r){return r.blob()}).then(function(b){
+      if(!b||!b.size)return;
+      el.src=URL.createObjectURL(new Blob([b],{type:'image/jpeg'}));
+    }).catch(function(){});
+  }
+  document.addEventListener('error',function(e){
+    if(e.target&&e.target.tagName==='IMG')fix(e.target);
+  },true);
+
+  var st=document.getElementById('st');
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      st.textContent='Service worker enregistré.';
+      document.getElementById('ok').style.display='block';
+      // Force update
+      reg.update();
+    }).catch(function(e){
+      st.textContent='SW: '+e.message+' — img-fix.js sera chargé si tu ajoutes le script sur index.';
+      document.getElementById('ok').style.display='block';
+    });
+  } else {
+    st.textContent='Navigateur sans service worker.';
+    document.getElementById('ok').style.display='block';
+  }
+})();
+</script>
+<script src="img-fix.js"></script>
+</body>
+</html>
