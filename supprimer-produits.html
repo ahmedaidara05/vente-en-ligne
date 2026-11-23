@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#E02E24"/>
+<title>IDUS — Suppression des produits</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#111;color:#eee;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:#1c1c1c;border:1px solid #333;border-radius:16px;max-width:420px;width:100%;padding:28px 24px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+h1{font-size:20px;font-weight:800;margin-bottom:6px;color:#E02E24}
+.sub{font-size:13px;color:#999;margin-bottom:20px;line-height:1.4}
+.warn{background:#2a1515;border:1px solid #5a2020;border-radius:10px;padding:12px 14px;font-size:13px;color:#f5a5a5;margin-bottom:18px;line-height:1.45}
+.warn b{color:#ff6b6b}
+.stat{background:#222;border-radius:10px;padding:14px;margin-bottom:16px;text-align:center}
+.stat .n{font-size:36px;font-weight:800;color:#fff}
+.stat .l{font-size:12px;color:#888;margin-top:2px}
+.btn{display:block;width:100%;height:48px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;font-family:inherit}
+.btn-danger{background:#E02E24;color:#fff}
+.btn-danger:hover{background:#c41e1a}
+.btn-danger:disabled{background:#555;color:#999;cursor:not-allowed}
+.btn-secondary{background:#333;color:#ddd}
+.btn-secondary:hover{background:#444}
+.btn-secondary:disabled{opacity:.5;cursor:not-allowed}
+.log{background:#0d0d0d;border-radius:10px;padding:12px;font-size:12px;font-family:ui-monospace,monospace;max-height:180px;overflow-y:auto;color:#8f8;margin-top:14px;display:none;white-space:pre-wrap;word-break:break-all}
+.log.on{display:block}
+.log .err{color:#f88}
+.log .info{color:#8cf}
+.confirm-box{display:none;margin-top:8px}
+.confirm-box.on{display:block}
+input[type=text]{width:100%;height:44px;border-radius:10px;border:1px solid #444;background:#111;color:#fff;padding:0 12px;font-size:14px;margin-bottom:10px;font-family:inherit}
+input[type=text]:focus{outline:none;border-color:#E02E24}
+.ok{color:#6f6;font-size:13px;margin-top:10px;display:none}
+.ok.on{display:block}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>⚠ Suppression des produits</h1>
+  <p class="sub">Outil unique pour vider la collection <b>products</b> de Firestore. Aucun autre fichier du projet n’est modifié.</p>
+
+  <div class="warn">
+    <b>Attention :</b> cette action est <b>irréversible</b>. Tous les documents de la collection <code>products</code> seront supprimés définitivement. Les images sur R2 ne sont pas effacées ici.
+  </div>
+
+  <div class="stat">
+    <div class="n" id="count">…</div>
+    <div class="l">produits actuellement dans la base</div>
+  </div>
+
+  <button type="button" class="btn btn-secondary" id="btnRefresh">Actualiser le compteur</button>
+  <button type="button" class="btn btn-danger" id="btnStart">Supprimer TOUS les produits</button>
+
+  <div class="confirm-box" id="confirmBox">
+    <p style="font-size:13px;color:#ccc;margin-bottom:8px">Tape <b>SUPPRIMER</b> pour confirmer :</p>
+    <input type="text" id="confirmInput" placeholder="SUPPRIMER" autocomplete="off"/>
+    <button type="button" class="btn btn-danger" id="btnConfirm">Confirmer la suppression totale</button>
+    <button type="button" class="btn btn-secondary" id="btnCancel">Annuler</button>
+  </div>
+
+  <div class="log" id="log"></div>
+  <div class="ok" id="done">✓ Tous les produits ont été supprimés.</div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getFirestore, collection, getDocs, deleteDoc, doc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",
+  authDomain: "idus-a87a6.firebaseapp.com",
+  projectId: "idus-a87a6",
+  storageBucket: "idus-a87a6.firebasestorage.app",
+  messagingSenderId: "284785552985",
+  appId: "1:284785552985:web:4cb12a71465a0e167bcb48",
+  measurementId: "G-M0EKXCDV3R"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const $ = (id) => document.getElementById(id);
+const logEl = $('log');
+
+function log(msg, type) {
+  logEl.classList.add('on');
+  const line = document.createElement('div');
+  if (type === 'err') line.className = 'err';
+  if (type === 'info') line.className = 'info';
+  line.textContent = msg;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+async function countProducts() {
+  $('count').textContent = '…';
+  try {
+    const snap = await getDocs(collection(db, 'products'));
+    $('count').textContent = String(snap.size);
+    return snap;
+  } catch (e) {
+    $('count').textContent = '?';
+    log('Erreur lecture: ' + e.message, 'err');
+    return null;
+  }
+}
+
+async function deleteAllProducts() {
+  $('btnConfirm').disabled = true;
+  $('btnStart').disabled = true;
+  $('btnRefresh').disabled = true;
+  $('done').classList.remove('on');
+  logEl.innerHTML = '';
+  logEl.classList.add('on');
+  log('Démarrage de la suppression…', 'info');
+
+  try {
+    let total = 0;
+    let rounds = 0;
+
+    while (true) {
+      rounds++;
+      const snap = await getDocs(collection(db, 'products'));
+      if (snap.empty) break;
+
+      log('Lot ' + rounds + ' : ' + snap.size + ' document(s)…', 'info');
+
+      // Firestore batch max = 500
+      const docs = snap.docs;
+      for (let i = 0; i < docs.length; i += 500) {
+        const batch = writeBatch(db);
+        const chunk = docs.slice(i, i + 500);
+        chunk.forEach((d) => batch.delete(doc(db, 'products', d.id)));
+        await batch.commit();
+        total += chunk.length;
+        log('  → ' + total + ' produit(s) supprimé(s)');
+      }
+    }
+
+    log('Terminé. Total supprimé : ' + total, 'info');
+    $('count').textContent = '0';
+    $('done').classList.add('on');
+  } catch (e) {
+    log('Erreur : ' + e.message, 'err');
+  } finally {
+    $('btnConfirm').disabled = false;
+    $('btnStart').disabled = false;
+    $('btnRefresh').disabled = false;
+    $('confirmBox').classList.remove('on');
+    $('confirmInput').value = '';
+  }
+}
+
+$('btnRefresh').addEventListener('click', () => countProducts());
+$('btnStart').addEventListener('click', () => {
+  $('confirmBox').classList.add('on');
+  $('confirmInput').focus();
+});
+$('btnCancel').addEventListener('click', () => {
+  $('confirmBox').classList.remove('on');
+  $('confirmInput').value = '';
+});
+$('btnConfirm').addEventListener('click', () => {
+  const v = ($('confirmInput').value || '').trim().toUpperCase();
+  if (v !== 'SUPPRIMER') {
+    log('Confirmation incorrecte. Tape exactement : SUPPRIMER', 'err');
+    return;
+  }
+  deleteAllProducts();
+});
+
+countProducts();
+</script>
+</body>
+</html>
