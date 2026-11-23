@@ -155,6 +155,135 @@ button{cursor:pointer}
 .msg-row .mr-pin{color:#00A854;font-size:12px;margin-left:6px}
   body.hide-header .header{display:none!important}
   body.hide-search-cart .sp,body.hide-search-cart .hi2{display:none!important}
+  /* En-tête de conversation : IDA à gauche, Message centré, menu à droite */
+  .ct-header{
+  width:100%;
+  height:56px;
+  min-height:56px;
+  padding:0 16px;
+  background:#fff;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  border-bottom:1px solid #eee;
+  position:sticky;
+  top:0;
+  z-index:100;
+  white-space:nowrap;
+}
+
+.ct-logo{
+  grid-column:1;
+  justify-self:start;
+  display:block;
+  font-size:21px;
+  line-height:1;
+  font-weight:800;
+  color:#00A854;
+  white-space:nowrap;
+}
+
+.ct-heading{
+  grid-column:2;
+  justify-self:center;
+  display:block;
+  margin:0;
+  font-size:17px;
+  line-height:1;
+  font-weight:700;
+  color:#1a1a1a;
+  white-space:nowrap;
+}
+
+.ct-more{
+  grid-column:3;
+  justify-self:end;
+  width:36px;
+  min-width:36px;
+  height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+  line-height:1;
+  color:#333;
+}
+
+/* === Espace Compte IDA === */
+.account-page{max-width:760px;margin:0 auto;padding:22px 16px 30px;color:#17211b}
+.account-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 2px 18px}
+.account-eyebrow{font-size:10px;letter-spacing:1.6px;font-weight:800;color:#00A854;margin-bottom:6px}
+.account-intro h1{font-size:25px;line-height:1.15;font-weight:850;letter-spacing:-.6px}
+.account-intro p{font-size:13px;color:#7a8580;margin-top:6px}
+.account-brand-mark{width:48px;height:48px;border-radius:15px;background:#E8FFF1;color:#00A854;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;box-shadow:inset 0 0 0 1px #d2f5df}
+.account-profile{position:relative;display:flex;align-items:center;gap:13px;padding:17px;background:linear-gradient(120deg,#073d27,#087b45);border-radius:18px;color:#fff;box-shadow:0 8px 22px rgba(0,110,57,.14);overflow:hidden}
+.account-profile:after{content:"";position:absolute;width:150px;height:150px;border:1px solid rgba(255,255,255,.11);border-radius:50%;right:-52px;top:-78px;box-shadow:0 0 0 18px rgba(255,255,255,.035),0 0 0 38px rgba(255,255,255,.025)}
+.account-avatar{width:54px;height:54px;flex:0 0 54px;border-radius:17px;background:#fff;color:#008c4b;display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:850;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.account-profile-info{min-width:0;position:relative;z-index:1;flex:1}
+.account-profile-name{font-size:15px;font-weight:800;margin-bottom:4px}
+.account-email{font-size:12px;color:rgba(255,255,255,.82);overflow-wrap:anywhere}
+.account-status{display:inline-flex;align-items:center;gap:6px;margin-top:9px;padding:4px 8px;border-radius:20px;background:rgba(255,255,255,.13);font-size:10px;color:#fff}
+.account-status span{width:6px;height:6px;border-radius:50%;background:#7ff0ae}
+.account-profile-shield{position:relative;z-index:1;color:rgba(255,255,255,.72);font-size:18px;margin-right:2px}
+.account-section-head{display:flex;align-items:center;justify-content:space-between;margin:23px 2px 11px}
+.account-section-head h2{font-size:15px;font-weight:800;color:#1b2921}
+.account-section-head>span{font-size:11px;color:#8b9690}
+.account-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.account-shortcut{position:relative;min-width:0;min-height:126px;padding:13px 10px 12px;background:#fff;border:1px solid #edf0ed;border-radius:15px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;box-shadow:0 3px 12px rgba(25,55,37,.035);transition:transform .15s,border-color .15s}
+.account-shortcut:active{transform:scale(.98)}
+.account-shortcut-icon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:11px}
+.account-shortcut-icon.messages{background:#e9f4ff;color:#2876c7}
+.account-shortcut-icon.favorites{background:#fff0f1;color:#e45a70}
+.account-shortcut-icon.follows{background:#e8fff1;color:#00A854}
+.account-shortcut strong{font-size:12px;color:#1d2922;line-height:1.25}
+.account-shortcut small{font-size:10px;color:#89938d;margin-top:5px;line-height:1.3}
+.account-chevron{position:absolute;right:10px;top:17px;font-size:10px;color:#aab3ad}
+.account-options-head{margin-top:24px}
+.account-options{background:#fff;border:1px solid #edf0ed;border-radius:15px;overflow:hidden;box-shadow:0 3px 12px rgba(25,55,37,.035)}
+.account-option-row{display:flex;align-items:center;gap:12px;padding:13px 14px;min-height:65px}
+.account-option-row+.account-option-row{border-top:1px solid #f0f2f0}
+.account-option-icon{width:34px;height:34px;flex:0 0 34px;border-radius:11px;background:#f1f8f3;color:#16864e;display:flex;align-items:center;justify-content:center;font-size:14px}
+.account-option-copy{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px}
+.account-option-copy strong{font-size:12px;color:#27332c}
+.account-option-copy small{font-size:11px;color:#8a958e;overflow-wrap:anywhere}
+.account-option-check{font-size:13px;color:#00A854}
+.account-logout{width:100%;height:47px;margin-top:17px;border:1px solid #f3dede;border-radius:13px;background:#fff;color:#d94b4b;font-size:13px;font-weight:750;display:flex;align-items:center;justify-content:center;gap:9px}
+.account-logout:active{background:#fff5f5}
+.account-footer{text-align:center;color:#a0aaa3;font-size:10px;margin-top:20px;letter-spacing:.2px}
+@media(max-width:380px){.account-page{padding-left:12px;padding-right:12px}.account-shortcuts{gap:6px}.account-shortcut{padding:11px 8px;min-height:120px}.account-shortcut strong{font-size:11px}.account-shortcut small{font-size:9px}}
+.ct-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.ct-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ct-logo,
+.ct-heading {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  line-height: 1;
+}
+ 
+.ct-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  border: none;
+  background: transparent;
+}
 </style>
 </head>
 <body>
@@ -214,12 +343,36 @@ function updateCartBadge(){const c=cart.reduce(function(s,i){return s+(i.qty||1)
 function minProductPrice(p){return (p.promoPrice&&p.promoPrice<p.price)?p.promoPrice:(p.price||0)}
 function calcVariantPrice(p,sel){let base=minProductPrice(p);(p.variantGroups||[]).forEach(function(g){const lab=sel[g.name];(g.options||[]).forEach(function(o){if(o.label===lab)base+=parseFloat(o.priceDelta)||0})});return base}
 function variantImage(p,sel){var groups=p.variantGroups||[];for(var i=0;i<groups.length;i++){var lab=sel[groups[i].name];var opts=groups[i].options||[];for(var j=0;j<opts.length;j++){if(opts[j].label===lab&&opts[j].image)return opts[j].image}}return(p.images&&p.images[0])||''}
-function setChrome(hide,headerOnly){document.body.classList.toggle('hide-chrome',!!hide&&!headerOnly);document.body.classList.toggle('hide-header',!!headerOnly)}
-  
+function setChrome(hide,headerOnly){
+  document.body.classList.toggle('hide-chrome',!!hide&&!headerOnly);
+
+  // Masquer complètement le header uniquement si nécessaire
+  document.body.classList.toggle('hide-header',headerOnly===true);
+
+  // Sur Chat, conserver le logo mais masquer recherche et panier
+  document.body.classList.toggle(
+    'hide-search-cart',
+    headerOnly==='searchCartOnly'
+  );
+}  
   let lastPageArgs={};
-function showPage(page,data){var prev=document.querySelector('.page.on');if(prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'){setChrome(false,'searchCartOnly')}else{setChrome(page==='product'||page==='boutique'||page==='messages'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows()}
-function goBack(){var fs=document.getElementById('fsViewer');if(fs){fs.remove();return}var vs=document.getElementById('variantSheet');if(vs){vs.remove();return}if(pageHistory.length){var last=pageHistory.pop();showPage(last.page,last.data)}else{setChrome(false);showPage('home')}}
-document.getElementById('logoBtn').addEventListener('click',function(){setChrome(false);showPage('home')});
+function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'){setChrome(false,'searchCartOnly')}else{setChrome(page==='product'||page==='boutique'||page==='messages'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows()}
+function goBack(){
+    var fs=document.getElementById('fsViewer');
+    if(fs){fs.remove();return}
+
+    var vs=document.getElementById('variantSheet');
+    if(vs){vs.remove();return}
+
+    if(pageHistory.length){
+        var last=pageHistory.pop();
+        showPage(last.page,last.data,true);
+    }else{
+        setChrome(false);
+        showPage('home',null,true);
+    }
+}
+  document.getElementById('logoBtn').addEventListener('click',function(){setChrome(false);showPage('home')});
 document.getElementById('cartBtn').addEventListener('click',function(){setChrome(false);showPage('cart')});
 document.querySelectorAll('.bn button').forEach(function(btn){btn.addEventListener('click',function(){setChrome(false);showPage(btn.dataset.page)})});
 async function loadCategories(){try{var s=await getDocs(collection(db,'categories'));categories=s.docs.map(function(d){return{id:d.id,...d.data()}})}catch(e){categories=[]}}
@@ -235,7 +388,40 @@ function openVariantSheet(mode){var p=currentProduct;if(!p)return;sheetMode=mode
 function renderCart(){var sub=cart.reduce(function(s,i){return s+i.price*i.qty},0);$('page-cart').innerHTML=cart.length?cart.map(function(it,idx){return'<div style="display:flex;gap:10px;padding:12px;background:#fff;border-bottom:1px solid #eee"><img src="'+escapeHtml(it.image||'')+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;background:#eee" onerror="this.style.background=\'#eee\'"/><div style="flex:1"><div style="font-weight:600">'+escapeHtml(it.name)+'</div><div style="font-size:12px;color:#888">'+Object.keys(it.variants||{}).map(function(k){return k+': '+it.variants[k]}).join(', ')+'</div><div style="color:#E02E24;font-weight:700">'+formatPrice(it.price)+' F × '+it.qty+'</div></div><button type="button" data-rm="'+idx+'" style="color:#E02E24">🗑</button></div>'}).join('')+'<div style="padding:12px;background:#fff"><div style="font-weight:700">Total: '+formatPrice(sub+(settings.shippingFee||0))+' F</div><button type="button" class="br" id="btnCheckout">Commander</button></div>':'<div class="em"><p>Panier vide</p></div>';document.querySelectorAll('[data-rm]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Supprimer ?'))return;cart.splice(+b.getAttribute('data-rm'),1);saveCart();renderCart()})});var bc=document.getElementById('btnCheckout');if(bc)bc.addEventListener('click',function(){if(!currentUser){showPage('auth');return}showPage('checkout')})}
 function renderCheckout(){$('page-checkout').innerHTML='<div style="padding:16px;background:#fff;margin:8px;border-radius:8px"><label>Nom</label><input id="chkName" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px"/><label>Téléphone</label><input id="chkPhone" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px"/><label>Adresse</label><textarea id="chkAddr" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px"></textarea><button type="button" class="br" id="btnPlace">Confirmer</button></div>';document.getElementById('btnPlace').addEventListener('click',placeOrder)}
 async function placeOrder(){var name=$('chkName').value.trim(),phone=$('chkPhone').value.trim(),address=$('chkAddr').value.trim();if(!name||!phone||!address){toast('Remplis les champs');return}if(!cart.length){toast('Panier vide');return}try{var byBout={};cart.forEach(function(it){var bid=it.boutiqueId||null;if(!bid){var pr=products.find(function(x){return x.id===it.productId});if(pr)bid=pr.boutiqueId||null}var key=bid||'_none';if(!byBout[key])byBout[key]=[];byBout[key].push(it)});var keys=Object.keys(byBout);for(var k=0;k<keys.length;k++){var key=keys[k];var items=byBout[key];var subB=items.reduce(function(s,i){return s+i.price*i.qty},0);var bid=key==='_none'?null:key;await addDoc(collection(db,'orders'),{orderNumber:'CMD-'+Date.now().toString(36).toUpperCase(),userId:currentUser?currentUser.uid:null,boutiqueId:bid,customer:{name:name,phone:phone,address:address,email:currentUser?currentUser.email:''},items:items,subtotal:subB,shipping:k===0?(settings.shippingFee||0):0,total:subB+(k===0?(settings.shippingFee||0):0),status:'pending',createdAt:serverTimestamp()})}cart=[];saveCart();toast('Commande envoyée !');showPage('home')}catch(e){toast(e.message)}}
-function renderAccount(){if(!currentUser){showPage('auth');return}$('page-account').innerHTML='<div style="padding:16px;background:#fff"><p>'+escapeHtml(currentUser.email)+'</p><button type="button" class="ba" id="btnMsgs" style="margin:8px 0">Messages</button><button type="button" class="ba" id="btnFavs" style="margin:8px 0">Favoris</button><button type="button" class="ba" id="btnFollows" style="margin:8px 0"><i class="fa-solid fa-list-check"></i> Liste de suivi</button><button type="button" class="br" id="btnOut">Déconnexion</button></div>';document.getElementById('btnMsgs').addEventListener('click',function(){showPage('messages')});document.getElementById('btnFavs').addEventListener('click',function(){showPage('favorites')});document.getElementById('btnFollows').addEventListener('click',function(){showPage('follows')});document.getElementById('btnOut').addEventListener('click',function(){signOut(auth)})}
+function renderAccount(){
+if(!currentUser){showPage('auth');return}
+var email=currentUser.email||'Compte IDA';
+var initial=(email.trim().charAt(0)||'I').toUpperCase();
+$('page-account').innerHTML=`
+<div class="account-page">
+  <div class="account-intro">
+    <div><div class="account-eyebrow">ESPACE PERSONNEL</div><h1>Mon compte</h1><p>Gérez votre activité sur IDA.</p></div>
+    <div class="account-brand-mark">IDA</div>
+  </div>
+  <section class="account-profile">
+    <div class="account-avatar">${escapeHtml(initial)}</div>
+    <div class="account-profile-info"><div class="account-profile-name">Mon espace IDA</div><div class="account-email">${escapeHtml(email)}</div><span class="account-status"><span></span> Compte connecté</span></div>
+    <i class="fa-solid fa-shield-halved account-profile-shield"></i>
+  </section>
+  <div class="account-section-head"><h2>Mon activité</h2><span>Accès rapide</span></div>
+  <section class="account-shortcuts">
+    <button type="button" class="account-shortcut" id="btnMsgs"><span class="account-shortcut-icon messages"><i class="fa-regular fa-comments"></i></span><strong>Messages</strong><small>Vos conversations</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+    <button type="button" class="account-shortcut" id="btnFavs"><span class="account-shortcut-icon favorites"><i class="fa-regular fa-heart"></i></span><strong>Favoris</strong><small>Produits enregistrés</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+    <button type="button" class="account-shortcut" id="btnFollows"><span class="account-shortcut-icon follows"><i class="fa-solid fa-store"></i></span><strong>Liste de suivi</strong><small>Vos boutiques suivies</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+  </section>
+  <div class="account-section-head account-options-head"><h2>Compte et sécurité</h2></div>
+  <section class="account-options">
+    <div class="account-option-row"><span class="account-option-icon"><i class="fa-regular fa-envelope"></i></span><span class="account-option-copy"><strong>Adresse e-mail</strong><small>${escapeHtml(email)}</small></span><i class="fa-solid fa-check account-option-check"></i></div>
+    <div class="account-option-row"><span class="account-option-icon"><i class="fa-solid fa-lock"></i></span><span class="account-option-copy"><strong>Connexion sécurisée</strong><small>Votre session est active</small></span><i class="fa-solid fa-check account-option-check"></i></div>
+  </section>
+  <button type="button" class="account-logout" id="btnOut"><i class="fa-solid fa-arrow-right-from-bracket"></i> Déconnexion</button>
+  <div class="account-footer">IDA · Votre boutique, simplement.</div>
+</div>`;
+document.getElementById('btnMsgs').addEventListener('click',function(){showPage('messages')});
+document.getElementById('btnFavs').addEventListener('click',function(){showPage('favorites')});
+document.getElementById('btnFollows').addEventListener('click',function(){showPage('follows')});
+document.getElementById('btnOut').addEventListener('click',function(){signOut(auth).catch(function(e){toast(e.message)})});
+}
 function renderAuth(){$('page-auth').innerHTML='<div style="padding:16px;background:#fff;margin:8px;border-radius:8px"><input id="authEmail" placeholder="Email" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px"/><input id="authPass" type="password" placeholder="Mot de passe" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px"/><button type="button" class="br" id="btnLogin">Connexion</button><button type="button" class="ba" id="btnReg" style="margin-top:8px">Créer un compte</button></div>';document.getElementById('btnLogin').addEventListener('click',async function(){try{await signInWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPass').value);showPage('account')}catch(e){toast(e.message)}});document.getElementById('btnReg').addEventListener('click',async function(){try{await createUserWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPass').value);showPage('account')}catch(e){toast(e.message)}})}
 function renderFavorites(){var list=products.filter(function(p){return isFav(p.id)});$('page-favorites').innerHTML='<div class="pg">'+(list.length?list.map(productCard).join(''):'<div class="em" style="grid-column:1/-1"><p>Aucun favori</p></div>')+'</div>';$('page-favorites').querySelectorAll('[data-pid]').forEach(function(el){el.addEventListener('click',function(){showPage('product',el.getAttribute('data-pid'))})})}
 async function isFollowing(boutiqueId){if(!currentUser)return false;try{var qy=await getDoc(doc(db,'follows',currentUser.uid+'_'+boutiqueId));return qy.exists()}catch(e){return false}}
@@ -314,7 +500,22 @@ function bindConvRows(root){root.querySelectorAll('[data-check]').forEach(functi
   function threadCacheKey(cid){return 'vl_thread_'+(currentUser?currentUser.uid:'anon')+'_'+cid}
 function loadThreadCache(cid){try{return JSON.parse(localStorage.getItem(threadCacheKey(cid))||'[]')}catch(e){return[]}}
 function saveThreadCache(cid,list){try{localStorage.setItem(threadCacheKey(cid),JSON.stringify(list.slice(-100)))}catch(e){}}
-async function renderChatThread(cid){$('page-chat-thread').innerHTML='<div style="padding:10px 12px;background:#fff;display:flex;gap:10px;align-items:center;border-bottom:1px solid #eee"><button type="button" id="ctBack" style="font-size:20px;color:#333;width:32px;height:32px;display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-arrow-left"></i></button><div id="ctAva" style="width:38px;height:38px;border-radius:50%;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00A854"></div><span style="flex:1" id="ctTitle" style="font-weight:700;font-size:15px">Chat</span><button type="button" id="ctMore" style="font-size:20px;color:#333;width:32px;height:32px;display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-ellipsis-vertical"></i></button></div><div id="ctBox" style="padding:12px;min-height:50vh"></div><div id="ctBar"></div>';document.getElementById('ctBack').addEventListener('click',function(){goBack()});var cached=loadThreadCache(cid);if(cached.length){paintThread(cached)}var convCache=loadConvCache();var convCached=convCache.find(function(c){return c.id===cid})||{};var conv={id:cid,boutiqueId:convCached.boutiqueId||'',boutiqueName:convCached.boutiqueName||'Chat'};document.getElementById('ctTitle').textContent=conv.boutiqueName;renderChatBar(conv);try{var cdoc=await getDoc(doc(db,'conversations',cid));if(cdoc.exists()){var cdata=cdoc.data();conv={id:cid,boutiqueId:cdata.boutiqueId||'',boutiqueName:cdata.boutiqueName||'Chat'};document.getElementById('ctTitle').textContent=conv.boutiqueName;renderChatBar(conv);if(conv.boutiqueId){getDoc(doc(db,'boutiques',conv.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();var ava=document.getElementById('ctAva');if(ava)ava.innerHTML=b.logo?'<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>':escapeHtml((b.name||'B')[0].toUpperCase())}}).catch(function(){})}}document.getElementById('ctMore').addEventListener('click',function(){openChatSettings(conv)});onSnapshot(query(collection(db,'conversations',cid,'messages'),orderBy('createdAt','asc')),function(snap){var msgs=snap.docs.map(function(d){var m=d.data();return{from:m.from,text:m.text||''}});if(isBlockedBoutique(conv.boutiqueId)){msgs=msgs.filter(function(m){return m.from==='user'})}saveThreadCache(cid,msgs);paintThread(msgs)})}catch(e){toast(e.message)}}
+async function renderChatThread(cid){
+$('page-chat-thread').innerHTML=`
+<div class="ct-header">
+  <div class="ct-left">
+    <div class="ct-logo">IDA</div>
+    <div class="ct-heading">Messages</div>
+  </div>
+
+  <button type="button" id="ctMore" class="ct-more">
+    <i class="fa-solid fa-ellipsis-vertical"></i>
+  </button>
+</div>
+<div id="ctBox" style="padding:12px;min-height:50vh"></div>
+<div id="ctBar"></div>`;
+
+var cached=loadThreadCache(cid);document.getElementById('ctBack').addEventListener('click',function(){goBack()});var cached=loadThreadCache(cid);if(cached.length){paintThread(cached)}var convCache=loadConvCache();var convCached=convCache.find(function(c){return c.id===cid})||{};var conv={id:cid,boutiqueId:convCached.boutiqueId||'',boutiqueName:convCached.boutiqueName||'Chat'};document.getElementById('ctTitle').textContent=conv.boutiqueName;renderChatBar(conv);try{var cdoc=await getDoc(doc(db,'conversations',cid));if(cdoc.exists()){var cdata=cdoc.data();conv={id:cid,boutiqueId:cdata.boutiqueId||'',boutiqueName:cdata.boutiqueName||'Chat'};document.getElementById('ctTitle').textContent=conv.boutiqueName;renderChatBar(conv);if(conv.boutiqueId){getDoc(doc(db,'boutiques',conv.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();var ava=document.getElementById('ctAva');if(ava)ava.innerHTML=b.logo?'<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>':escapeHtml((b.name||'B')[0].toUpperCase())}}).catch(function(){})}}document.getElementById('ctMore').addEventListener('click',function(){openChatSettings(conv)});onSnapshot(query(collection(db,'conversations',cid,'messages'),orderBy('createdAt','asc')),function(snap){var msgs=snap.docs.map(function(d){var m=d.data();return{from:m.from,text:m.text||''}});if(isBlockedBoutique(conv.boutiqueId)){msgs=msgs.filter(function(m){return m.from==='user'})}saveThreadCache(cid,msgs);paintThread(msgs)})}catch(e){toast(e.message)}}
 function renderChatBar(conv){var bar=document.getElementById('ctBar');if(!bar)return;var bid=conv.boutiqueId||'';if(isBlockedBoutique(bid)){bar.innerHTML='<div style="position:fixed;left:0;right:0;bottom:0;background:#fff;padding:14px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid #eee;text-align:center"><div style="font-size:13px;color:#666;margin-bottom:8px">Vous avez bloqué cette entreprise</div><button type="button" id="ctUnblock" class="ba" style="width:100%;height:40px">Débloquer pour chatter</button></div>';document.getElementById('ctUnblock').addEventListener('click',function(){confirmAction('Débloquer cette boutique ?','Vous pourrez à nouveau échanger avec cette boutique.',function(){toggleBlockBoutique(conv)})})}else{bar.innerHTML='<div style="position:fixed;left:0;right:0;bottom:0;background:#fff;padding:8px;display:flex;gap:8px"><input id="ctIn" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:20px"/><button type="button" class="br" style="width:auto;padding:0 16px;height:40px;border-radius:20px" id="ctSend">Envoyer</button></div>';document.getElementById('ctSend').addEventListener('click',async function(){var text=document.getElementById('ctIn').value.trim();if(!text)return;var local=loadThreadCache(conv.id);local.push({from:'user',text:text});saveThreadCache(conv.id,local);paintThread(local);document.getElementById('ctIn').value='';try{await addDoc(collection(db,'conversations',conv.id,'messages'),{from:'user',text:text,createdAt:serverTimestamp()});await updateDoc(doc(db,'conversations',conv.id),{lastMessage:text,updatedAt:serverTimestamp()})}catch(e){toast(e.message)}})}}
 function paintThread(msgs){var box=document.getElementById('ctBox');if(!box)return;box.innerHTML=msgs.map(function(m){var me=m.from==='user';return'<div style="text-align:'+(me?'right':'left')+';margin:6px 0"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:'+(me?'#00A854':'#eee')+';color:'+(me?'#fff':'#333')+';font-size:13px">'+escapeHtml(m.text||'')+'</span></div>'}).join('')}
 function notifKey(bid){return 'vl_notif_'+(currentUser?currentUser.uid:'anon')+'_'+bid}
