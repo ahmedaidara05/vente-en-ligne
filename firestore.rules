@@ -27,16 +27,17 @@ service cloud.firestore {
          userDoc().role == 'stock' || 
          userDoc().role == 'orders');
     }
+    
+    function isStoreManager(storeId) {
+      return isSignedIn() && 
+        (isAdmin() || 
+         (userDoc().role == 'manager' && userDoc().storeId == storeId));
+    }
 
     match /users/{userId} {
       allow read: if isOwner(userId) || isStaff();
-      // Create: only own doc, and role must be customer (or absent)
-      allow create: if isSignedIn() && request.auth.uid == userId
-        && (!('role' in request.resource.data) || request.resource.data.role == 'customer');
-      // Update: owner can update non-role fields; only admin can change role
-      allow update: if isOwner(userId) && 
-        (!('role' in request.resource.data) || request.resource.data.role == resource.data.role)
-        || isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -52,7 +53,7 @@ service cloud.firestore {
 
     match /stores/{storeId} {
       allow read: if resource.data.active == true || isStaff();
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin() || isStoreManager(storeId);
     }
 
     match /orders/{orderId} {
@@ -85,19 +86,47 @@ service cloud.firestore {
     }
 
     match /notifications/{notifId} {
-      allow read: if isSignedIn() && 
-        (resource.data.userId == request.auth.uid || isStaff());
-      allow create: if isStaff() || isSignedIn();
-      allow update: if isOwner(resource.data.userId) || isStaff();
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isStaff();
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if isAdmin();
     }
 
     match /adminRoles/{roleId} {
       allow read, write: if isAdmin();
     }
-    
+
     match /auditLogs/{logId} {
       allow read: if isAdmin();
       allow create: if isStaff();
     }
+
+    match /boutiques/{id} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /ads/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /follows/{id} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /conversations/{id} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isStaff());
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      match /messages/{mid} {
+        allow read, create: if isSignedIn();
+        allow update, delete: if false;
+      }
+    }
+
   }
 }
