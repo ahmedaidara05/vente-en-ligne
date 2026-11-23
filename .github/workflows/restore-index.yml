@@ -1,0 +1,24 @@
+name: Restore index.html
+on:
+  workflow_dispatch:
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore index from good commit
+        run: |
+          git checkout 6443eaba4b965f7a6c00c8b518fc39440a3af4f2 -- index.html
+          # Add img-fix script if missing
+          if ! grep -q 'img-fix.js' index.html; then
+            sed -i 's|</body>|<script src="img-fix.js"></script>\n</body>|' index.html
+          fi
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html
+          git commit -m "restore: full index.html + img-fix.js for R2 images" || echo "no change"
+          git push
