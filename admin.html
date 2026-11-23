@@ -22,7 +22,6 @@ button.primary{padding:10px 14px;background:var(--accent);color:#fff;border:none
 button.sm{padding:6px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:#222;color:#fff;cursor:pointer;margin:2px}
 button.danger{color:var(--danger);border-color:var(--danger)}
 .item{padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
 .muted{color:var(--muted);font-size:12px}
 label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
 .err{color:var(--danger);font-size:13px;margin:8px 0}
@@ -37,39 +36,62 @@ label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
 <button type="button" data-p="orders">Commandes</button>
 <button type="button" data-p="categories">Catégories</button>
 <button type="button" data-p="boutiques">Boutiques</button>
+<button type="button" data-p="ads">Pubs</button>
 <button type="button" data-p="add">+ Produit</button>
 </div>
 <div id="panel-dash" class="panel on"><div class="card"><h3>Dashboard</h3><p id="stats">…</p></div></div>
-<div id="panel-products" class="panel"><div class="card"><div class="row"><input id="prodSearch" placeholder="Rechercher…" style="flex:1"/><select id="prodCat"><option value="">Toutes</option></select></div><div id="prodList"></div></div></div>
+<div id="panel-products" class="panel"><div class="card"><h3>Produits</h3><div id="prodList"></div></div></div>
 <div id="panel-orders" class="panel"><div class="card"><h3>Commandes</h3><div id="orderList"></div></div></div>
-<div id="panel-categories" class="panel"><div class="card"><h3>Catégories</h3><div id="catList"></div><div class="row" style="margin-top:12px"><input id="newCat" placeholder="Nouvelle catégorie" style="flex:1"/><button type="button" class="primary" id="btnAddCat">Ajouter</button></div></div></div>
+<div id="panel-categories" class="panel"><div class="card"><h3>Catégories</h3><div id="catList"></div><div style="margin-top:12px"><input id="newCat" placeholder="Nouvelle catégorie"/><button type="button" class="primary" id="btnAddCat">Ajouter</button></div></div></div>
 <div id="panel-boutiques" class="panel"><div class="card"><h3>Boutiques</h3><div id="boutList"></div>
 <h3 style="margin-top:16px">Créer une boutique</h3>
 <label>Email vendeur *</label><input id="bEmail" type="email"/>
 <label>Nom boutique</label><input id="bName"/>
-<label>Mot de passe temporaire *</label><input id="bTempPass" type="text" placeholder="min 6 caractères"/>
+<label>Mot de passe temporaire *</label><input id="bTempPass" type="text"/>
 <button type="button" class="primary" id="btnCreateBout">Créer</button>
-<p class="muted" style="margin-top:8px">Le vendeur se connecte sur boutique.html. Après validation email Firebase, il peut changer le mot de passe — le statut s'affiche ici.</p>
 <p id="boutErr" class="err" style="display:none"></p></div></div>
-<div id="panel-add" class="panel"></div>
+<div id="panel-ads" class="panel">
+<div class="card">
+<h3>Publicités</h3>
+<p class="muted">Sans pub active, rien ne s'affiche côté client.</p>
+<label>Type</label>
+<select id="adType"><option value="banner">Bannière</option><option value="inapp">In-app (popup)</option></select>
+<label>Image</label>
+<input type="file" id="adImg" accept="image/*"/>
+<div id="adPreview" class="muted" style="margin:8px 0"></div>
+<label>Lien</label>
+<select id="adLinkType"><option value="none">Aucun</option><option value="url">URL externe</option><option value="product">Produit</option><option value="boutique">Boutique</option></select>
+<input id="adLinkUrl" placeholder="https://..." style="display:none"/>
+<input id="adLinkId" placeholder="ID produit ou boutique" style="display:none"/>
+<label><input type="checkbox" id="adActive" checked/> Actif</label>
+<button type="button" class="primary" id="adSave">Ajouter la pub</button>
+<p id="adMsg" class="muted"></p>
+</div>
+<div class="card"><h3>Pubs existantes</h3><div id="adList">…</div></div>
+</div>
+<div id="panel-add" class="panel"><div class="card"><p class="muted">Produits gérés depuis boutique.html</p></div></div>
 </div>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getFirestore, collection, doc, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import { getFirestore, collection, doc, getDocs, addDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+const MEDIA_WORKER='https://soft-surf-b4e9.ahmedsaidaidara5.workers.dev';
 const firebaseConfig={apiKey:"AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",authDomain:"idus-a87a6.firebaseapp.com",projectId:"idus-a87a6",storageBucket:"idus-a87a6.firebasestorage.app",messagingSenderId:"284785552985",appId:"1:284785552985:web:4cb12a71465a0e167bcb48",measurementId:"G-M0EKXCDV3R"};
 const app=initializeApp(firebaseConfig);const db=getFirestore(app);
-let products=[],categories=[];
 function esc(s){if(s==null)return'';const d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
-function show(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.getAttribute('data-p')===id));const panel=document.getElementById('panel-'+id);if(panel)panel.classList.add('on');if(id==='dash')loadStats();if(id==='products')loadProducts();if(id==='orders')loadOrders();if(id==='categories')loadCats();if(id==='boutiques')loadBoutiques();}
+function show(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.getAttribute('data-p')===id));const panel=document.getElementById('panel-'+id);if(panel)panel.classList.add('on');if(id==='dash')loadStats();if(id==='products')loadProducts();if(id==='orders')loadOrders();if(id==='categories')loadCats();if(id==='boutiques')loadBoutiques();if(id==='ads')loadAds();}
 document.querySelectorAll('.nav button').forEach(btn=>{btn.addEventListener('click',()=>show(btn.getAttribute('data-p')));});
-async function loadStats(){try{const[ps,os,cs,bs]=await Promise.all([getDocs(collection(db,'products')),getDocs(collection(db,'orders')),getDocs(collection(db,'categories')),getDocs(collection(db,'boutiques'))]);document.getElementById('stats').innerHTML='Produits: <b>'+ps.size+'</b><br>Commandes: <b>'+os.size+'</b><br>Catégories: <b>'+cs.size+'</b><br>Boutiques: <b>'+bs.size+'</b>';}catch(e){document.getElementById('stats').innerHTML=e.message;}}
-async function loadCats(){try{const s=await getDocs(collection(db,'categories'));categories=s.docs.map(d=>({id:d.id,...d.data()}));document.getElementById('catList').innerHTML=categories.map(c=>'<div class="item">'+esc(c.name)+'</div>').join('')||'<div class="muted">Aucune</div>';}catch(e){}}
+async function loadStats(){try{const[ps,os,cs,bs]=await Promise.all([getDocs(collection(db,'products')),getDocs(collection(db,'orders')),getDocs(collection(db,'categories')),getDocs(collection(db,'boutiques'))]);document.getElementById('stats').innerHTML='Produits: <b>'+ps.size+'</b><br>Commandes: <b>'+os.size+'</b><br>Catégories: <b>'+cs.size+'</b><br>Boutiques: <b>'+bs.size+'</b>';}catch(e){document.getElementById('stats').textContent=e.message;}}
+async function loadProducts(){try{const s=await getDocs(collection(db,'products'));document.getElementById('prodList').innerHTML=s.docs.map(d=>{const p=d.data();return '<div class="item"><b>'+esc(p.name)+'</b> — '+(p.price||0)+' F</div>';}).join('')||'<div class="muted">Aucun</div>';}catch(e){}}
+async function loadOrders(){try{const s=await getDocs(collection(db,'orders'));document.getElementById('orderList').innerHTML=s.docs.map(d=>{const o=d.data();return '<div class="item"><b>#'+esc(o.orderNumber||d.id.slice(0,8))+'</b> · '+(o.total||0)+' F</div>';}).join('')||'<div class="muted">Aucune</div>';}catch(e){}}
+async function loadCats(){try{const s=await getDocs(collection(db,'categories'));document.getElementById('catList').innerHTML=s.docs.map(d=>'<div class="item">'+esc(d.data().name)+'</div>').join('')||'<div class="muted">Aucune</div>';}catch(e){}}
 document.getElementById('btnAddCat').addEventListener('click',async()=>{const name=document.getElementById('newCat').value.trim();if(!name)return;await addDoc(collection(db,'categories'),{name,createdAt:serverTimestamp()});document.getElementById('newCat').value='';loadCats();});
-async function loadProducts(){try{const s=await getDocs(collection(db,'products'));products=s.docs.map(d=>({id:d.id,...d.data()}));document.getElementById('prodList').innerHTML=products.map(p=>'<div class="item"><b>'+esc(p.name)+'</b> — '+(p.price||0)+' F '+(p.boutiqueName?'· '+esc(p.boutiqueName):'')+'</div>').join('')||'<div class="muted">Aucun</div>';}catch(e){}}
-async function loadOrders(){try{const s=await getDocs(collection(db,'orders'));document.getElementById('orderList').innerHTML=s.docs.map(d=>{const o=d.data();return '<div class="item"><b>#'+esc(o.orderNumber||d.id.slice(0,8))+'</b> · '+(o.total||0)+' F · '+esc(o.status||'')+'</div>';}).join('')||'<div class="muted">Aucune</div>';}catch(e){}}
-async function loadBoutiques(){const listEl=document.getElementById('boutList');try{const s=await getDocs(collection(db,'boutiques'));listEl.innerHTML=s.docs.map(d=>{const b=d.data();const pass=b.passwordChanged?'<span style="color:#00A854">MDP modifié</span>':'<span style="color:#f59e0b">Temp: '+esc(b.tempPassword||'—')+'</span>';return '<div class="item"><b>'+esc(b.name||'')+'</b><br/>'+esc(b.email)+'<br/>'+pass+' · Abonnés: '+(b.followersCount||0)+' <button type="button" class="sm danger" data-del="'+d.id+'">Suppr</button></div>';}).join('')||'<div class="muted">Aucune boutique</div>';listEl.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',async()=>{if(!confirm('Supprimer?'))return;await deleteDoc(doc(db,'boutiques',btn.getAttribute('data-del')));loadBoutiques();}));}catch(e){listEl.innerHTML='<div class="err">'+esc(e.message)+'</div>';}}
-async function createBoutique(){const err=document.getElementById('boutErr');const email=(document.getElementById('bEmail').value||'').trim().toLowerCase();const name=(document.getElementById('bName').value||'').trim()||'Boutique';const tempPass=(document.getElementById('bTempPass').value||'').trim();if(!email||tempPass.length<6){err.textContent='Email + mdp 6+ car.';err.style.display='block';return;}try{const {initializeApp:init2,getApp}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');const {getAuth:getAuth2,createUserWithEmailAndPassword:create2,signOut:signOut2}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');let secondary;try{secondary=getApp('Secondary');}catch(e){secondary=init2(firebaseConfig,'Secondary');}const auth2=getAuth2(secondary);const cred=await create2(auth2,email,tempPass);await addDoc(collection(db,'boutiques'),{email,name,tempPassword:tempPass,passwordChanged:false,ownerUid:cred.user.uid,description:'',logo:'',banner:'',followersCount:0,ratingAvg:0,ratingCount:0,active:true,createdAt:serverTimestamp()});await signOut2(auth2);document.getElementById('bEmail').value='';document.getElementById('bName').value='';document.getElementById('bTempPass').value='';err.style.display='none';alert('Boutique créée → connexion sur boutique.html');loadBoutiques();}catch(e){err.textContent=e.message;err.style.display='block';}}
-document.getElementById('btnCreateBout').addEventListener('click',createBoutique);
+async function loadBoutiques(){const listEl=document.getElementById('boutList');try{const s=await getDocs(collection(db,'boutiques'));listEl.innerHTML=s.docs.map(d=>{const b=d.data();return '<div class="item"><b>'+esc(b.name||'')+'</b><br/>'+esc(b.email)+' <button type="button" class="sm danger" data-del="'+d.id+'">Suppr</button></div>';}).join('')||'<div class="muted">Aucune</div>';listEl.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',async()=>{if(!confirm('Supprimer?'))return;await deleteDoc(doc(db,'boutiques',btn.getAttribute('data-del')));loadBoutiques();}));}catch(e){listEl.innerHTML='<div class="err">'+esc(e.message)+'</div>';}}
+document.getElementById('btnCreateBout').addEventListener('click',async()=>{const err=document.getElementById('boutErr');const email=(document.getElementById('bEmail').value||'').trim().toLowerCase();const name=(document.getElementById('bName').value||'').trim()||'Boutique';const tempPass=(document.getElementById('bTempPass').value||'').trim();if(!email||tempPass.length<6){err.textContent='Email + mdp 6+';err.style.display='block';return;}try{const {initializeApp:init2,getApp}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');const {getAuth:getAuth2,createUserWithEmailAndPassword:create2,signOut:signOut2}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');let secondary;try{secondary=getApp('Secondary');}catch(e){secondary=init2(firebaseConfig,'Secondary');}const auth2=getAuth2(secondary);const cred=await create2(auth2,email,tempPass);await addDoc(collection(db,'boutiques'),{email,name,tempPassword:tempPass,passwordChanged:false,ownerUid:cred.user.uid,description:'',logo:'',banner:'',followersCount:0,active:true,createdAt:serverTimestamp()});await signOut2(auth2);document.getElementById('bEmail').value='';document.getElementById('bName').value='';document.getElementById('bTempPass').value='';err.style.display='none';alert('Boutique créée');loadBoutiques();}catch(e){err.textContent=e.message;err.style.display='block';}});
+let adImageData='';
+document.getElementById('adLinkType').addEventListener('change',function(){const v=this.value;document.getElementById('adLinkUrl').style.display=v==='url'?'block':'none';document.getElementById('adLinkId').style.display=(v==='product'||v==='boutique')?'block':'none';});
+document.getElementById('adImg').addEventListener('change',async function(e){const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async function(){const img=new Image();img.onload=async function(){const c=document.createElement('canvas');let w=img.width,h=img.height,max=900;if(w>max){h=Math.round(h*max/w);w=max;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);const dataUrl=c.toDataURL('image/jpeg',0.7);adImageData=dataUrl;try{const blob=await(await fetch(dataUrl)).blob();const file=new File([blob],'ad.jpg',{type:'image/jpeg'});const fd=new FormData();fd.append('file',file);const res=await fetch(MEDIA_WORKER+'/upload',{method:'POST',body:fd});const data=await res.json();if(res.ok&&data.url&&String(data.url).indexOf('/file/img/')>=0)adImageData=data.url;}catch(err){}document.getElementById('adPreview').innerHTML='<img src="'+adImageData+'" style="max-width:100%;max-height:120px;border-radius:8px"/>';};img.src=r.result;};r.readAsDataURL(f);});
+document.getElementById('adSave').addEventListener('click',async function(){const msg=document.getElementById('adMsg');if(!adImageData){msg.textContent='Choisis une image';return;}try{await addDoc(collection(db,'ads'),{type:document.getElementById('adType').value,image:adImageData,linkType:document.getElementById('adLinkType').value,linkUrl:document.getElementById('adLinkUrl').value.trim(),linkId:document.getElementById('adLinkId').value.trim(),active:document.getElementById('adActive').checked,createdAt:serverTimestamp()});adImageData='';document.getElementById('adPreview').innerHTML='';document.getElementById('adImg').value='';msg.textContent='Pub enregistrée';loadAds();}catch(e){msg.textContent=e.message;}});
+async function loadAds(){const el=document.getElementById('adList');try{const s=await getDocs(collection(db,'ads'));el.innerHTML=s.docs.map(d=>{const a=d.data();return '<div class="item"><img src="'+(a.image||'')+'" style="width:80px;height:40px;object-fit:cover;border-radius:4px;vertical-align:middle"/> <b>'+(a.type||'')+'</b> · '+(a.active?'actif':'off')+' <button type="button" class="sm danger" data-ad-del="'+d.id+'">Suppr</button></div>';}).join('')||'<div class="muted">Aucune pub</div>';el.querySelectorAll('[data-ad-del]').forEach(btn=>btn.addEventListener('click',async()=>{if(!confirm('Supprimer?'))return;await deleteDoc(doc(db,'ads',btn.getAttribute('data-ad-del')));loadAds();}));}catch(e){el.innerHTML='<div class="err">'+e.message+'</div>';}}
 loadStats();
 </script>
 </body>
