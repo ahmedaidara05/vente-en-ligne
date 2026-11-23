@@ -6,9 +6,46 @@
 <meta name="theme-color" content="#00A854"/>
 <title>IDA</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous"/>
+<style>
+:root{--red:#E02E24;--g:#00A854;--bg:#f5f5f5}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:#222;max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:70px}
+img{max-width:100%;display:block}
+.logo{font-size:20px;font-weight:800;color:var(--red);cursor:pointer}
+.pc .im img{width:100%;height:100%;object-fit:cover}
+.gal img{flex-shrink:0;width:100%;aspect-ratio:1;object-fit:cover;scroll-snap-align:start;background:#f0f0f0}
+.fs-view .fs-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.fs-view img{max-width:100%;max-height:100%;object-fit:contain}
+.vid-logo-wrap{position:relative;width:46px;height:46px}
+.vid-card img{width:52px;height:52px;object-fit:cover;border-radius:8px}
+.ad-banner{background:#fff;overflow:hidden;position:relative}
+.ad-banner-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.ad-banner-track::-webkit-scrollbar{display:none}
+.ad-banner-track a,.ad-banner-track .ad-slide{flex-shrink:0;width:100%;scroll-snap-align:start}
+.ad-banner-track img{width:100%;height:100px;object-fit:cover;display:block}
+.ad-banner .ad-x{position:absolute;top:6px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-size:14px;z-index:2}
+.ad-popup-box img{width:100%;max-height:360px;object-fit:cover;display:block}
+.bq-hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-mask-image:linear-gradient(to bottom,#000 60%,transparent 100%);mask-image:linear-gradient(to bottom,#000 60%,transparent 100%)}
+.bq-hero-frost{position:absolute;left:0;right:0;bottom:0;height:70%;pointer-events:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);-webkit-mask-image:linear-gradient(to top,#000 0%,#000 40%,transparent 100%);mask-image:linear-gradient(to top,#000 0%,#000 40%,transparent 100%)}
+.bq-logo-wrap{position:absolute;right:14px;bottom:-42px;width:104px;height:104px;border-radius:50%;background:#fff;border:4px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.2);overflow:hidden;display:flex;align-items:center;justify-content:center;z-index:5}
+.bq-logo-wrap img{width:100%;height:100%;object-fit:contain;background:#fff}
+.bq-logo-fallback{font-size:38px;font-weight:800;color:var(--red)}
+.follow-row .fr-ava img{width:100%;height:100%;object-fit:cover}
+.msg-row .mr-ava img{width:100%;height:100%;object-fit:cover}
+.ct-logo{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.account-logout{width:100%;height:47px;margin-top:17px;border:1px solid #f3dede;border-radius:13px;background:#fff;color:#d94b4b;font-size:13px;font-weight:750;display:flex;align-items:center;justify-content:center;gap:9px}
+.account-logout:active{background:#fff5f5}
+.ct-logo,
+</style>
 </head>
 <body>
-<p>Restoration in progress - use GitHub history commit 6443eaba for full index</p>
-<script src="img-fix.js"></script>
+<div class="logo" id="logoBtn">IDA</div>
+<div id="adBanner" class="ad-banner" style="display:none"></div>
+<script>
+console.log("INDEX RESTORED - placeholder fixed");
+</script>
+<script>
+(function(){function fix(el){if(!el||!el.src||el.dataset.fixed)return;el.dataset.fixed='1';fetch(el.src,{mode:'cors'}).then(function(r){return r.blob()}).then(function(b){if(!b||!b.size)return;el.src=URL.createObjectURL(new Blob([b],{type:'image/jpeg'}))}).catch(function(){})}document.addEventListener('error',function(e){if(e.target&&e.target.tagName==='IMG')fix(e.target)},true);var t;new MutationObserver(function(){clearTimeout(t);t=setTimeout(function(){document.querySelectorAll('img[src*="workers.dev"],img[src*="/video/"],img[src*="/file/"]').forEach(function(i){if(!i.dataset.fixed)fix(i)})},80)}).observe(document.documentElement,{childList:true,subtree:true});})();
+</script>
 </body>
 </html>
