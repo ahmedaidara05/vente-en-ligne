@@ -142,6 +142,8 @@ button.d{color:var(--danger);border-color:var(--danger)}
       <button type="button" data-t="commandes">Commandes</button>
       <button type="button" data-t="messages">Messages</button>
       <button type="button" data-t="auto">Auto-réponses</button>
+      
+            <button type="button" data-t="points">Points relais</button>
     </div>
     <div id="tab-home" class="card"><h3>Dashboard</h3><p id="dashStats">…</p></div>
     <div id="tab-profil" class="card hidden"></div>
@@ -149,6 +151,7 @@ button.d{color:var(--danger);border-color:var(--danger)}
     <div id="tab-commandes" class="card hidden"></div>
     <div id="tab-messages" class="card hidden"></div>
     <div id="tab-auto" class="card hidden"></div>
+        <div id="tab-points" class="card hidden"></div>
   </div>
 </div>
 
@@ -283,7 +286,7 @@ document.querySelectorAll('.nav button').forEach(b=>{
 });
 
 function tab(id){
-  ['home','profil','produits','commandes','messages','auto'].forEach(t=>{
+  ['home','profil','produits','commandes','messages','auto','points'].forEach(t=>{
     const el=$('tab-'+t);
     if(el)el.classList.toggle('hidden',t!==id);
   });
@@ -292,6 +295,7 @@ function tab(id){
   if(id==='commandes')renderCommandes();
   if(id==='messages')renderMessages();
   if(id==='auto')renderAuto();
+    if(id==='points')renderPoints();
   if(id==='home')loadDashStats();
 }
 
@@ -464,7 +468,8 @@ function openProdForm(id){
     +'<label>Stock</label><input id="pStock" type="number" value="'+(p?p.stock??10:10)+'"/>'
     +'<label><input type="checkbox" id="pShowStock" '+(p&&p.showStock===false?'':'checked')+'/> Afficher le stock</label>'
     +'<label>Livraison</label><select id="pDelivery">'+delivs.map(d=>'<option value="'+d+'" '+(p&&p.deliveryTime===d?'selected':'')+'>'+d+'</option>').join('')+'</select>'
-    +'<label style="margin-top:8px"><input type="checkbox" id="pFast" '+(p&&p.fastDelivery===true?'checked':'')+'/> <b style="color:#00A854">Livraison rapide gratuite (Chine → Sénégal)</b></label>'
+    +'<label style="margin-top:6px"><input type="checkbox" id="pFromChina" '+(p&&p.fromChina===true?'checked':'')+'/> <b style="color:#00A854">Produit venant de Chine</b></label>'
+    +'<label style="margin-top:6px"><input type="checkbox" id="pPickupFree" '+(p&&p.pickupFree===true?'checked':'')+'/> <b style="color:#00A854">Retrait gratuit en point relais</b></label>'
     +'<label>Catégorie</label><select id="pCat"><option value="">—</option>'+categories.map(c=>'<option value="'+c.id+'" '+(p&&p.categoryId===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select>'
     +'<label>Description</label><textarea id="pDesc" rows="2">'+esc(p?p.description:'')+'</textarea>'
     +'<label>Images (max 20)</label><div id="imgList" class="img-grid"></div>'
@@ -575,7 +580,8 @@ function openProdForm(id){
       stock:parseInt($('pStock').value)||0,
       showStock:$('pShowStock').checked,
       deliveryTime:$('pDelivery').value,
-      fastDelivery:$('pFast').checked,
+      fromChina:$('pFromChina').checked,
+      pickupFree:$('pPickupFree').checked,
       categoryId:$('pCat').value||null,
       description:$('pDesc').value.trim(),
       images:editImages,
@@ -603,11 +609,58 @@ async function renderCommandes(){
     const s=await getDocs(query(collection(db,'orders'),where('boutiqueId','==',boutiqueId)));
     const list=s.docs.map(d=>({id:d.id,...d.data()}));
     list.sort((a,b)=>((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));
-    $('ordList').innerHTML=list.length?list.map(o=>'<div class="item"><b>'+esc(o.orderNumber||o.id)+'</b> — '+(o.total||0)+' F<br/><span class="muted">'+esc((o.customer&&o.customer.name)||'')+' · '+esc(o.status||'')+'</span></div>').join(''):'<p class="muted">Aucune commande</p>';
+    if(!list.length){$('ordList').innerHTML='<p class="muted">Aucune commande</p>';return;}
+
+    $('ordList').innerHTML=list.map(o=>{
+      const date=o.createdAt&&o.createdAt.seconds
+        ?new Date(o.createdAt.seconds*1000).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})
+        :'—';
+      const c=o.customer||{};
+      const items=(o.items||[]).map(it=>{
+        const v=Object.keys(it.variants||{}).map(k=>k+': '+it.variants[k]).join(', ');
+        return '<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed #333">'
+          +(it.image?'<img src="'+esc(it.image)+'" style="width:38px;height:38px;object-fit:cover;border-radius:6px;background:#222" onerror="fixBrokenImg(this)"/>':'')
+          +'<div style="flex:1;min-width:0"><b style="font-size:12px">'+esc(it.name||'')+'</b>'
+          +(v?'<br/><span class="muted" style="font-size:11px">'+esc(v)+'</span>':'')
+          +'<br/><span style="color:#E02E24;font-size:11px;font-weight:700">'+formatPrice(it.price)+' F × '+(it.qty||1)+'</span></div>'
+        +'</div>';
+      }).join('');
+      const statusColors={pending:'#FCD34D',paid:'#00A854',shipped:'#3B82F6',cancelled:'#EF4444'};
+      const statusLabels={pending:'En attente',paid:'Payée',shipped:'Expédiée',cancelled:'Annulée'};
+      const stColor=statusColors[o.status]||'#888';
+      const stLabel=statusLabels[o.status]||o.status||'—';
+
+      return '<div class="item" style="padding:12px 0">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+          +'<b style="font-size:13px">'+esc(o.orderNumber||o.id)+'</b>'
+          +'<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:'+stColor+'22;color:'+stColor+'">'+esc(stLabel)+'</span>'
+        +'</div>'
+        +'<div class="muted" style="font-size:11px;margin-bottom:8px">'+date+'</div>'
+        +'<div style="background:#111;border-radius:8px;padding:8px;margin-bottom:8px">'
+          +'<div class="muted" style="font-size:10px;margin-bottom:4px">👤 Client</div>'
+          +'<div style="font-size:12px"><b>'+esc(c.name||'—')+'</b></div>'
+          +'<div style="font-size:11px;color:#888">📞 '+esc(c.phone||'—')+'</div>'
+          +(c.email?'<div style="font-size:11px;color:#888">✉️ '+esc(c.email)+'</div>':'')
+          +'<div style="font-size:11px;color:#888">📍 '+esc(c.address||'—')+'</div>'
+        +'</div>'
+        +(o.fromChina?'<div style="margin-bottom:6px"><span style="font-size:10px;background:#00A85422;color:#00A854;padding:2px 8px;border-radius:999px;font-weight:700">🐢 Origine : Chine</span></div>':'')
+        +(o.pickupAvailable?'<div style="margin-bottom:6px"><span style="font-size:10px;background:#3B82F622;color:#3B82F6;padding:2px 8px;border-radius:999px;font-weight:700">📍 Retrait point relais</span>'
+          +(o.pickupPoint&&o.pickupPoint.address?'<div class="muted" style="font-size:11px;margin-top:4px;padding-left:4px">→ '+esc(o.pickupPoint.address)+'</div>':'')
+          +'</div>':'')
+        +'<div style="background:#111;border-radius:8px;padding:8px;margin-bottom:8px">'
+          +'<div class="muted" style="font-size:10px;margin-bottom:4px">📦 Articles</div>'
+          +items
+        +'</div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid #333">'
+          +'<span class="muted" style="font-size:11px">Total</span>'
+          +'<b style="font-size:15px;color:#E02E24">'+formatPrice(o.total||0)+' F</b>'
+        +'</div>'
+      +'</div>';
+    }).join('');
   }catch(e){$('ordList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}
 }
 
-/* ================== MESSAGES (liste) ================== */
+/* ================== MESSAGES (liste) ================== */ 
 async function renderMessages(){
   const el=$('tab-messages');
   el.innerHTML='<h3>Messages</h3><div id="convList">…</div>';
@@ -811,7 +864,84 @@ function renderAuto(){
     }catch(e){alert(e.message);}
   });
 }
+/* ================== POINTS RELAIS ================== */
+async function loadPickupPoints(){
+  const s=await getDocs(collection(db,'boutiques',boutiqueId,'pickupPoints'));
+  const list=s.docs.map(d=>({id:d.id,...d.data()}));
+  list.sort((a,b)=>{
+    const ta=(a.createdAt&&a.createdAt.seconds)||0;
+    const tb=(b.createdAt&&b.createdAt.seconds)||0;
+    return tb-ta;
+  });
+  return list;
+}
 
+async function renderPoints(){
+  const el=$('tab-points');
+  el.innerHTML='<h3>Points relais</h3>'
+    +'<p class="muted" style="margin-bottom:12px">Ajoutez les adresses où vos clients peuvent retirer gratuitement leurs colis.</p>'
+    +'<div id="ptsList"><p class="muted">Chargement…</p></div>'
+    +'<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">'
+      +'<h3 style="font-size:13px">+ Nouveau point relais</h3>'
+      +'<label>Ville / Région *</label>'
+      +'<select id="ptCity">'
+        +'<option value="Dakar">Dakar (Sénégal)</option>'
+        +'<option value="Niamey">Niamey (Niger)</option>'
+        +'<option value="Paris">Paris (France)</option>'
+      +'</select>'
+      +'<label>Adresse complète *</label>'
+      +'<input id="ptAddress" placeholder="Ex: Sacré-Cœur 3, villa 12"/>'
+      +'<label>Horaires (optionnel)</label>'
+      +'<input id="ptHours" placeholder="Ex: Lun-Sam 9h-19h"/>'
+      +'<button type="button" class="p" id="btnAddPt">Ajouter le point relais</button>'
+      +'<p id="ptMsg" class="muted"></p>'
+    +'</div>';
+
+  async function refreshList(){
+    try{
+      const list=await loadPickupPoints();
+      const box=$('ptsList');
+      if(!list.length){box.innerHTML='<p class="muted">Aucun point relais pour l\'instant.</p>';return;}
+      box.innerHTML=list.map(p=>'<div class="item" style="display:flex;gap:10px;align-items:flex-start">'
+        +'<div style="width:34px;height:34px;flex-shrink:0;border-radius:8px;background:#00A85422;color:#00A854;display:flex;align-items:center;justify-content:center;font-size:14px">📍</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<b style="color:#00A854;font-size:11px;letter-spacing:.5px">'+esc(p.city||'')+'</b><br/>'
+          +'<span style="font-size:13px">'+esc(p.address||'')+'</span>'
+          +(p.hours?'<br/><span class="muted">🕐 '+esc(p.hours)+'</span>':'')
+        +'</div>'
+        +'<button type="button" class="s d" data-delpt="'+p.id+'">×</button>'
+      +'</div>').join('');
+      box.querySelectorAll('[data-delpt]').forEach(b=>{
+        b.addEventListener('click',async()=>{
+          if(!confirm('Supprimer ce point relais ?'))return;
+          try{
+            await deleteDoc(doc(db,'boutiques',boutiqueId,'pickupPoints',b.getAttribute('data-delpt')));
+            refreshList();
+          }catch(e){alert(e.message);}
+        });
+      });
+    }catch(e){$('ptsList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}
+  }
+  refreshList();
+
+  $('btnAddPt').addEventListener('click',async()=>{
+    const city=$('ptCity').value;
+    const address=$('ptAddress').value.trim();
+    const hours=$('ptHours').value.trim();
+    const msg=$('ptMsg');
+    msg.className='muted';msg.textContent='';
+    if(!address){msg.className='err';msg.textContent='Adresse requise';return;}
+    try{
+      await addDoc(collection(db,'boutiques',boutiqueId,'pickupPoints'),{
+        city,address,hours,createdAt:serverTimestamp()
+      });
+      $('ptAddress').value='';
+      $('ptHours').value='';
+      msg.className='ok';msg.textContent='Point relais ajouté ✅';
+      refreshList();
+    }catch(e){msg.className='err';msg.textContent=e.message;}
+  });
+}
 /* ================== AUTH STATE ================== */
 onAuthStateChanged(auth,async(u)=>{
   if(!u){showLogin();return;}
