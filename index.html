@@ -978,21 +978,56 @@ async function renderOrders(){
     var box=document.getElementById('ordList');
     if(!box)return;
     if(!orders.length){box.innerHTML='<div class="chk-empty"><i class="fa-solid fa-box-open" style="font-size:36px;color:#ddd;margin-bottom:10px"></i><p>Aucune commande pour l\'instant</p></div>';return}
-    box.innerHTML=orders.map(function(o){
-      var date=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
-      var statusClass='';
-      if(o.status==='paid')statusClass='paid';
-      else if(o.status==='shipped')statusClass='shipped';
-      else if(o.status==='cancelled')statusClass='cancelled';
-      var statusLabel=({pending:'En attente',paid:'Payée',shipped:'Expédiée',cancelled:'Annulée'})[o.status]||o.status||'—';
-      var nbItems=(o.items||[]).reduce(function(s,i){return s+(i.qty||1)},0);
-      var firstProd=(o.items&&o.items[0])?o.items[0].name:'—';
-      return '<div class="ord-card" data-oid="'+o.id+'">'
-        +'<div class="ord-card-top"><div><div class="ord-num">'+(o.orderNumber||'—')+'</div><div class="ord-date">'+date+'</div></div><span class="ord-status '+statusClass+'">'+statusLabel+'</span></div>'
-        +'<div class="ord-prods">'+escapeHtml(firstProd)+(nbItems>1?' + '+(nbItems-1)+' autre(s)':'')+'</div>'
-        +'<div class="ord-total">'+formatPrice(o.total||0)+' F</div>'
-      +'</div>';
-    }).join('');
+
+    // === Regroupement par "batch" (même timestamp à la minute) ===
+    var groups=[];
+    orders.forEach(function(o){
+      var ts=o.createdAt&&o.createdAt.toMillis?Math.floor(o.createdAt.toMillis()/60000):0;
+      var g=groups.find(function(x){return x.ts===ts});
+      if(!g){g={ts:ts,orders:[]};groups.push(g)}
+      g.orders.push(o);
+    });
+
+    var groupColors=['#00A854','#F59E0B','#EF4444','#3B82F6','#8B5CF6','#EC4899'];
+    var html='';
+    groups.forEach(function(g,gi){
+      var isGroup=g.orders.length>1;
+      var color=isGroup?groupColors[gi%groupColors.length]:'transparent';
+      g.orders.forEach(function(o){
+        var date=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
+        var statusClass='';
+        if(o.status==='paid')statusClass='paid';
+        else if(o.status==='shipped')statusClass='shipped';
+        else if(o.status==='cancelled')statusClass='cancelled';
+        var statusLabel=({pending:'En attente',paid:'Payée',shipped:'Expédiée',cancelled:'Annulée'})[o.status]||o.status||'—';
+        var items=o.items||[];
+        var first=items[0]||{};
+        var img=first.image||'';
+        var nbItems=items.reduce(function(s,i){return s+(i.qty||1)},0);
+        var optStr=Object.keys(first.variants||{}).map(function(k){return k+': '+first.variants[k]}).join(', ');
+
+        html+='<div class="ord-card" data-oid="'+o.id+'" style="position:relative;padding-left:'+(isGroup?'18px':'12px')+'">'
+          +(isGroup?'<div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:'+color+';border-radius:12px 0 0 12px"></div>':'')
+          +'<div style="display:flex;gap:10px">'
+            +(img?'<img src="'+escapeHtml(img)+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;background:#eee;flex-shrink:0" onerror="this.style.background=\'#eee\'"/>':'')
+            +'<div style="flex:1;min-width:0">'
+              +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">'
+                +'<div class="ord-num">'+(o.orderNumber||'—')+'</div>'
+                +'<span class="ord-status '+statusClass+'">'+statusLabel+'</span>'
+              +'</div>'
+              +'<div style="font-size:13px;font-weight:600">'+escapeHtml(first.name||'—')+'</div>'
+              +(optStr?'<div style="font-size:11px;color:#888">'+escapeHtml(optStr)+'</div>':'')
+              +(nbItems>1?'<div style="font-size:11px;color:#666;margin-top:2px">+ '+(nbItems-1)+' autre(s) article(s)</div>':'')
+              +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">'
+                +'<div class="ord-date">'+date+'</div>'
+                +'<div class="ord-total">'+formatPrice(o.total||0)+' F</div>'
+              +'</div>'
+            +'</div>'
+          +'</div>'
+        +'</div>';
+      });
+    });
+    box.innerHTML=html;
     box.querySelectorAll('[data-oid]').forEach(function(el){
       el.addEventListener('click',function(){showPage('order-detail',el.getAttribute('data-oid'))});
     });
@@ -1009,7 +1044,27 @@ async function renderOrderDetail(oid){
     var s=await getDoc(doc(db,'orders',oid));
     if(!s.exists()){document.getElementById('oddBody').innerHTML='<div class="chk-empty">Introuvable</div>';return}
     var o={id:s.id,...s.data()};
+
+    // Charge les événements de suivi
+    var events=[];
+    try{
+      var evs=await getDocs(query(collection(db,'orders',oid,'trackingEvents'),orderBy('timestamp','desc')));
+      events=evs.docs.map(function(d){return{id:d.id,...d.data()}});
+    }catch(e){}
+
     var date=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()).toLocaleString('fr-FR'):'—';
+    var c=o.customer||{};
+
+    // === Statut livraison en haut (bandeau vert) ===
+    var statusBanner='<div style="background:linear-gradient(120deg,#073d27,#087b45);color:#fff;border-radius:14px;padding:16px;margin-bottom:12px">'
+      +'<div style="font-size:11px;letter-spacing:1.2px;font-weight:800;opacity:.7;margin-bottom:4px">STATUT DE LIVRAISON</div>'
+      +'<div style="font-size:18px;font-weight:800">'+escapeHtml(o.trackingStatus||'En attente de configuration')+'</div>'
+      +(o.trackingOrderNumber?'<div style="font-size:11px;opacity:.85;margin-top:6px">Numéro de suivi : <b>'+escapeHtml(o.trackingOrderNumber)+'</b></div>':'')
+      +(o.carrier?'<div style="font-size:11px;opacity:.85">Transporteur : '+escapeHtml(o.carrier)+'</div>':'')
+      +(o.trackingNumber?'<div style="font-size:11px;opacity:.85">Tracking : '+escapeHtml(o.trackingNumber)+'</div>':'')
+    +'</div>';
+
+    // === Articles ===
     var itemsHtml=(o.items||[]).map(function(it){
       var v=Object.keys(it.variants||{}).map(function(k){return k+': '+it.variants[k]}).join(', ');
       return '<div class="ord-item">'
@@ -1018,12 +1073,32 @@ async function renderOrderDetail(oid){
       +'</div>';
     }).join('');
 
-    var c=o.customer||{};
+    // === Chronologie (du plus récent au plus ancien) ===
+    var chronoHtml='';
+    if(events.length){
+      chronoHtml='<div class="ord-detail-section">'
+        +'<div class="ord-detail-title"><i class="fa-solid fa-clock-rotate-left" style="color:#00A854;margin-right:6px"></i>Chronologie du suivi</div>'
+        +'<div style="position:relative;padding-left:18px">'
+        +'<div style="position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:#E8FFF0"></div>'
+        +events.map(function(ev){
+          var d=ev.timestamp&&ev.timestamp.seconds?new Date(ev.timestamp.seconds*1000):null;
+          var dateStr=d?d.toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+          return '<div style="position:relative;padding:8px 0;font-size:13px">'
+            +'<div style="position:absolute;left:-18px;top:12px;width:10px;height:10px;border-radius:50%;background:#00A854;border:2px solid #fff;box-shadow:0 0 0 1px #00A854"></div>'
+            +'<div style="font-weight:700">'+escapeHtml(ev.status||'')+'</div>'
+            +'<div style="font-size:11px;color:#888">'+dateStr+(ev.location?' · '+escapeHtml(ev.location):'')+'</div>'
+            +(ev.description?'<div style="font-size:12px;color:#555;margin-top:2px">'+escapeHtml(ev.description)+'</div>':'')
+          +'</div>';
+        }).join('')
+        +'</div></div>';
+    }
+
     document.getElementById('oddBody').innerHTML=''
+      +statusBanner
       +'<div class="ord-detail-section">'
         +'<div class="ord-detail-title">Commande '+(o.orderNumber||'')+'</div>'
         +'<div class="chk-row"><span class="lbl">Date</span><span class="val">'+date+'</span></div>'
-        +'<div class="chk-row"><span class="lbl">Statut</span><span class="val">'+(o.status||'—')+'</span></div>'
+        +'<div class="chk-row"><span class="lbl">Statut paiement</span><span class="val">'+(o.status||'—')+'</span></div>'
       +'</div>'
       +'<div class="ord-detail-section">'
         +'<div class="ord-detail-title">Articles</div>'
@@ -1034,16 +1109,19 @@ async function renderOrderDetail(oid){
         +'<div class="chk-row"><span class="lbl">Destinataire</span><span class="val">'+escapeHtml(c.name||'—')+'</span></div>'
         +'<div class="chk-row"><span class="lbl">Téléphone</span><span class="val">'+escapeHtml(c.phone||'—')+'</span></div>'
         +'<div class="chk-row"><span class="lbl">Email</span><span class="val">'+escapeHtml(c.email||'—')+'</span></div>'
-        +'<div class="chk-row"><span class="lbl">Adresse</span><span class="val">'+escapeHtml(c.address||'—')+'</span></div>'
+        +'<div class="chk-row"><span class="lbl">Adresse</span><span class="val">'+escapeHtml(o.trackingAddress||c.address||'—')+'</span></div>'
         +'<div class="chk-row"><span class="lbl">Origine</span><span class="val">'+(o.fromChina?'Chine':'Locale')+'</span></div>'
         +(o.pickupAvailable?'<div class="chk-row"><span class="lbl">Retrait relais</span><span class="val"><span class="chk-badge">Disponible</span></span></div>':'')
       +'</div>'
+      +chronoHtml
       +'<div class="ord-detail-section">'
+        +'<div class="chk-row"><span class="lbl">Sous-total</span><span class="val">'+formatPrice(o.subtotal||0)+' F</span></div>'
+        +'<div class="chk-row"><span class="lbl">Livraison</span><span class="val">'+(o.shipping>0?formatPrice(o.shipping)+' F':'Gratuite')+'</span></div>'
         +'<div class="chk-total"><span>Total</span><span class="val">'+formatPrice(o.total||0)+' F</span></div>'
       +'</div>';
   }catch(e){document.getElementById('oddBody').innerHTML='<div class="chk-empty">'+escapeHtml(e.message)+'</div>'}
 }
-  
+    
 function renderAccount(){
 if(!currentUser){showPage('auth');return}
 var email=currentUser.email||'Compte IDA';
@@ -1061,7 +1139,7 @@ $('page-account').innerHTML=`
   </section>
   <div class="account-section-head"><h2>Mon activité</h2><span>Accès rapide</span></div>
   <section class="account-shortcuts">
-    <button type="button" class="account-shortcut" id="btnMsgs"><span class="account-shortcut-icon messages"><i class="fa-regular fa-comments"></i></span><strong>Messages</strong><small>Vos conversations</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+    <button type="button" class="account-shortcut" id="btnOrders2"><span class="account-shortcut-icon messages"><i class="fa-solid fa-receipt"></i></span><strong>Mes commandes</strong><small>Vos commandes passées</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
     <button type="button" class="account-shortcut" id="btnFavs"><span class="account-shortcut-icon favorites"><i class="fa-regular fa-heart"></i></span><strong>Favoris</strong><small>Produits enregistrés</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
     <button type="button" class="account-shortcut" id="btnFollows"><span class="account-shortcut-icon follows"><i class="fa-solid fa-store"></i></span><strong>Liste de suivi</strong><small>Vos boutiques suivies</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
   </section>
@@ -1073,7 +1151,7 @@ $('page-account').innerHTML=`
   <button type="button" class="account-logout" id="btnOut"><i class="fa-solid fa-arrow-right-from-bracket"></i> Déconnexion</button>
   <div class="account-footer">IDA · Votre boutique, simplement.</div>
 </div>`;
-document.getElementById('btnMsgs').addEventListener('click',function(){showPage('messages')});
+document.getElementById('btnOrders2').addEventListener('click',function(){showPage('orders')});
 document.getElementById('btnFavs').addEventListener('click',function(){showPage('favorites')});
 document.getElementById('btnFollows').addEventListener('click',function(){showPage('follows')});
   document.getElementById('btnOrders').addEventListener('click',function(){showPage('orders')});
