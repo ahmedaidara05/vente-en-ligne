@@ -15,7 +15,8 @@ body.hide-chrome{padding-bottom:0}
 body.hide-chrome .header,body.hide-chrome .bn{display:none!important}
 img{max-width:100%;display:block}
 button,input,textarea{font-family:inherit;font-size:16px;border:none;background:none}
-button{cursor:pointer}
+  body.hide-chrome #page-chat.on ~ .bn,body.hide-chrome #page-messages.on ~ .bn{display:flex!important}
+button{cursor:pointer} 
 .header{position:sticky;top:0;z-index:100;background:#fff;box-shadow:0 1px 0 var(--border)}
 .hi{padding:8px 10px 0}.sr{display:flex;align-items:center;gap:8px}
 .logo{font-size:20px;font-weight:800;color:var(--red);cursor:pointer}
@@ -365,7 +366,7 @@ function setChrome(hide,headerOnly){
   );
 }  
   let lastPageArgs={};
-function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'){setChrome(false,'searchCartOnly')}else{setChrome(page==='product'||page==='boutique'||page==='messages'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows()}
+function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'||page==='messages'){setChrome(true)}else{setChrome(page==='product'||page==='boutique'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows()}
 function goBack(){
     var fs=document.getElementById('fsViewer');
     if(fs){fs.remove();return}
@@ -473,7 +474,7 @@ if(!currentUser){$('page-messages').innerHTML='<div class="em"><p>Connectez-vous
 var target=document.querySelector('.page.on')||$('page-messages');
 var archived=loadArchived();var pinned=loadPinned();var deleted=loadDeleted();
 var cached=loadConvCache();
-var html='<div class="msg-head"><div class="mh-spacer"></div><b>'+(msgShowArchived?'Archives':'Messages')+'</b><button type="button" id="msgMore">⋮</button></div>';
+var html='<div class="msg-head"><div class="ct-logo" style="width:36px;flex-shrink:0">IDA</div><b>'+(msgShowArchived?'Archives':'Messages')+'</b><button type="button" id="msgMore">⋮</button></div>';
 html+='<div id="msgList">';
 if(cached.length){
   var visible=cached.filter(function(c){
@@ -499,13 +500,45 @@ var cf=document.getElementById('msgConfirmSel');if(cf)cf.addEventListener('click
 /* refresh Firestore en arrière-plan */
 try{var s=await getDocs(query(collection(db,'conversations'),where('userId','==',currentUser.uid)));var list=s.docs.map(function(d){var c=d.data();return{id:d.id,boutiqueId:c.boutiqueId||'',boutiqueName:c.boutiqueName||'Boutique',lastMessage:c.lastMessage||'',updatedAt:c.updatedAt&&c.updatedAt.toMillis?c.updatedAt.toMillis():0}});saveConvCache(list);var box=document.getElementById('msgList');if(box){var vis=list.filter(function(c){if(deleted.indexOf(c.id)>=0)return false;var arch=archived.indexOf(c.id)>=0;return msgShowArchived?arch:!arch});vis.sort(function(a,b){var pa=isPinned(a.id)?1:0;var pb=isPinned(b.id)?1:0;if(pa!==pb)return pb-pa;return (b.updatedAt||0)-(a.updatedAt||0)});box.innerHTML=vis.length?vis.map(function(c){return convRowHtml(c,msgMode,isPinned(c.id),msgSelected[c.id])}).join(''):'<div class="em"><p>'+(msgShowArchived?'Aucune archive':'Aucune conversation')+'</p></div>';bindConvRows(target)}}catch(e){}
 }
-function openMsgMenu(){var old=document.getElementById('msgMenu');if(old)old.remove();var html='<div id="msgMenu" class="msg-menu"><div class="msg-menu-box"><button type="button" class="danger" data-act="delete"><i class="fa-solid fa-trash"></i>Supprimer</button><button type="button" data-act="'+(loadPinned().length?'unpin':'pin')+'"><i class="fa-solid fa-thumbtack"></i>'+(loadPinned().length?'Désépingler':'Épingler')+'</button><button type="button" data-act="archive"><i class="fa-solid fa-box-archive"></i>Archiver</button><button type="button" data-act="showArchived"><i class="fa-solid fa-inbox"></i>'+(msgShowArchived?'Voir les messages':'Voir les archives')+'</button></div></div>';document.body.insertAdjacentHTML('beforeend',html);document.getElementById('msgMenu').addEventListener('click',function(e){if(e.target.id==='msgMenu')document.getElementById('msgMenu').remove()});document.querySelectorAll('#msgMenu [data-act]').forEach(function(b){b.addEventListener('click',function(){var act=b.getAttribute('data-act');document.getElementById('msgMenu').remove();if(act==='showArchived'){msgShowArchived=!msgShowArchived;renderMessagesList();return}msgMode=act;msgSelected={};renderMessagesList()})})}
-async function applyMsgAction(){var ids=Object.keys(msgSelected).filter(function(k){return msgSelected[k]});if(!ids.length){toast('Aucune sélection');return}var pinned=loadPinned();var archived=loadArchived();var deleted=loadDeleted();
-if(msgMode==='delete'){deleted=deleted.concat(ids);saveDeleted(deleted);toast(ids.length+' supprimé(s)')}
-else if(msgMode==='pin'){ids.forEach(function(id){if(pinned.indexOf(id)<0)pinned.push(id)});savePinned(pinned);toast('Épinglé')}
-else if(msgMode==='unpin'){pinned=pinned.filter(function(id){return ids.indexOf(id)<0});savePinned(pinned);toast('Désépinglé')}
-else if(msgMode==='archive'){archived=archived.concat(ids);saveArchived(archived);toast('Archivé')}
-msgMode=null;msgSelected={};renderMessagesList()}
+function openMsgMenu(){
+  var old=document.getElementById('msgMenu');if(old)old.remove();
+  var archiveLabel=msgShowArchived?'Désarchiver':'Archiver';
+  var archiveIcon=msgShowArchived?'fa-box-open':'fa-box-archive';
+  var html='<div id="msgMenu" class="msg-menu"><div class="msg-menu-box">'
+    +'<button type="button" class="danger" data-act="delete"><i class="fa-solid fa-trash"></i>Supprimer</button>'
+    +'<button type="button" data-act="'+(loadPinned().length?'unpin':'pin')+'"><i class="fa-solid fa-thumbtack"></i>'+(loadPinned().length?'Désépingler':'Épingler')+'</button>'
+    +'<button type="button" data-act="'+(msgShowArchived?'unarchive':'archive')+'"><i class="fa-solid '+archiveIcon+'"></i>'+archiveLabel+'</button>'
+    +'<button type="button" data-act="showArchived"><i class="fa-solid fa-inbox"></i>'+(msgShowArchived?'Voir les messages':'Voir les archives')+'</button>'
+    +'</div></div>';
+  document.body.insertAdjacentHTML('beforeend',html);
+  document.getElementById('msgMenu').addEventListener('click',function(e){if(e.target.id==='msgMenu')document.getElementById('msgMenu').remove()});
+  document.querySelectorAll('#msgMenu [data-act]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var act=b.getAttribute('data-act');
+      document.getElementById('msgMenu').remove();
+      if(act==='showArchived'){msgShowArchived=!msgShowArchived;renderMessagesList();return}
+      msgMode=act;msgSelected={};renderMessagesList()
+    })
+  })
+}
+async function applyMsgAction(){
+  var ids=Object.keys(msgSelected).filter(function(k){return msgSelected[k]});
+  if(!ids.length){toast('Aucune sélection');return}
+  var pinned=loadPinned();var archived=loadArchived();var deleted=loadDeleted();
+  if(msgMode==='delete'){
+    deleted=deleted.concat(ids);saveDeleted(deleted);toast(ids.length+' supprimé(s)')
+  }else if(msgMode==='pin'){
+    ids.forEach(function(id){if(pinned.indexOf(id)<0)pinned.push(id)});savePinned(pinned);toast('Épinglé')
+  }else if(msgMode==='unpin'){
+    pinned=pinned.filter(function(id){return ids.indexOf(id)<0});savePinned(pinned);toast('Désépinglé')
+  }else if(msgMode==='archive'){
+    archived=archived.concat(ids);saveArchived(archived);toast('Archivé')
+  }else if(msgMode==='unarchive'){
+    archived=archived.filter(function(id){return ids.indexOf(id)<0});saveArchived(archived);toast('Désarchivé')
+  }
+  msgMode=null;msgSelected={};
+  renderMessagesList()
+}
 function convRowHtml(c,mode,pinned,selected){var ava=c.boutiqueLogo?'<img src="'+escapeHtml(c.boutiqueLogo)+'"/>':escapeHtml((c.boutiqueName||'B')[0].toUpperCase());var check='';if(mode){check='<div class="mr-check'+(selected?' on':'')+'" data-check="'+c.id+'">'+(selected?'<i class="fa-solid fa-check"></i>':'')+'</div>'}return'<div class="msg-row'+(pinned?' pinned':'')+'" data-cid="'+c.id+'" data-bid="'+escapeHtml(c.boutiqueId||'')+'">'+check+'<div class="mr-ava">'+ava+'</div><div class="mr-body"><div class="mr-name">'+escapeHtml(c.boutiqueName||'Boutique')+(pinned?' <i class="fa-solid fa-thumbtack mr-pin"></i>':'')+'</div><div class="mr-last">'+escapeHtml(c.lastMessage||'')+'</div></div></div>'}
 function bindConvRows(root){root.querySelectorAll('[data-check]').forEach(function(chk){chk.addEventListener('click',function(e){e.stopPropagation();var id=chk.getAttribute('data-check');msgSelected[id]=!msgSelected[id];renderMessagesList()})});root.querySelectorAll('[data-cid]').forEach(function(el){el.addEventListener('click',function(){if(msgMode){var id=el.getAttribute('data-cid');msgSelected[id]=!msgSelected[id];renderMessagesList();return}showPage('chat-thread',el.getAttribute('data-cid'))})})}
   function threadCacheKey(cid){return 'vl_thread_'+(currentUser?currentUser.uid:'anon')+'_'+cid}
