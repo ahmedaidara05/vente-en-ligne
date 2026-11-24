@@ -1,80 +1,220 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
+    // ============================================================
+    // HELPERS
+    // ============================================================
+
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    
+
     function userDoc() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
-    
-    function isAdmin() {
-      return isSignedIn() && 
-        (userDoc().role == 'superadmin' || userDoc().role == 'admin');
-    }
-    
-    function isStaff() {
-      return isSignedIn() && 
-        (userDoc().role == 'superadmin' || 
-         userDoc().role == 'admin' || 
-         userDoc().role == 'manager' || 
-         userDoc().role == 'stock' || 
-         userDoc().role == 'orders');
-    }
-    
-    function isStoreManager(storeId) {
-      return isSignedIn() && 
-        (isAdmin() || 
-         (userDoc().role == 'manager' && userDoc().storeId == storeId));
+
+    function hasUserDoc() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
+    // Staff plateforme (admin console) — pas les boutiquiers
+    function isAdmin() {
+      return hasUserDoc()
+        && userDoc().role in ['superadmin', 'admin'];
+    }
+
+    function isStaff() {
+      return hasUserDoc()
+        && userDoc().role in ['superadmin', 'admin', 'manager', 'stock', 'orders'];
+    }
+
+    function isStoreManager(storeId) {
+      return isAdmin()
+        || (hasUserDoc()
+            && userDoc().role == 'manager'
+            && userDoc().storeId == storeId);
+    }
+
+    // Propriétaire d'une boutique (ownerUid posé à la création admin)
+    // Fallback email pour anciennes boutiques sans ownerUid
+    function boutiqueData(boutiqueId) {
+      return get(/databases/$(database)/documents/boutiques/$(boutiqueId)).data;
+    }
+
+    function isBoutiqueOwner(boutiqueId) {
+      return isSignedIn()
+        && boutiqueId is string
+        && boutiqueId.size() > 0
+        && exists(/databases/$(database)/documents/boutiques/$(boutiqueId))
+        && (
+          boutiqueData(boutiqueId).ownerUid == request.auth.uid
+          || (
+            request.auth.token.email != null
+            && boutiqueData(boutiqueId).email == request.auth.token.email
+          )
+        );
+    }
+
+    // Champs protégés sur users (anti escalade de privilèges)
+    function userProtectedFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data)
+        .affectedKeys()
+        .hasAny(['role', 'storeId', 'boutiqueId', 'permissions']);
+    }
+
+    function roleIsSafeOnCreate() {
+      return !('role' in request.resource.data)
+        || request.resource.data.role in ['client', 'user', ''];
+    }
+
+    // Validation structure commande (anti total / status trafiqués)
+    function orderCreateValid() {
+      return request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasAll(['items', 'total', 'status', 'customer'])
+        && request.resource.data.items is list
+        && request.resource.data.total is number
+        && request.resource.data.total >= 0
+        && request.resource.data.customer is map
+        && (
+          // Client connecté : userId doit être le sien
+          (isSignedIn()
+            && request.resource.data.userId == request.auth.uid)
+          // Invité : userId null ou absent
+          || (!isSignedIn()
+            && (
+              !('userId' in request.resource.data)
+              || request.resource.data.userId == null
+            ))
+        );
+    }
+
+    // ============================================================
+    // USERS — anti auto-promotion admin
+    // ============================================================
     match /users/{userId} {
       allow read: if isOwner(userId) || isStaff();
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isOwner(userId) || isAdmin();
+
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && roleIsSafeOnCreate();
+
+      // Owner peut modifier son profil SAUF role / storeId / boutiqueId
+      allow update: if isAdmin()
+        || (isOwner(userId) && userProtectedFieldsUnchanged());
+
       allow delete: if isAdmin();
     }
 
+    // ============================================================
+    // PRODUCTS
+    // Lecture : public si publié, staff, ou propriétaire de la boutique
+    // Écriture : staff plateforme OU propriétaire de la boutique du produit
+    // ============================================================
     match /products/{productId} {
-      allow read: if resource.data.published == true || isStaff();
-      allow create, update, delete: if isStaff();
+      allow read: if resource.data.published == true
+        || isStaff()
+        || (resource.data.boutiqueId is string
+            && isBoutiqueOwner(resource.data.boutiqueId));
+
+      allow create: if isStaff()
+        || (isSignedIn()
+            && request.resource.data.boutiqueId is string
+            && isBoutiqueOwner(request.resource.data.boutiqueId));
+
+      allow update: if isStaff()
+        || (resource.data.boutiqueId is string
+            && isBoutiqueOwner(resource.data.boutiqueId)
+            // Le boutiquier ne peut pas changer la boutique d'appartenance
+            && request.resource.data.boutiqueId == resource.data.boutiqueId);
+
+      allow delete: if isStaff()
+        || (resource.data.boutiqueId is string
+            && isBoutiqueOwner(resource.data.boutiqueId));
     }
 
+    // ============================================================
+    // CATEGORIES — lecture publique, écriture admin
+    // ============================================================
     match /categories/{catId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // ============================================================
+    // STORES (legacy) — si encore utilisée
+    // ============================================================
     match /stores/{storeId} {
       allow read: if resource.data.active == true || isStaff();
       allow create, update, delete: if isAdmin() || isStoreManager(storeId);
     }
 
-    match /orders/{orderId} {
-      allow read: if isStaff() || 
-        (isSignedIn() && resource.data.userId == request.auth.uid);
-      allow create: if isSignedIn() && 
-        request.resource.data.userId == request.auth.uid &&
-        request.resource.data.status == 'pending';
-      allow update: if isStaff() || 
-        (isSignedIn() && resource.data.userId == request.auth.uid && 
-         resource.data.status == 'pending' && 
-         request.resource.data.status == 'cancelled');
+    // ============================================================
+    // BOUTIQUES
+    // Lecture publique (catalogue)
+    // Création / suppression : admin uniquement
+    // Update : admin OU propriétaire de CETTE boutique
+    // ============================================================
+    match /boutiques/{boutiqueId} {
+      allow read: if true;
+
+      allow create: if isAdmin();
+
+      allow update: if isAdmin()
+        || isBoutiqueOwner(boutiqueId);
+
       allow delete: if isAdmin();
     }
 
+    // ============================================================
+    // ORDERS
+    // Client : créer pending (structure validée), lire les siennes,
+    //          annuler si encore pending
+    // Staff : tout
+    // Boutiquier : lire / mettre à jour les commandes de SA boutique
+    // ============================================================
+    match /orders/{orderId} {
+      allow read: if isStaff()
+        || (isSignedIn() && resource.data.userId == request.auth.uid)
+        || (resource.data.boutiqueId is string
+            && isBoutiqueOwner(resource.data.boutiqueId));
+
+      allow create: if orderCreateValid();
+
+      allow update: if isStaff()
+        || (resource.data.boutiqueId is string
+            && isBoutiqueOwner(resource.data.boutiqueId))
+        || (
+          isSignedIn()
+          && resource.data.userId == request.auth.uid
+          && resource.data.status == 'pending'
+          && request.resource.data.status == 'cancelled'
+          // Le client ne change que le statut (annulation)
+          && request.resource.data.diff(resource.data)
+            .affectedKeys()
+            .hasOnly(['status', 'updatedAt', 'cancelledAt'])
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // INVENTORY MOVEMENTS — staff only
+    // ============================================================
     match /inventoryMovements/{movId} {
       allow read: if isStaff();
       allow create: if isStaff();
       allow update, delete: if isAdmin();
     }
 
+    // ============================================================
+    // SETTINGS / PROMOTIONS
+    // ============================================================
     match /settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -85,13 +225,20 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ============================================================
+    // NOTIFICATIONS
+    // ============================================================
     match /notifications/{notifId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isStaff();
-      allow update: if isOwner(resource.data.userId);
-      allow delete: if isAdmin();
+      allow read: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isStaff());
+      allow create: if isStaff() || isSignedIn();
+      allow update: if isOwner(resource.data.userId) || isStaff();
+      allow delete: if isStaff();
     }
 
+    // ============================================================
+    // ADMIN ROLES / AUDIT
+    // ============================================================
     match /adminRoles/{roleId} {
       allow read, write: if isAdmin();
     }
@@ -99,34 +246,119 @@ service cloud.firestore {
     match /auditLogs/{logId} {
       allow read: if isAdmin();
       allow create: if isStaff();
+      allow update, delete: if false;
     }
 
-    match /boutiques/{id} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-
+    // ============================================================
+    // ADS
+    // ============================================================
     match /ads/{id} {
       allow read: if true;
-      allow write: if true;
+      allow write: if isAdmin() || isStaff();
     }
 
+    // ============================================================
+    // FOLLOWS — l'utilisateur ne gère que les siens
+    // ============================================================
     match /follows/{id} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
       allow update: if false;
     }
 
+    // ============================================================
+    // CONVERSATIONS + MESSAGES
+    // Participant = client (userId) ou propriétaire de la boutique
+    // ============================================================
     match /conversations/{id} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isStaff());
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
+      allow read: if isStaff()
+        || (isSignedIn()
+            && (
+              resource.data.userId == request.auth.uid
+              || (resource.data.boutiqueId is string
+                  && isBoutiqueOwner(resource.data.boutiqueId))
+            ));
+
+      allow create: if isSignedIn()
+        && (
+          request.resource.data.userId == request.auth.uid
+          || (request.resource.data.boutiqueId is string
+              && isBoutiqueOwner(request.resource.data.boutiqueId))
+        );
+
+      allow update: if isStaff()
+        || (isSignedIn()
+            && (
+              resource.data.userId == request.auth.uid
+              || (resource.data.boutiqueId is string
+                  && isBoutiqueOwner(resource.data.boutiqueId))
+            ));
+
+      allow delete: if isStaff();
+
       match /messages/{mid} {
-        allow read, create: if isSignedIn();
+        allow read: if isStaff()
+          || (isSignedIn()
+              && (
+                get(/databases/$(database)/documents/conversations/$(id)).data.userId
+                  == request.auth.uid
+                || (
+                  get(/databases/$(database)/documents/conversations/$(id)).data.boutiqueId is string
+                  && isBoutiqueOwner(
+                    get(/databases/$(database)/documents/conversations/$(id)).data.boutiqueId
+                  )
+                )
+              ));
+
+        allow create: if isSignedIn()
+          && (
+            get(/databases/$(database)/documents/conversations/$(id)).data.userId
+              == request.auth.uid
+            || (
+              get(/databases/$(database)/documents/conversations/$(id)).data.boutiqueId is string
+              && isBoutiqueOwner(
+                get(/databases/$(database)/documents/conversations/$(id)).data.boutiqueId
+              )
+            )
+            || isStaff()
+          );
+
         allow update, delete: if false;
       }
     }
 
+    // ============================================================
+    // REPORTS (signalements)
+    // ============================================================
+    match /reports/{id} {
+      allow create: if isSignedIn()
+        && request.resource.data.status == 'pending';
+      allow read: if isStaff()
+        || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // VIDEO COMMENTS (optionnel, utilisé par index)
+    // ============================================================
+    match /videoComments/{id} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isStaff()
+        || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // ============================================================
+    // DENY BY DEFAULT — toute autre collection
+    // ============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }

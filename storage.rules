@@ -1,42 +1,61 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    
+
     function isSignedIn() {
       return request.auth != null;
     }
-    
-    function isAdmin() {
-      return isSignedIn() && 
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['superadmin', 'admin', 'manager'];
+
+    function userRole() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role;
     }
 
+    function isAdminOrManager() {
+      return isSignedIn()
+        && userRole() in ['superadmin', 'admin', 'manager'];
+    }
+
+    function isStaff() {
+      return isSignedIn()
+        && userRole() in ['superadmin', 'admin', 'manager', 'stock', 'orders'];
+    }
+
+    // Images produits (Firebase Storage — les médias R2 restent hors de ces règles)
     match /products/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin() && 
-        request.resource.size < 5 * 1024 * 1024 &&
-        request.resource.contentType.matches('image/.*');
+      allow write: if isStaff()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
     }
 
+    // Logos / bannières stores
     match /stores/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin() && 
-        request.resource.size < 5 * 1024 * 1024 &&
-        request.resource.contentType.matches('image/.*');
+      allow write: if isAdminOrManager()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
     }
 
+    // Catégories
     match /categories/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin() && 
-        request.resource.size < 2 * 1024 * 1024 &&
-        request.resource.contentType.matches('image/.*');
+      allow write: if isAdminOrManager()
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
     }
 
+    // Avatars utilisateurs — chacun le sien
     match /users/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isSignedIn() && request.auth.uid == userId &&
-        request.resource.size < 2 * 1024 * 1024 &&
-        request.resource.contentType.matches('image/.*');
+      allow write: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Tout le reste refusé
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }
