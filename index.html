@@ -92,6 +92,69 @@ button{cursor:pointer}
 .addr-actions button{flex:1;height:42px;border-radius:21px;font-weight:700}
 .addr-cancel{background:#eee;color:#333}
 .addr-save{background:#00A854;color:#fff}
+  /* === CHECKOUT + COMMANDES (Lot 2B) === */
+.chk-page{padding:12px;max-width:760px;margin:0 auto}
+.chk-section{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #eee}
+.chk-section-title{font-size:13px;font-weight:800;color:#1a1a1a;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.chk-section-title i{color:#00A854;font-size:14px}
+.chk-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px dashed #f0f0f0}
+.chk-row:last-child{border-bottom:none}
+.chk-row .lbl{color:#777}
+.chk-row .val{font-weight:600;color:#1a1a1a;text-align:right;max-width:60%;overflow-wrap:anywhere}
+.chk-field{margin-bottom:10px}
+.chk-field label{display:block;font-size:12px;font-weight:600;color:#333;margin-bottom:4px}
+.chk-field input{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px}
+.chk-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;background:#E8FFF0;color:#0a7a3e;border:1px solid #A7F3D0}
+.chk-badge.warn{background:#FFF7E6;color:#92400E;border-color:#FCD34D}
+.chk-badge.info{background:#F5F5F5;color:#444;border-color:#E0E0E0}
+.chk-total{display:flex;justify-content:space-between;font-size:15px;font-weight:800;padding-top:8px;margin-top:6px;border-top:2px solid #f0f0f0}
+.chk-total .val{color:#E02E24}
+.chk-btn{width:100%;height:48px;border-radius:24px;background:#00A854;color:#fff;font-weight:800;font-size:15px;margin-top:12px}
+.chk-btn:disabled{opacity:.5}
+.chk-empty{text-align:center;padding:40px 20px;color:#888}
+
+/* === Commandes passées === */
+.ord-head{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid #eee}
+.ord-head button{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#333}
+.ord-head b{font-size:16px}
+.ord-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin:10px;cursor:pointer}
+.ord-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.ord-num{font-size:13px;font-weight:800;color:#1a1a1a}
+.ord-date{font-size:11px;color:#999}
+.ord-status{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;background:#FFF7E6;color:#92400E}
+.ord-status.paid{background:#E8FFF0;color:#0a7a3e}
+.ord-status.shipped{background:#E0F2FE;color:#075985}
+.ord-status.cancelled{background:#FEE2E2;color:#991B1B}
+.ord-prods{font-size:12px;color:#666;margin:6px 0}
+.ord-total{font-size:14px;font-weight:800;color:#E02E24;text-align:right}
+.ord-detail{padding:12px}
+.ord-detail-section{background:#fff;border:1px solid #eee;border-radius:12px;padding:14px;margin-bottom:10px}
+.ord-detail-title{font-size:13px;font-weight:800;margin-bottom:8px;color:#1a1a1a}
+.ord-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed #f0f0f0}
+.ord-item:last-child{border-bottom:none}
+.ord-item img{width:52px;height:52px;object-fit:cover;border-radius:8px;background:#eee}
+.ord-item .oi-body{flex:1;min-width:0}
+.ord-item .oi-name{font-size:12px;font-weight:700}
+.ord-item .oi-var{font-size:11px;color:#888}
+.ord-item .oi-price{font-size:12px;font-weight:700;color:#E02E24;margin-top:2px}
+  /* === POINTS RELAIS + PICKUP (Lot 2C) === */
+.pr-section{margin-top:18px}
+.pr-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 4px}
+.pr-section-head h3{font-size:14px;font-weight:800;color:#1a1a1a}
+.pr-section-head span{font-size:11px;color:#888}
+.pr-list{padding:0 4px}
+.pr-card{display:flex;gap:10px;padding:12px;background:#fff;border:1px solid #eee;border-radius:12px;margin-bottom:8px}
+.pr-card.selected{border-color:#00A854;background:#F0FFF7}
+.pr-card .pr-ico{width:38px;height:38px;flex:0 0 38px;border-radius:10px;background:#E8FFF0;color:#00A854;display:flex;align-items:center;justify-content:center;font-size:16px}
+.pr-card .pr-body{flex:1;min-width:0}
+.pr-card .pr-city{font-size:11px;font-weight:800;color:#00A854;text-transform:uppercase;letter-spacing:.5px}
+.pr-card .pr-addr{font-size:13px;font-weight:600;color:#1a1a1a;margin-top:2px}
+.pr-card .pr-hours{font-size:11px;color:#888;margin-top:3px}
+.pr-card .pr-pick{background:#00A854;color:#fff;padding:0 14px;height:34px;border-radius:17px;font-size:12px;font-weight:700;align-self:center}
+.pr-card.selected .pr-pick{background:#E02E24}
+.pr-empty{padding:20px;text-align:center;font-size:12px;color:#999;border:1px dashed #ddd;border-radius:12px;margin-bottom:8px}
+.chk-pickup-list{margin-top:8px}
+.chk-pickup-title{font-size:12px;font-weight:700;color:#333;margin-bottom:6px}
 .free-deliv span{display:inline-block;transform:skewX(12deg)}
 .chat-prod-float{position:fixed;right:12px;bottom:calc(var(--nav-h) + 20px + var(--safe-b));z-index:250;width:150px;background:#fff;border:2px solid #00A854;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden}
 .chat-prod-float .cpf-x{position:absolute;top:4px;right:4px;width:22px;height:22px;background:none;color:#E02E24;font-size:18px;font-weight:800;line-height:1;z-index:2}
@@ -376,6 +439,8 @@ button{cursor:pointer}
 <div id="page-messages" class="page"></div>
 <div id="page-chat-thread" class="page"></div>
 <div id="page-follows" class="page"></div>
+  <div id="page-orders" class="page"></div>
+<div id="page-order-detail" class="page"></div>
 <nav class="bn">
 <button type="button" data-page="home" class="on"><i class="fa-solid fa-house"></i>Accueil</button>
 <button type="button" data-page="video"><i class="fa-solid fa-play"></i>Video</button>
@@ -424,7 +489,7 @@ function setChrome(hide,headerOnly){
   );
 }  
   let lastPageArgs={};
-function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'||page==='messages'){setChrome(true)}else{setChrome(page==='product'||page==='boutique'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}document.body.classList.toggle('page-account-active', page === 'account');if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows()}
+function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'||page==='messages'){setChrome(true)}else{setChrome(page==='product'||page==='boutique'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}document.body.classList.toggle('page-account-active', page === 'account');if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows();else if(page==='orders')renderOrders();else if(page==='order-detail'&&data)renderOrderDetail(data)}
 function goBack(){
     var fs=document.getElementById('fsViewer');
     if(fs){fs.remove();return}
@@ -708,58 +773,224 @@ function renderCart(){var sub=cart.reduce(function(s,i){return s+i.price*i.qty},
 function renderCheckout(){
   var prof=loadLocalProfile();
   var hasAddr=prof.address&&prof.address.trim();
-  var banner=hasAddr
-    ? '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#E8FFF0;border:1px solid #A7F3D0;border-radius:8px;margin:8px;font-size:12px;color:#0a7a3e"><i class="fa-solid fa-location-dot"></i><div style="flex:1"><b>Livraison à :</b> '+escapeHtml(prof.address)+'</div><button type="button" id="chkEditAddr" style="background:none;border:none;color:#0a7a3e;font-size:12px;text-decoration:underline">Modifier</button></div>'
-    : '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#FFF7E6;border:1px solid #FCD34D;border-radius:8px;margin:8px;font-size:12px;color:#92400E"><i class="fa-solid fa-pencil"></i><div style="flex:1">Renseignez votre adresse de livraison</div><button type="button" id="chkGoProfile" style="background:none;border:none;color:#92400E;font-size:12px;text-decoration:underline">Compte</button></div>';
+  var userEmail=currentUser&&currentUser.email?currentUser.email:'';
 
-  $('page-checkout').innerHTML=banner
-    +'<div style="padding:16px;background:#fff;margin:8px;border-radius:8px">'
-    +'<label>Nom</label><input id="chkName" value="'+escapeHtml(prof.name||'')+'" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px"/>'
-    +'<label>Téléphone</label><input id="chkPhone" value="'+escapeHtml(prof.phone||'')+'" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px"/>'
-    +'<label>Adresse</label><textarea id="chkAddr" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px">'+escapeHtml(prof.address||'')+'</textarea>'
-    +'<button type="button" class="br" id="btnPlace">Confirmer</button>'
-    +'</div>';
+  // === Bandeau adresse en haut ===
+  var addrBanner=hasAddr
+    ? '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#E8FFF0;border:1px solid #A7F3D0;border-radius:8px;margin-bottom:10px;font-size:12px;color:#0a7a3e"><i class="fa-solid fa-location-dot"></i><div style="flex:1"><b>Livraison à :</b> '+escapeHtml(prof.address)+'</div><button type="button" id="chkEditAddr" style="background:none;border:none;color:#0a7a3e;font-size:12px;text-decoration:underline">Modifier</button></div>'
+    : '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#FFF7E6;border:1px solid #FCD34D;border-radius:8px;margin-bottom:10px;font-size:12px;color:#92400E"><i class="fa-solid fa-pencil"></i><div style="flex:1">Renseignez votre adresse de livraison</div><button type="button" id="chkAddAddr" style="background:none;border:none;color:#92400E;font-size:12px;text-decoration:underline">Ajouter</button></div>';
 
-  var edit=document.getElementById('chkEditAddr');
-  if(edit)edit.addEventListener('click',function(){showPage('account')});
-  var go=document.getElementById('chkGoProfile');
-  if(go)go.addEventListener('click',function(){showPage('account')});
+  // === Récap panier ===
+  var itemsHtml=cart.map(function(it){
+    var v=Object.keys(it.variants||{}).map(function(k){return k+': '+it.variants[k]}).join(', ');
+    return '<div class="ord-item">'
+      +(it.image?'<img src="'+escapeHtml(it.image)+'" onerror="this.style.background=\'#eee\'"/>':'')
+      +'<div class="oi-body">'
+        +'<div class="oi-name">'+escapeHtml(it.name||'')+'</div>'
+        +(v?'<div class="oi-var">'+escapeHtml(v)+'</div>':'')
+        +'<div class="oi-price">'+formatPrice(it.price)+' F × '+it.qty+'</div>'
+      +'</div></div>';
+  }).join('');
+
+  var sub=cart.reduce(function(s,i){return s+i.price*i.qty},0);
+  var ship=settings.shippingFee||0;
+  var total=sub+ship;
+
+  // === Récap livraison (Chine + retrait) ===
+  var hasPickup=cart.some(function(it){
+    var p=products.find(function(x){return x.id===it.productId});
+    return p&&p.pickupFree===true;
+  });
+  var originChine=cart.some(function(it){
+    var p=products.find(function(x){return x.id===it.productId});
+    return p&&p.fromChina===true;
+  });
+
+  var livraisonHtml=''
+    +'<div class="chk-row"><span class="lbl"><i class="fa-solid fa-ship" style="color:#00A854;margin-right:4px"></i>Origine du colis</span><span class="val">'+(originChine?'Chine':'Locale')+'</span></div>'
+    +'<div class="chk-row"><span class="lbl"><i class="fa-solid fa-location-dot" style="color:#00A854;margin-right:4px"></i>Adresse finale</span><span class="val">'+(hasAddr?escapeHtml(prof.address):'—')+'</span></div>'
+    +'<div class="chk-row"><span class="lbl">Livraison Chine → pays</span><span class="val"><span class="chk-badge">'+(originChine?'Gratuite':'—')+'</span></span></div>'
+    +'<div class="chk-row"><span class="lbl">Livraison → adresse</span><span class="val">'+(ship>0?'<span class="chk-badge warn">Payante '+formatPrice(ship)+' F</span>':'<span class="chk-badge">Gratuite</span>')+'</span></div>'
+    +(hasPickup?'<div class="chk-row"><span class="lbl">Retrait point relais</span><span class="val"><span class="chk-badge">Disponible</span></span></div>':'');
+
+  $('page-checkout').innerHTML='<div class="chk-page">'
+    +addrBanner
+    +'<div class="chk-section">'
+      +'<div class="chk-section-title"><i class="fa-solid fa-user"></i>Informations client</div>'
+      +'<div class="chk-field"><label>Nom complet</label><input id="chkName" value="'+escapeHtml(prof.name||'')+'" placeholder="Ex: Amadou Diop"/></div>'
+      +'<div class="chk-field"><label>Téléphone</label><input id="chkPhone" type="tel" value="'+escapeHtml(prof.phone||'')+'" placeholder="Ex: +221 77 000 00 00"/></div>'
+      +'<div class="chk-field"><label>Email</label><input id="chkEmail" type="email" value="'+escapeHtml(userEmail)+'" placeholder="votre@email.com"/></div>'
+    +'</div>'
+    +'<div class="chk-section">'
+      +'<div class="chk-section-title"><i class="fa-solid fa-box"></i>Articles ('+cart.length+')</div>'
+      +itemsHtml
+      +'<div class="chk-total"><span>Total</span><span class="val">'+formatPrice(total)+' F</span></div>'
+    +'</div>'
+    +'<div class="chk-section">'
+      +'<div class="chk-section-title"><i class="fa-solid fa-truck-fast"></i>Livraison</div>'
+      +livraisonHtml
+    +'</div>'
+    +'<button type="button" class="chk-btn" id="btnPlace">Confirmer la commande</button>'
+    +'<p style="text-align:center;font-size:11px;color:#888;margin-top:10px">En confirmant, vous acceptez les conditions IDA.</p>'
+  +'</div>';
+
+  // === Boutons adresse ===
+  var e1=document.getElementById('chkEditAddr');
+  if(e1)e1.addEventListener('click',function(){askDeliveryAddress(function(){renderCheckout()})});
+  var e2=document.getElementById('chkAddAddr');
+  if(e2)e2.addEventListener('click',function(){askDeliveryAddress(function(){renderCheckout()})});
 
   document.getElementById('btnPlace').addEventListener('click',placeOrder);
 }
 async function placeOrder(){
-  var name=$('chkName').value.trim(),phone=$('chkPhone').value.trim(),address=$('chkAddr').value.trim();
-  if(!name||!phone||!address){toast('Remplis les champs');return}
+  var name=$('chkName').value.trim();
+  var phone=$('chkPhone').value.trim();
+  var email=$('chkEmail').value.trim();
+  var prof=loadLocalProfile();
+  var address=(prof.address||'').trim();
+
+  if(!name){toast('Nom requis');return}
+  if(!phone){toast('Téléphone requis');return}
+  if(!email){toast('Email requis');return}
+  if(!address){toast('Adresse de livraison requise');return}
   if(!cart.length){toast('Panier vide');return}
+
+  var btn=$('btnPlace');
+  if(btn){btn.disabled=true;btn.textContent='Envoi en cours…'}
+
   try{
-    saveLocalProfile({name:name,phone:phone,address:address});
+    saveLocalProfile({name:name,phone:phone});
+
     var byBout={};
     cart.forEach(function(it){
       var bid=it.boutiqueId||null;
       if(!bid){var pr=products.find(function(x){return x.id===it.productId});if(pr)bid=pr.boutiqueId||null}
       var key=bid||'_none';
       if(!byBout[key])byBout[key]=[];
-      byBout[key].push(it)
+      byBout[key].push(it);
     });
+
     var keys=Object.keys(byBout);
     for(var k=0;k<keys.length;k++){
       var key=keys[k];var items=byBout[key];
       var subB=items.reduce(function(s,i){return s+i.price*i.qty},0);
       var bid=key==='_none'?null:key;
+      var originChine=items.some(function(it){
+        var p=products.find(function(x){return x.id===it.productId});
+        return p&&p.fromChina===true;
+      });
+      var hasPickup=items.some(function(it){
+        var p=products.find(function(x){return x.id===it.productId});
+        return p&&p.pickupFree===true;
+      });
       await addDoc(collection(db,'orders'),{
-        orderNumber:'CMD-'+Date.now().toString(36).toUpperCase(),
+        orderNumber:'CMD-'+Date.now().toString(36).toUpperCase()+'-'+k,
         userId:currentUser?currentUser.uid:null,
         boutiqueId:bid,
-        customer:{name:name,phone:phone,address:(items[0]&&items[0].deliveryAddress)||address,email:currentUser?currentUser.email:''},
-        items:items,subtotal:subB,
+        customer:{name:name,phone:phone,address:address,email:email},
+        items:items,
+        subtotal:subB,
         shipping:k===0?(settings.shippingFee||0):0,
         total:subB+(k===0?(settings.shippingFee||0):0),
-        status:'pending',createdAt:serverTimestamp()
-      })
+        fromChina:originChine,
+        pickupAvailable:hasPickup,
+        status:'pending',
+        createdAt:serverTimestamp()
+      });
     }
-    cart=[];saveCart();toast('Commande envoyée !');showPage('home');
-  }catch(e){toast(e.message)}
+
+    cart=[];saveCart();
+    toast('Commande confirmée !');
+    showPage('orders');
+  }catch(e){
+    toast(e.message);
+    if(btn){btn.disabled=false;btn.textContent='Confirmer la commande'}
+  }
 }
+  
+  /* === Commandes passées (Lot 2B) === */
+async function renderOrders(){
+  if(!currentUser){showPage('auth');return}
+  $('page-orders').innerHTML='<div class="ord-head"><button type="button" id="ordBack"><i class="fa-solid fa-arrow-left"></i></button><b>Mes commandes</b></div><div id="ordList"><div class="chk-empty">Chargement…</div></div>';
+  document.getElementById('ordBack').addEventListener('click',goBack);
+
+  try{
+    var s=await getDocs(query(collection(db,'orders'),where('userId','==',currentUser.uid)));
+    var orders=s.docs.map(function(d){return{id:d.id,...d.data()}});
+    orders.sort(function(a,b){
+      var ta=a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0;
+      var tb=b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0;
+      return tb-ta;
+    });
+    var box=document.getElementById('ordList');
+    if(!box)return;
+    if(!orders.length){box.innerHTML='<div class="chk-empty"><i class="fa-solid fa-box-open" style="font-size:36px;color:#ddd;margin-bottom:10px"></i><p>Aucune commande pour l\'instant</p></div>';return}
+    box.innerHTML=orders.map(function(o){
+      var date=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
+      var statusClass='';
+      if(o.status==='paid')statusClass='paid';
+      else if(o.status==='shipped')statusClass='shipped';
+      else if(o.status==='cancelled')statusClass='cancelled';
+      var statusLabel=({pending:'En attente',paid:'Payée',shipped:'Expédiée',cancelled:'Annulée'})[o.status]||o.status||'—';
+      var nbItems=(o.items||[]).reduce(function(s,i){return s+(i.qty||1)},0);
+      var firstProd=(o.items&&o.items[0])?o.items[0].name:'—';
+      return '<div class="ord-card" data-oid="'+o.id+'">'
+        +'<div class="ord-card-top"><div><div class="ord-num">'+(o.orderNumber||'—')+'</div><div class="ord-date">'+date+'</div></div><span class="ord-status '+statusClass+'">'+statusLabel+'</span></div>'
+        +'<div class="ord-prods">'+escapeHtml(firstProd)+(nbItems>1?' + '+(nbItems-1)+' autre(s)':'')+'</div>'
+        +'<div class="ord-total">'+formatPrice(o.total||0)+' F</div>'
+      +'</div>';
+    }).join('');
+    box.querySelectorAll('[data-oid]').forEach(function(el){
+      el.addEventListener('click',function(){showPage('order-detail',el.getAttribute('data-oid'))});
+    });
+  }catch(e){
+    var box2=document.getElementById('ordList');
+    if(box2)box2.innerHTML='<div class="chk-empty">'+escapeHtml(e.message)+'</div>';
+  }
+}
+
+async function renderOrderDetail(oid){
+  $('page-order-detail').innerHTML='<div class="ord-head"><button type="button" id="oddBack"><i class="fa-solid fa-arrow-left"></i></button><b>Détail commande</b></div><div class="ord-detail" id="oddBody"><div class="chk-empty">Chargement…</div></div>';
+  document.getElementById('oddBack').addEventListener('click',goBack);
+  try{
+    var s=await getDoc(doc(db,'orders',oid));
+    if(!s.exists()){document.getElementById('oddBody').innerHTML='<div class="chk-empty">Introuvable</div>';return}
+    var o={id:s.id,...s.data()};
+    var date=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()).toLocaleString('fr-FR'):'—';
+    var itemsHtml=(o.items||[]).map(function(it){
+      var v=Object.keys(it.variants||{}).map(function(k){return k+': '+it.variants[k]}).join(', ');
+      return '<div class="ord-item">'
+        +(it.image?'<img src="'+escapeHtml(it.image)+'" onerror="this.style.background=\'#eee\'"/>':'')
+        +'<div class="oi-body"><div class="oi-name">'+escapeHtml(it.name||'')+'</div>'+(v?'<div class="oi-var">'+escapeHtml(v)+'</div>':'')+'<div class="oi-price">'+formatPrice(it.price)+' F × '+it.qty+'</div></div>'
+      +'</div>';
+    }).join('');
+
+    var c=o.customer||{};
+    document.getElementById('oddBody').innerHTML=''
+      +'<div class="ord-detail-section">'
+        +'<div class="ord-detail-title">Commande '+(o.orderNumber||'')+'</div>'
+        +'<div class="chk-row"><span class="lbl">Date</span><span class="val">'+date+'</span></div>'
+        +'<div class="chk-row"><span class="lbl">Statut</span><span class="val">'+(o.status||'—')+'</span></div>'
+      +'</div>'
+      +'<div class="ord-detail-section">'
+        +'<div class="ord-detail-title">Articles</div>'
+        +itemsHtml
+      +'</div>'
+      +'<div class="ord-detail-section">'
+        +'<div class="ord-detail-title">Livraison</div>'
+        +'<div class="chk-row"><span class="lbl">Destinataire</span><span class="val">'+escapeHtml(c.name||'—')+'</span></div>'
+        +'<div class="chk-row"><span class="lbl">Téléphone</span><span class="val">'+escapeHtml(c.phone||'—')+'</span></div>'
+        +'<div class="chk-row"><span class="lbl">Email</span><span class="val">'+escapeHtml(c.email||'—')+'</span></div>'
+        +'<div class="chk-row"><span class="lbl">Adresse</span><span class="val">'+escapeHtml(c.address||'—')+'</span></div>'
+        +'<div class="chk-row"><span class="lbl">Origine</span><span class="val">'+(o.fromChina?'Chine':'Locale')+'</span></div>'
+        +(o.pickupAvailable?'<div class="chk-row"><span class="lbl">Retrait relais</span><span class="val"><span class="chk-badge">Disponible</span></span></div>':'')
+      +'</div>'
+      +'<div class="ord-detail-section">'
+        +'<div class="chk-total"><span>Total</span><span class="val">'+formatPrice(o.total||0)+' F</span></div>'
+      +'</div>';
+  }catch(e){document.getElementById('oddBody').innerHTML='<div class="chk-empty">'+escapeHtml(e.message)+'</div>'}
+}
+  
 function renderAccount(){
 if(!currentUser){showPage('auth');return}
 var email=currentUser.email||'Compte IDA';
@@ -792,6 +1023,7 @@ $('page-account').innerHTML=`
 document.getElementById('btnMsgs').addEventListener('click',function(){showPage('messages')});
 document.getElementById('btnFavs').addEventListener('click',function(){showPage('favorites')});
 document.getElementById('btnFollows').addEventListener('click',function(){showPage('follows')});
+  document.getElementById('btnOrders').addEventListener('click',function(){showPage('orders')});
 document.getElementById('btnOut').addEventListener('click',function(){signOut(auth).catch(function(e){toast(e.message)})});
 }
   
@@ -1005,6 +1237,28 @@ function renderFavorites(){var list=products.filter(function(p){return isFav(p.i
 async function isFollowing(boutiqueId){if(!currentUser)return false;try{var qy=await getDoc(doc(db,'follows',currentUser.uid+'_'+boutiqueId));return qy.exists()}catch(e){return false}}
 async function setFollow(boutiqueId,follow){if(!currentUser)return;var id=currentUser.uid+'_'+boutiqueId;try{if(follow){await setDoc(doc(db,'follows',id),{userId:currentUser.uid,boutiqueId:boutiqueId,createdAt:serverTimestamp()})}else{await deleteDoc(doc(db,'follows',id))}}catch(e){toast(e.message)}}
 function boutiqueLogoHtml(b){if(b.logo)return'<img src="'+escapeHtml(b.logo)+'" onerror="this.style.display=\'none\';this.parentNode.innerHTML=\'<span class=&quot;bq-logo-fallback&quot;>'+escapeHtml((b.name||'?')[0].toUpperCase())+'</span>\'"/>';return'<span class="bq-logo-fallback">'+escapeHtml((b.name||'?')[0].toUpperCase())+'</span>'}
+  /* === Points relais (Lot 2C) === */
+async function loadPickupPoints(boutiqueId){
+  if(!boutiqueId)return[];
+  try{
+    var s=await getDocs(collection(db,'boutiques',boutiqueId,'pickupPoints'));
+    return s.docs.map(function(d){return{id:d.id,...d.data()}});
+  }catch(e){return[]}
+}
+
+function pickupPointCardHtml(p,selectedId,onClick){
+  var sel=(selectedId&&selectedId===p.id);
+  var btn=onClick?'<button type="button" class="pr-pick" data-pick="'+p.id+'">'+(sel?'Choisi':'Choisir')+'</button>':'';
+  return '<div class="pr-card'+(sel?' selected':'')+'" data-prid="'+p.id+'">'
+    +'<div class="pr-ico"><i class="fa-solid fa-location-dot"></i></div>'
+    +'<div class="pr-body">'
+      +'<div class="pr-city">'+escapeHtml(p.city||'')+'</div>'
+      +'<div class="pr-addr">'+escapeHtml(p.address||'')+'</div>'
+      +(p.hours?'<div class="pr-hours"><i class="fa-regular fa-clock"></i> '+escapeHtml(p.hours)+'</div>':'')
+    +'</div>'
+    +btn
+  +'</div>';
+}
 async function renderBoutiquePage(id){
 /* 1) affichage immédiat depuis le cache produits */
 var prods=products.filter(function(p){return p.boutiqueId===id});
