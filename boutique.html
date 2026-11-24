@@ -31,81 +31,314 @@ button.d{color:var(--danger);border-color:var(--danger)}
 .filebtn{display:inline-block;padding:10px 14px;background:var(--g);color:#fff;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px}
 .filebtn input{display:none}
 .hidden{display:none!important}
-.msg-bubble{padding:8px 12px;border-radius:12px;margin:6px 0;max-width:85%;font-size:13px}
-.msg-me{background:var(--g);margin-left:auto}
-.msg-them{background:#333}
+.msg-bubble{padding:8px 12px;border-radius:12px;margin:6px 0;max-width:85%;font-size:13px;word-wrap:break-word}
+.msg-me{background:var(--g);margin-left:auto;color:#fff}
+.msg-them{background:#333;color:#eee}
 #chatBox{max-height:50vh;overflow-y:auto;padding:8px}
 .img-grid{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
 .img-grid .box{width:72px;height:72px;border-radius:8px;overflow:hidden;position:relative;background:#222;border:1px solid var(--border)}
 .img-grid .box img{width:100%;height:100%;object-fit:cover}
 .img-grid .box .rm{position:absolute;top:2px;right:2px;background:#000a;color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer}
+
+/* === CHAT PLEIN ÉCRAN (page séparée) === */
+#view-chat{
+  position:fixed;inset:0;z-index:200;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+}
+#view-chat.hidden{display:none!important}
+.chat-header{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.chat-header .ch-back{
+  width:36px;height:36px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:#222;color:#fff;border:1px solid var(--border);
+  border-radius:50%;font-size:18px;cursor:pointer;
+}
+.chat-header .ch-ava{
+  width:38px;height:38px;flex-shrink:0;border-radius:50%;
+  background:var(--g);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:15px;overflow:hidden;
+}
+.chat-header .ch-ava img{width:100%;height:100%;object-fit:cover}
+.chat-header .ch-title{
+  flex:1;min-width:0;
+  font-size:15px;font-weight:700;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.chat-header .ch-sub{
+  font-size:11px;color:var(--muted);font-weight:400;
+}
+.chat-body{
+  flex:1;overflow-y:auto;
+  padding:14px;
+  display:flex;flex-direction:column;
+}
+.chat-body .msg-bubble{max-width:80%}
+.chat-bar{
+  flex-shrink:0;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+  background:var(--card);
+  border-top:1px solid var(--border);
+  display:flex;gap:8px;align-items:center;
+}
+.chat-bar input{
+  flex:1;margin:0;
+  padding:10px 14px;
+  border-radius:20px;
+  background:#111;
+  border:1px solid var(--border);
+  color:#fff;font-size:14px;
+}
+.chat-bar button{
+  height:40px;padding:0 18px;
+  background:var(--g);color:#fff;border:none;
+  border-radius:20px;font-weight:700;font-size:13px;cursor:pointer;
+}
+.chat-empty{
+  color:var(--muted);text-align:center;
+  font-size:13px;padding:20px 0;
+}
 </style>
 </head>
 <body>
 <div class="wrap" id="app">
-<div class="logo">IDUS Boutique</div>
-<div class="sub">Espace vendeur</div>
-<div id="view-login" class="card">
-<h3>Connexion boutique</h3>
-<label>Email boutique</label>
-<input id="loginEmail" type="email"/>
-<div id="stepVerify" class="hidden">
-<p class="ok" id="verifyMsg">Vérifiez votre email.</p>
-<button type="button" class="p" id="btnCheckVerified">J'ai validé mon email</button>
+  <div class="logo">IDUS Boutique</div>
+  <div class="sub">Espace vendeur</div>
+
+  <!-- LOGIN -->
+  <div id="view-login" class="card">
+    <h3>Connexion boutique</h3>
+    <label>Email boutique</label>
+    <input id="loginEmail" type="email"/>
+    <div id="stepVerify" class="hidden">
+      <p class="ok" id="verifyMsg">Vérifiez votre email.</p>
+      <button type="button" class="p" id="btnCheckVerified">J'ai validé mon email</button>
+    </div>
+    <div id="stepPass">
+      <label>Mot de passe</label>
+      <input id="loginPass" type="password"/>
+      <button type="button" class="p" id="btnLogin">Se connecter</button>
+    </div>
+    <p id="loginErr" class="err" style="display:none"></p>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="view-dash" class="hidden">
+    <div class="row" style="justify-content:space-between;margin-bottom:12px">
+      <div><b id="shopName">Boutique</b><br/><span class="muted" id="shopEmail"></span></div>
+      <button type="button" class="s d" id="btnLogout">Déconnexion</button>
+    </div>
+    <div class="nav">
+      <button type="button" class="on" data-t="home">Accueil</button>
+      <button type="button" data-t="profil">Profil</button>
+      <button type="button" data-t="produits">Produits</button>
+      <button type="button" data-t="commandes">Commandes</button>
+      <button type="button" data-t="messages">Messages</button>
+      <button type="button" data-t="auto">Auto-réponses</button>
+    </div>
+    <div id="tab-home" class="card"><h3>Dashboard</h3><p id="dashStats">…</p></div>
+    <div id="tab-profil" class="card hidden"></div>
+    <div id="tab-produits" class="card hidden"></div>
+    <div id="tab-commandes" class="card hidden"></div>
+    <div id="tab-messages" class="card hidden"></div>
+    <div id="tab-auto" class="card hidden"></div>
+  </div>
 </div>
-<div id="stepPass">
-<label>Mot de passe</label>
-<input id="loginPass" type="password"/>
-<button type="button" class="p" id="btnLogin">Se connecter</button>
+
+<!-- CHAT PLEIN ÉCRAN (hors du wrap pour éviter tout conflit) -->
+<div id="view-chat" class="hidden">
+  <div class="chat-header">
+    <button type="button" class="ch-back" id="chatBack">←</button>
+    <div class="ch-ava" id="chatAva">C</div>
+    <div style="flex:1;min-width:0">
+      <div class="ch-title" id="chatTitle">Client</div>
+      <div class="ch-sub" id="chatSub"></div>
+    </div>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="chat-empty">Chargement…</div>
+  </div>
+  <div class="chat-bar">
+    <input id="chatInput" placeholder="Message…"/>
+    <button type="button" id="chatSendBtn">Envoyer</button>
+  </div>
 </div>
-<p id="loginErr" class="err" style="display:none"></p>
-</div>
-<div id="view-dash" class="hidden">
-<div class="row" style="justify-content:space-between;margin-bottom:12px">
-<div><b id="shopName">Boutique</b><br/><span class="muted" id="shopEmail"></span></div>
-<button type="button" class="s d" id="btnLogout">Déconnexion</button>
-</div>
-<div class="nav">
-<button type="button" class="on" data-t="home">Accueil</button>
-<button type="button" data-t="profil">Profil</button>
-<button type="button" data-t="produits">Produits</button>
-<button type="button" data-t="commandes">Commandes</button>
-<button type="button" data-t="messages">Messages</button>
-<button type="button" data-t="auto">Auto-réponses</button>
-</div>
-<div id="tab-home" class="card"><h3>Dashboard</h3><p id="dashStats">…</p></div>
-<div id="tab-profil" class="card hidden"></div>
-<div id="tab-produits" class="card hidden"></div>
-<div id="tab-commandes" class="card hidden"></div>
-<div id="tab-messages" class="card hidden"></div>
-<div id="tab-auto" class="card hidden"></div>
-</div>
-</div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification, updatePassword } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { getFirestore, collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import { getFirestore, collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
 const MEDIA_WORKER='https://soft-surf-b4e9.ahmedsaidaidara5.workers.dev';
-function fixBrokenImg(el){if(!el||!el.src||el.dataset.fixed)return;el.dataset.fixed='1';var src=el.src;fetch(src,{mode:'cors'}).then(function(r){return r.blob()}).then(function(b){if(!b||!b.size)return;var t='image/jpeg';if(/\.png/i.test(src))t='image/png';else if(/\.webp/i.test(src))t='image/webp';else if(/\.gif/i.test(src))t='image/gif';el.src=URL.createObjectURL(new Blob([b],{type:t}))}).catch(function(){})}
-document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG')fixBrokenImg(t)},true);
+
+function fixBrokenImg(el){
+  if(!el||!el.src||el.dataset.fixed)return;
+  el.dataset.fixed='1';
+  var src=el.src;
+  fetch(src,{mode:'cors'}).then(function(r){return r.blob()}).then(function(b){
+    if(!b||!b.size)return;
+    var t='image/jpeg';
+    if(/\.png/i.test(src))t='image/png';
+    else if(/\.webp/i.test(src))t='image/webp';
+    else if(/\.gif/i.test(src))t='image/gif';
+    el.src=URL.createObjectURL(new Blob([b],{type:t}));
+  }).catch(function(){});
+}
+document.addEventListener('error',function(e){
+  var t=e.target;
+  if(t&&t.tagName==='IMG')fixBrokenImg(t);
+},true);
+
 const firebaseConfig={apiKey:"AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",authDomain:"idus-a87a6.firebaseapp.com",projectId:"idus-a87a6",storageBucket:"idus-a87a6.firebasestorage.app",messagingSenderId:"284785552985",appId:"1:284785552985:web:4cb12a71465a0e167bcb48",measurementId:"G-M0EKXCDV3R"};
-const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 setPersistence(auth,browserLocalPersistence).catch(()=>{});
+
 let boutique=null,boutiqueId=null,categories=[],products=[],editImages=[],editGroups=[],editVideoUrl='',editVideoKey='';
+
 function esc(s){if(s==null)return'';const d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
 function $(id){return document.getElementById(id);}
-function showLogin(){$('view-login').classList.remove('hidden');$('view-dash').classList.add('hidden');}
+function showLogin(){$('view-login').classList.remove('hidden');$('view-dash').classList.add('hidden');closeChat();}
 function showDash(){$('view-login').classList.add('hidden');$('view-dash').classList.remove('hidden');}
-async function findBoutiqueByEmail(email){const s=await getDocs(query(collection(db,'boutiques'),where('email','==',email.toLowerCase().trim())));if(s.empty)return null;const d=s.docs[0];return{id:d.id,...d.data()};}
-$('btnLogin').addEventListener('click',async()=>{const email=$('loginEmail').value.trim().toLowerCase();const pass=$('loginPass').value;const err=$('loginErr');err.style.display='none';if(!email||!pass){err.textContent='Email et mot de passe requis';err.style.display='block';return;}try{const b=await findBoutiqueByEmail(email);if(!b){err.textContent='Aucune boutique liée';err.style.display='block';return;}const cred=await signInWithEmailAndPassword(auth,email,pass);if(!cred.user.emailVerified){await sendEmailVerification(cred.user);$('stepPass').classList.add('hidden');$('stepVerify').classList.remove('hidden');$('verifyMsg').textContent='Email envoyé à '+email;await signOut(auth);return;}boutique=b;boutiqueId=b.id;enterDash();}catch(e){err.textContent=e.message;err.style.display='block';}});
-$('btnCheckVerified').addEventListener('click',async()=>{const email=$('loginEmail').value.trim().toLowerCase();const pass=$('loginPass').value;const err=$('loginErr');try{const cred=await signInWithEmailAndPassword(auth,email,pass);await cred.user.reload();if(!cred.user.emailVerified){err.textContent='Email pas encore validé';err.style.display='block';await signOut(auth);return;}const b=await findBoutiqueByEmail(email);boutique=b;boutiqueId=b.id;$('stepVerify').classList.add('hidden');$('stepPass').classList.remove('hidden');enterDash();}catch(e){err.textContent=e.message;err.style.display='block';}});
-$('btnLogout').addEventListener('click',()=>{signOut(auth);boutique=null;boutiqueId=null;showLogin();});
-function enterDash(){showDash();$('shopName').textContent=boutique.name||'Boutique';$('shopEmail').textContent=boutique.email||'';loadDashStats();tab('home');}
-document.querySelectorAll('.nav button').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');tab(b.getAttribute('data-t'));});});
-function tab(id){['home','profil','produits','commandes','messages','auto'].forEach(t=>{const el=$('tab-'+t);if(el)el.classList.toggle('hidden',t!==id);});if(id==='profil')renderProfil();if(id==='produits')renderProduits();if(id==='commandes')renderCommandes();if(id==='messages')renderMessages();if(id==='auto')renderAuto();if(id==='home')loadDashStats();}
-async function loadDashStats(){try{const[ps,os,ms]=await Promise.all([getDocs(query(collection(db,'products'),where('boutiqueId','==',boutiqueId))),getDocs(query(collection(db,'orders'),where('boutiqueId','==',boutiqueId))),getDocs(query(collection(db,'conversations'),where('boutiqueId','==',boutiqueId)))]);$('dashStats').innerHTML='Produits: <b>'+ps.size+'</b><br>Commandes: <b>'+os.size+'</b><br>Conversations: <b>'+ms.size+'</b>';}catch(e){$('dashStats').innerHTML='<span class="err">'+esc(e.message)+'</span>';}}
-function compressImage(file,maxW,q){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',q));};img.onerror=reject;img.src=r.result;};r.onerror=reject;r.readAsDataURL(file);});}
-async function uploadToR2(fileOrBlob,filename,mime){try{const fd=new FormData();const f=(fileOrBlob instanceof File)?fileOrBlob:new File([fileOrBlob],filename||'img.jpg',{type:mime||'image/jpeg'});fd.append('file',f,f.name);const res=await fetch(MEDIA_WORKER+'/upload',{method:'POST',body:fd});if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();if(!data||!data.url)throw new Error('no url');return data.url;}catch(e){return null;}}
+
+async function findBoutiqueByEmail(email){
+  const s=await getDocs(query(collection(db,'boutiques'),where('email','==',email.toLowerCase().trim())));
+  if(s.empty)return null;
+  const d=s.docs[0];
+  return{id:d.id,...d.data()};
+}
+
+/* ================== AUTH ================== */
+$('btnLogin').addEventListener('click',async()=>{
+  const email=$('loginEmail').value.trim().toLowerCase();
+  const pass=$('loginPass').value;
+  const err=$('loginErr');err.style.display='none';
+  if(!email||!pass){err.textContent='Email et mot de passe requis';err.style.display='block';return;}
+  try{
+    const b=await findBoutiqueByEmail(email);
+    if(!b){err.textContent='Aucune boutique liée';err.style.display='block';return;}
+    const cred=await signInWithEmailAndPassword(auth,email,pass);
+    if(!cred.user.emailVerified){
+      await sendEmailVerification(cred.user);
+      $('stepPass').classList.add('hidden');
+      $('stepVerify').classList.remove('hidden');
+      $('verifyMsg').textContent='Email envoyé à '+email;
+      await signOut(auth);
+      return;
+    }
+    boutique=b;boutiqueId=b.id;enterDash();
+  }catch(e){err.textContent=e.message;err.style.display='block';}
+});
+
+$('btnCheckVerified').addEventListener('click',async()=>{
+  const email=$('loginEmail').value.trim().toLowerCase();
+  const pass=$('loginPass').value;
+  const err=$('loginErr');
+  try{
+    const cred=await signInWithEmailAndPassword(auth,email,pass);
+    await cred.user.reload();
+    if(!cred.user.emailVerified){
+      err.textContent='Email pas encore validé';
+      err.style.display='block';
+      await signOut(auth);
+      return;
+    }
+    const b=await findBoutiqueByEmail(email);
+    boutique=b;boutiqueId=b.id;
+    $('stepVerify').classList.add('hidden');
+    $('stepPass').classList.remove('hidden');
+    enterDash();
+  }catch(e){err.textContent=e.message;err.style.display='block';}
+});
+
+$('btnLogout').addEventListener('click',()=>{
+  closeChat();
+  signOut(auth);
+  boutique=null;boutiqueId=null;
+  showLogin();
+});
+
+function enterDash(){
+  showDash();
+  $('shopName').textContent=boutique.name||'Boutique';
+  $('shopEmail').textContent=boutique.email||'';
+  loadDashStats();
+  tab('home');
+}
+
+document.querySelectorAll('.nav button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    tab(b.getAttribute('data-t'));
+  });
+});
+
+function tab(id){
+  ['home','profil','produits','commandes','messages','auto'].forEach(t=>{
+    const el=$('tab-'+t);
+    if(el)el.classList.toggle('hidden',t!==id);
+  });
+  if(id==='profil')renderProfil();
+  if(id==='produits')renderProduits();
+  if(id==='commandes')renderCommandes();
+  if(id==='messages')renderMessages();
+  if(id==='auto')renderAuto();
+  if(id==='home')loadDashStats();
+}
+
+async function loadDashStats(){
+  try{
+    const[ps,os,ms]=await Promise.all([
+      getDocs(query(collection(db,'products'),where('boutiqueId','==',boutiqueId))),
+      getDocs(query(collection(db,'orders'),where('boutiqueId','==',boutiqueId))),
+      getDocs(query(collection(db,'conversations'),where('boutiqueId','==',boutiqueId)))
+    ]);
+    $('dashStats').innerHTML='Produits: <b>'+ps.size+'</b><br>Commandes: <b>'+os.size+'</b><br>Conversations: <b>'+ms.size+'</b>';
+  }catch(e){$('dashStats').innerHTML='<span class="err">'+esc(e.message)+'</span>';}
+}
+
+/* ================== UPLOAD ================== */
+function compressImage(file,maxW,q){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement('canvas');
+        let w=img.width,h=img.height;
+        if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
+        c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(c.toDataURL('image/jpeg',q));
+      };
+      img.onerror=reject;
+      img.src=r.result;
+    };
+    r.onerror=reject;
+    r.readAsDataURL(file);
+  });
+}
+async function uploadToR2(fileOrBlob,filename,mime){
+  try{
+    const fd=new FormData();
+    const f=(fileOrBlob instanceof File)?fileOrBlob:new File([fileOrBlob],filename||'img.jpg',{type:mime||'image/jpeg'});
+    fd.append('file',f,f.name);
+    const res=await fetch(MEDIA_WORKER+'/upload',{method:'POST',body:fd});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(!data||!data.url)throw new Error('no url');
+    return data.url;
+  }catch(e){return null;}
+}
 async function uploadImg(dataUrl){
   const res0=await fetch(dataUrl);
   const blob=await res0.blob();
@@ -125,23 +358,476 @@ async function uploadBlobFile(file,nameHint){
 }
 async function uploadVideoFile(file){
   if(!file||!file.type.startsWith('video/'))throw new Error('Fichier video requis');
-  const dur=await new Promise((resolve,reject)=>{const v=document.createElement('video');v.preload='metadata';v.onloadedmetadata=()=>{URL.revokeObjectURL(v.src);resolve(v.duration||0);};v.onerror=()=>reject(new Error('Lecture video impossible'));v.src=URL.createObjectURL(file);});
+  const dur=await new Promise((resolve,reject)=>{
+    const v=document.createElement('video');
+    v.preload='metadata';
+    v.onloadedmetadata=()=>{URL.revokeObjectURL(v.src);resolve(v.duration||0);};
+    v.onerror=()=>reject(new Error('Lecture video impossible'));
+    v.src=URL.createObjectURL(file);
+  });
   if(dur>90)throw new Error('Max 1 min 30');
   if(file.size>20*1024*1024)throw new Error('Max 20 Mo');
   const up=await uploadBlobFile(file,file.name||'video.mp4');
   return {url:up.url,key:up.key||'',size:file.size};
 }
-async function deleteRemoteVideo(key){if(!key)return;try{await fetch(MEDIA_WORKER+'/file/'+encodeURIComponent(key),{method:'DELETE'});}catch(e){}
-try{await fetch(MEDIA_WORKER+'/video/'+encodeURIComponent(key),{method:'DELETE'});}catch(e){}}
-function renderProfil(){const el=$('tab-profil');el.innerHTML='<h3>Personnaliser</h3><label>Nom</label><input id="bName" value="'+esc(boutique.name||'')+'"/><label>Description</label><textarea id="bDesc" rows="3">'+esc(boutique.description||'')+'</textarea><label>Logo</label><div class="row">'+(boutique.logo?'<img class="thumb" src="'+esc(boutique.logo)+'" onerror="fixBrokenImg(this)"/>':'')+'<label class="filebtn">Choisir<input type="file" id="bLogo" accept="image/*"/></label></div><label>Bannière</label><div class="row">'+(boutique.banner?'<img class="thumb" src="'+esc(boutique.banner)+'" style="width:120px;height:48px" onerror="fixBrokenImg(this)"/>':'')+'<label class="filebtn">Choisir<input type="file" id="bBanner" accept="image/*"/></label></div><label>Nouveau mot de passe</label><input id="bNewPass" type="password"/><button type="button" class="p" id="btnSaveProfil">Enregistrer</button><p id="profilMsg" class="muted"></p>';$('bLogo').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;boutique.logo=await uploadImg(await compressImage(f,320,0.5));renderProfil();});$('bBanner').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;boutique.banner=await uploadImg(await compressImage(f,800,0.5));renderProfil();});$('btnSaveProfil').addEventListener('click',async()=>{const name=$('bName').value.trim(),description=$('bDesc').value.trim(),newPass=$('bNewPass').value;try{const data={name,description,logo:boutique.logo||'',banner:boutique.banner||'',updatedAt:serverTimestamp()};if(newPass&&newPass.length>=6){await updatePassword(auth.currentUser,newPass);data.passwordChanged=true;data.tempPassword='';}await updateDoc(doc(db,'boutiques',boutiqueId),data);boutique={...boutique,...data};$('shopName').textContent=name;$('profilMsg').textContent='Enregistré';$('profilMsg').className='ok';}catch(e){$('profilMsg').textContent=e.message;$('profilMsg').className='err';}});}async function loadCats(){const s=await getDocs(collection(db,'categories'));categories=s.docs.map(d=>({id:d.id,...d.data()}));}
-async function renderProduits(){const el=$('tab-produits');el.innerHTML='<h3>Mes produits</h3><button type="button" class="p" id="btnNewProd">+ Nouveau produit</button><div id="prodList" style="margin-top:12px">…</div>';$('btnNewProd').addEventListener('click',()=>openProdForm(null));try{await loadCats();const s=await getDocs(query(collection(db,'products'),where('boutiqueId','==',boutiqueId)));products=s.docs.map(d=>({id:d.id,...d.data()}));$('prodList').innerHTML=products.map(p=>{const img=(p.images&&p.images[0])||'';return '<div class="item"><div class="row">'+(img?'<img class="thumb" src="'+esc(img)+'" onerror="fixBrokenImg(this)"/>':'')+'<div style="flex:1"><b>'+esc(p.name)+'</b><br/>'+(p.price||0)+' F</div></div><button type="button" class="s" data-edit="'+p.id+'">Modifier</button> <button type="button" class="s d" data-del="'+p.id+'">Suppr</button></div>';}).join('')||'<p class="muted">Aucun produit</p>';el.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openProdForm(b.getAttribute('data-edit'))));el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{if(!confirm('Supprimer?'))return;await deleteDoc(doc(db,'products',b.getAttribute('data-del')));renderProduits();}));}catch(e){$('prodList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}}
-function openProdForm(id){const p=id?products.find(x=>x.id===id):null;editImages=p&&p.images?p.images.slice():[];editGroups=p&&p.variantGroups?JSON.parse(JSON.stringify(p.variantGroups)):[];editVideoUrl=(p&&p.videoUrl)||'';editVideoKey=(p&&p.videoKey)||'';const el=$('tab-produits');const delivs=['Moins de 24h','2 jours','3 jours','5 jours','2 semaines','3 semaines','1 mois','2 mois','3 mois'];el.innerHTML='<h3>'+(p?'Modifier':'Nouveau')+' produit</h3><label>Nom *</label><input id="pName" value="'+esc(p?p.name:'')+'"/><div class="row"><div style="flex:1"><label>Prix *</label><input id="pPrice" type="number" value="'+(p?p.price:0)+'"/></div><div style="flex:1"><label>Prix promo</label><input id="pPromo" type="number" value="'+(p&&p.promoPrice!=null?p.promoPrice:'')+'"/></div></div><label>Stock</label><input id="pStock" type="number" value="'+(p?p.stock??10:10)+'"/><label><input type="checkbox" id="pShowStock" '+(p&&p.showStock===false?'':'checked')+'/> Afficher le stock</label><label>Livraison</label><select id="pDelivery">'+delivs.map(d=>'<option value="'+d+'" '+(p&&p.deliveryTime===d?'selected':'')+'>'+d+'</option>').join('')+'</select><label style="margin-top:8px"><input type="checkbox" id="pFast" '+(p&&p.fastDelivery===true?'checked':'')+'/> <b style="color:#00A854">Livraison rapide gratuite (Chine → Sénégal)</b></label><label>Catégorie</label><select id="pCat"><option value="">—</option>'+categories.map(c=>'<option value="'+c.id+'" '+(p&&p.categoryId===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select><label>Description</label><textarea id="pDesc" rows="2">'+esc(p?p.description:'')+'</textarea><label>Images (max 20)</label><div id="imgList" class="img-grid"></div><label class="filebtn">+ Galerie<input type="file" id="fileImg" accept="image/*" multiple/></label><p class="muted" id="imgCount">0 / 20</p><label style="margin-top:12px">Video</label><div id="vidBox"></div><label class="filebtn">+ Video<input type="file" id="fileVid" accept="video/*"/></label> <button type="button" class="s d" id="btnRmVid">Supprimer video</button><p class="muted" id="vidStatus"></p><label style="margin-top:12px">Variantes</label><div id="varList" style="background:#111;padding:10px;border-radius:8px;margin:6px 0"></div><button type="button" class="s" id="btnAddG">+ Groupe</button><label style="margin-top:10px"><input type="checkbox" id="pPub" '+(p&&p.published===false?'':'checked')+'/> Publié</label><button type="button" class="p" id="btnSaveP">Enregistrer</button> <button type="button" class="s" id="btnCancelP">Annuler</button>';function renderImgs(){$('imgList').innerHTML=editImages.map((u,i)=>'<div class="box"><img src="'+esc(u)+'" onerror="fixBrokenImg(this)"/><button type="button" class="rm" data-rm="'+i+'">×</button></div>').join('');$('imgCount').textContent=editImages.length+' / 20';$('imgList').querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click',()=>{editImages.splice(+b.getAttribute('data-rm'),1);renderImgs();}));}renderImgs();function paintVid(){const box=$('vidBox');if(editVideoUrl)box.innerHTML='<video src="'+esc(editVideoUrl)+'" controls style="width:100%;max-height:180px;border-radius:8px;background:#000"></video>';else box.innerHTML='<span class="muted">Aucune video</span>';}paintVid();$('fileImg').addEventListener('change',async e=>{for(const f of Array.from(e.target.files||[])){if(editImages.length>=20)break;try{editImages.push(await uploadImg(await compressImage(f,480,0.45)));renderImgs();}catch(err){alert(err.message);}}e.target.value='';});$('fileVid').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;try{const up=await uploadVideoFile(f);editVideoUrl=up.url;editVideoKey=up.key||'';paintVid();$('vidStatus').textContent='OK';}catch(err){alert(err.message);}$('vidStatus').textContent='';e.target.value='';});$('btnRmVid').addEventListener('click',async()=>{if(!editVideoUrl)return;await deleteRemoteVideo(editVideoKey);editVideoUrl='';editVideoKey='';paintVid();});function renderVars(){const vl=$('varList');if(!editGroups.length){vl.innerHTML='<p class="muted">Aucun groupe</p>';return;}vl.innerHTML=editGroups.map((g,gi)=>'<div style="border:1px solid #333;padding:8px;margin-bottom:8px;border-radius:8px"><input placeholder="Groupe" value="'+esc(g.name)+'" data-gn="'+gi+'"/><button type="button" class="s d" data-rm-g="'+gi+'">Suppr groupe</button><div id="opts'+gi+'"></div><button type="button" class="s" data-add-o="'+gi+'">+ Option</button></div>').join('');vl.querySelectorAll('[data-gn]').forEach(inp=>inp.addEventListener('input',()=>{editGroups[+inp.getAttribute('data-gn')].name=inp.value;}));vl.querySelectorAll('[data-rm-g]').forEach(b=>b.addEventListener('click',()=>{editGroups.splice(+b.getAttribute('data-rm-g'),1);renderVars();}));vl.querySelectorAll('[data-add-o]').forEach(b=>b.addEventListener('click',()=>{const gi=+b.getAttribute('data-add-o');if(!editGroups[gi].options)editGroups[gi].options=[];editGroups[gi].options.push({label:'Option',priceDelta:0,image:''});renderVars();}));editGroups.forEach((g,gi)=>{const box=$('opts'+gi);if(!box)return;box.innerHTML=(g.options||[]).map((o,oi)=>'<div class="row" style="margin:4px 0"><input style="flex:1" value="'+esc(o.label)+'" data-ol="'+gi+'-'+oi+'"/><input style="width:70px" type="number" value="'+(o.priceDelta||0)+'" data-op="'+gi+'-'+oi+'"/><button type="button" class="s d" data-rm-o="'+gi+'-'+oi+'">×</button></div>').join('');box.querySelectorAll('[data-ol]').forEach(inp=>{const[gi,oi]=inp.getAttribute('data-ol').split('-').map(Number);inp.addEventListener('input',()=>{editGroups[gi].options[oi].label=inp.value;});});box.querySelectorAll('[data-op]').forEach(inp=>{const[gi,oi]=inp.getAttribute('data-op').split('-').map(Number);inp.addEventListener('input',()=>{editGroups[gi].options[oi].priceDelta=parseFloat(inp.value)||0;});});box.querySelectorAll('[data-rm-o]').forEach(b=>{b.addEventListener('click',()=>{const[gi,oi]=b.getAttribute('data-rm-o').split('-').map(Number);editGroups[gi].options.splice(oi,1);renderVars();});});});}$('btnAddG').addEventListener('click',()=>{editGroups.push({name:'Groupe',options:[{label:'Option',priceDelta:0,image:''}]});renderVars();});renderVars();$('btnCancelP').addEventListener('click',()=>renderProduits());$('btnSaveP').addEventListener('click',async()=>{const name=$('pName').value.trim();const price=parseFloat($('pPrice').value)||0;if(!name||!price){alert('Nom et prix requis');return;}const data={name,price,promoPrice:$('pPromo').value?parseFloat($('pPromo').value):null,stock:parseInt($('pStock').value)||0,showStock:$('pShowStock').checked,deliveryTime:$('pDelivery').value,fastDelivery:$('pFast').checked,categoryId:$('pCat').value||null,description:$('pDesc').value.trim(),images:editImages,variantGroups:editGroups,videoUrl:editVideoUrl||null,videoKey:editVideoKey||null,published:$('pPub').checked,boutiqueId:boutiqueId,boutiqueName:boutique.name||'',updatedAt:serverTimestamp()};try{if(p){await updateDoc(doc(db,'products',p.id),data);}else{data.createdAt=serverTimestamp();await addDoc(collection(db,'products'),data);}renderProduits();}catch(e){alert(e.message);}});}
-async function renderCommandes(){const el=$('tab-commandes');el.innerHTML='<h3>Commandes</h3><div id="ordList">…</div>';try{const s=await getDocs(query(collection(db,'orders'),where('boutiqueId','==',boutiqueId)));const list=s.docs.map(d=>({id:d.id,...d.data()}));list.sort((a,b)=>((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));$('ordList').innerHTML=list.length?list.map(o=>'<div class="item"><b>'+esc(o.orderNumber||o.id)+'</b> — '+(o.total||0)+' F<br/><span class="muted">'+esc((o.customer&&o.customer.name)||'')+' · '+esc(o.status||'')+'</span></div>').join(''):'<p class="muted">Aucune commande</p>';}catch(e){$('ordList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}}
-async function renderMessages(){const el=$('tab-messages');el.innerHTML='<h3>Messages</h3><div id="convList">…</div><div id="chatPanel" class="hidden"><div id="chatBox"></div><div class="row"><input id="chatIn" style="flex:1" placeholder="Message…"/><button type="button" class="s" id="chatSend">Envoyer</button></div></div>';try{const s=await getDocs(query(collection(db,'conversations'),where('boutiqueId','==',boutiqueId)));const list=s.docs.map(d=>({id:d.id,...d.data()}));$('convList').innerHTML=list.length?list.map(c=>'<div class="item" data-cid="'+c.id+'" style="cursor:pointer"><b>'+esc(c.customerName||c.customerEmail||'Client')+'</b><br/><span class="muted">'+esc(c.lastMessage||'')+'</span></div>').join(''):'<p class="muted">Aucun message</p>';el.querySelectorAll('[data-cid]').forEach(row=>row.addEventListener('click',()=>openChat(row.getAttribute('data-cid'))));}catch(e){$('convList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}}
+async function deleteRemoteVideo(key){
+  if(!key)return;
+  try{await fetch(MEDIA_WORKER+'/file/'+encodeURIComponent(key),{method:'DELETE'});}catch(e){}
+  try{await fetch(MEDIA_WORKER+'/video/'+encodeURIComponent(key),{method:'DELETE'});}catch(e){}
+}
+
+/* ================== PROFIL ================== */
+function renderProfil(){
+  const el=$('tab-profil');
+  el.innerHTML='<h3>Personnaliser</h3>'
+    +'<label>Nom</label><input id="bName" value="'+esc(boutique.name||'')+'"/>'
+    +'<label>Description</label><textarea id="bDesc" rows="3">'+esc(boutique.description||'')+'</textarea>'
+    +'<label>Logo</label><div class="row">'+(boutique.logo?'<img class="thumb" src="'+esc(boutique.logo)+'" onerror="fixBrokenImg(this)"/>':'')+'<label class="filebtn">Choisir<input type="file" id="bLogo" accept="image/*"/></label></div>'
+    +'<label>Bannière</label><div class="row">'+(boutique.banner?'<img class="thumb" src="'+esc(boutique.banner)+'" style="width:120px;height:48px" onerror="fixBrokenImg(this)"/>':'')+'<label class="filebtn">Choisir<input type="file" id="bBanner" accept="image/*"/></label></div>'
+    +'<label>Nouveau mot de passe</label><input id="bNewPass" type="password"/>'
+    +'<button type="button" class="p" id="btnSaveProfil">Enregistrer</button>'
+    +'<p id="profilMsg" class="muted"></p>';
+
+  $('bLogo').addEventListener('change',async e=>{
+    const f=e.target.files[0];if(!f)return;
+    boutique.logo=await uploadImg(await compressImage(f,320,0.5));
+    renderProfil();
+  });
+  $('bBanner').addEventListener('change',async e=>{
+    const f=e.target.files[0];if(!f)return;
+    boutique.banner=await uploadImg(await compressImage(f,800,0.5));
+    renderProfil();
+  });
+  $('btnSaveProfil').addEventListener('click',async()=>{
+    const name=$('bName').value.trim(),description=$('bDesc').value.trim(),newPass=$('bNewPass').value;
+    try{
+      const data={name,description,logo:boutique.logo||'',banner:boutique.banner||'',updatedAt:serverTimestamp()};
+      if(newPass&&newPass.length>=6){
+        await updatePassword(auth.currentUser,newPass);
+        data.passwordChanged=true;data.tempPassword='';
+      }
+      await updateDoc(doc(db,'boutiques',boutiqueId),data);
+      boutique={...boutique,...data};
+      $('shopName').textContent=name;
+      $('profilMsg').textContent='Enregistré';
+      $('profilMsg').className='ok';
+    }catch(e){
+      $('profilMsg').textContent=e.message;
+      $('profilMsg').className='err';
+    }
+  });
+}
+
+/* ================== PRODUITS ================== */
+async function loadCats(){
+  const s=await getDocs(collection(db,'categories'));
+  categories=s.docs.map(d=>({id:d.id,...d.data()}));
+}
+
+async function renderProduits(){
+  const el=$('tab-produits');
+  el.innerHTML='<h3>Mes produits</h3><button type="button" class="p" id="btnNewProd">+ Nouveau produit</button><div id="prodList" style="margin-top:12px">…</div>';
+  $('btnNewProd').addEventListener('click',()=>openProdForm(null));
+  try{
+    await loadCats();
+    const s=await getDocs(query(collection(db,'products'),where('boutiqueId','==',boutiqueId)));
+    products=s.docs.map(d=>({id:d.id,...d.data()}));
+    $('prodList').innerHTML=products.map(p=>{
+      const img=(p.images&&p.images[0])||'';
+      return '<div class="item"><div class="row">'
+        +(img?'<img class="thumb" src="'+esc(img)+'" onerror="fixBrokenImg(this)"/>':'')
+        +'<div style="flex:1"><b>'+esc(p.name)+'</b><br/>'+(p.price||0)+' F</div></div>'
+        +'<button type="button" class="s" data-edit="'+p.id+'">Modifier</button> '
+        +'<button type="button" class="s d" data-del="'+p.id+'">Suppr</button></div>';
+    }).join('')||'<p class="muted">Aucun produit</p>';
+    el.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openProdForm(b.getAttribute('data-edit'))));
+    el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
+      if(!confirm('Supprimer?'))return;
+      await deleteDoc(doc(db,'products',b.getAttribute('data-del')));
+      renderProduits();
+    }));
+  }catch(e){$('prodList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}
+}
+
+function openProdForm(id){
+  const p=id?products.find(x=>x.id===id):null;
+  editImages=p&&p.images?p.images.slice():[];
+  editGroups=p&&p.variantGroups?JSON.parse(JSON.stringify(p.variantGroups)):[];
+  editVideoUrl=(p&&p.videoUrl)||'';
+  editVideoKey=(p&&p.videoKey)||'';
+  const el=$('tab-produits');
+  const delivs=['Moins de 24h','2 jours','3 jours','5 jours','2 semaines','3 semaines','1 mois','2 mois','3 mois'];
+  el.innerHTML='<h3>'+(p?'Modifier':'Nouveau')+' produit</h3>'
+    +'<label>Nom *</label><input id="pName" value="'+esc(p?p.name:'')+'"/>'
+    +'<div class="row"><div style="flex:1"><label>Prix *</label><input id="pPrice" type="number" value="'+(p?p.price:0)+'"/></div>'
+    +'<div style="flex:1"><label>Prix promo</label><input id="pPromo" type="number" value="'+(p&&p.promoPrice!=null?p.promoPrice:'')+'"/></div></div>'
+    +'<label>Stock</label><input id="pStock" type="number" value="'+(p?p.stock??10:10)+'"/>'
+    +'<label><input type="checkbox" id="pShowStock" '+(p&&p.showStock===false?'':'checked')+'/> Afficher le stock</label>'
+    +'<label>Livraison</label><select id="pDelivery">'+delivs.map(d=>'<option value="'+d+'" '+(p&&p.deliveryTime===d?'selected':'')+'>'+d+'</option>').join('')+'</select>'
+    +'<label style="margin-top:8px"><input type="checkbox" id="pFast" '+(p&&p.fastDelivery===true?'checked':'')+'/> <b style="color:#00A854">Livraison rapide gratuite (Chine → Sénégal)</b></label>'
+    +'<label>Catégorie</label><select id="pCat"><option value="">—</option>'+categories.map(c=>'<option value="'+c.id+'" '+(p&&p.categoryId===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select>'
+    +'<label>Description</label><textarea id="pDesc" rows="2">'+esc(p?p.description:'')+'</textarea>'
+    +'<label>Images (max 20)</label><div id="imgList" class="img-grid"></div>'
+    +'<label class="filebtn">+ Galerie<input type="file" id="fileImg" accept="image/*" multiple/></label>'
+    +'<p class="muted" id="imgCount">0 / 20</p>'
+    +'<label style="margin-top:12px">Video</label><div id="vidBox"></div>'
+    +'<label class="filebtn">+ Video<input type="file" id="fileVid" accept="video/*"/></label> '
+    +'<button type="button" class="s d" id="btnRmVid">Supprimer video</button>'
+    +'<p class="muted" id="vidStatus"></p>'
+    +'<label style="margin-top:12px">Variantes</label><div id="varList" style="background:#111;padding:10px;border-radius:8px;margin:6px 0"></div>'
+    +'<button type="button" class="s" id="btnAddG">+ Groupe</button>'
+    +'<label style="margin-top:10px"><input type="checkbox" id="pPub" '+(p&&p.published===false?'':'checked')+'/> Publié</label>'
+    +'<button type="button" class="p" id="btnSaveP">Enregistrer</button> '
+    +'<button type="button" class="s" id="btnCancelP">Annuler</button>';
+
+  function renderImgs(){
+    $('imgList').innerHTML=editImages.map((u,i)=>'<div class="box"><img src="'+esc(u)+'" onerror="fixBrokenImg(this)"/><button type="button" class="rm" data-rm="'+i+'">×</button></div>').join('');
+    $('imgCount').textContent=editImages.length+' / 20';
+    $('imgList').querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click',()=>{editImages.splice(+b.getAttribute('data-rm'),1);renderImgs();}));
+  }
+  renderImgs();
+
+  function paintVid(){
+    const box=$('vidBox');
+    if(editVideoUrl)box.innerHTML='<video src="'+esc(editVideoUrl)+'" controls style="width:100%;max-height:180px;border-radius:8px;background:#000"></video>';
+    else box.innerHTML='<span class="muted">Aucune video</span>';
+  }
+  paintVid();
+
+  $('fileImg').addEventListener('change',async e=>{
+    for(const f of Array.from(e.target.files||[])){
+      if(editImages.length>=20)break;
+      try{editImages.push(await uploadImg(await compressImage(f,480,0.45)));renderImgs();}
+      catch(err){alert(err.message);}
+    }
+    e.target.value='';
+  });
+  $('fileVid').addEventListener('change',async e=>{
+    const f=e.target.files&&e.target.files[0];if(!f)return;
+    try{
+      const up=await uploadVideoFile(f);
+      editVideoUrl=up.url;editVideoKey=up.key||'';
+      paintVid();$('vidStatus').textContent='OK';
+    }catch(err){alert(err.message);}
+    $('vidStatus').textContent='';
+    e.target.value='';
+  });
+  $('btnRmVid').addEventListener('click',async()=>{
+    if(!editVideoUrl)return;
+    await deleteRemoteVideo(editVideoKey);
+    editVideoUrl='';editVideoKey='';paintVid();
+  });
+
+  function renderVars(){
+    const vl=$('varList');
+    if(!editGroups.length){vl.innerHTML='<p class="muted">Aucun groupe</p>';return;}
+    vl.innerHTML=editGroups.map((g,gi)=>'<div style="border:1px solid #333;padding:8px;margin-bottom:8px;border-radius:8px">'
+      +'<input placeholder="Groupe" value="'+esc(g.name)+'" data-gn="'+gi+'"/>'
+      +'<button type="button" class="s d" data-rm-g="'+gi+'">Suppr groupe</button>'
+      +'<div id="opts'+gi+'"></div>'
+      +'<button type="button" class="s" data-add-o="'+gi+'">+ Option</button></div>').join('');
+    vl.querySelectorAll('[data-gn]').forEach(inp=>inp.addEventListener('input',()=>{editGroups[+inp.getAttribute('data-gn')].name=inp.value;}));
+    vl.querySelectorAll('[data-rm-g]').forEach(b=>b.addEventListener('click',()=>{editGroups.splice(+b.getAttribute('data-rm-g'),1);renderVars();}));
+    vl.querySelectorAll('[data-add-o]').forEach(b=>b.addEventListener('click',()=>{
+      const gi=+b.getAttribute('data-add-o');
+      if(!editGroups[gi].options)editGroups[gi].options=[];
+      editGroups[gi].options.push({label:'Option',priceDelta:0,image:''});
+      renderVars();
+    }));
+    editGroups.forEach((g,gi)=>{
+      const box=$('opts'+gi);if(!box)return;
+      box.innerHTML=(g.options||[]).map((o,oi)=>'<div class="row" style="margin:4px 0">'
+        +'<input style="flex:1" value="'+esc(o.label)+'" data-ol="'+gi+'-'+oi+'"/>'
+        +'<input style="width:70px" type="number" value="'+(o.priceDelta||0)+'" data-op="'+gi+'-'+oi+'"/>'
+        +'<button type="button" class="s d" data-rm-o="'+gi+'-'+oi+'">×</button></div>').join('');
+      box.querySelectorAll('[data-ol]').forEach(inp=>{
+        const[gi2,oi]=inp.getAttribute('data-ol').split('-').map(Number);
+        inp.addEventListener('input',()=>{editGroups[gi2].options[oi].label=inp.value;});
+      });
+      box.querySelectorAll('[data-op]').forEach(inp=>{
+        const[gi2,oi]=inp.getAttribute('data-op').split('-').map(Number);
+        inp.addEventListener('input',()=>{editGroups[gi2].options[oi].priceDelta=parseFloat(inp.value)||0;});
+      });
+      box.querySelectorAll('[data-rm-o]').forEach(b=>{
+        b.addEventListener('click',()=>{
+          const[gi2,oi]=b.getAttribute('data-rm-o').split('-').map(Number);
+          editGroups[gi2].options.splice(oi,1);
+          renderVars();
+        });
+      });
+    });
+  }
+  $('btnAddG').addEventListener('click',()=>{
+    editGroups.push({name:'Groupe',options:[{label:'Option',priceDelta:0,image:''}]});
+    renderVars();
+  });
+  renderVars();
+
+  $('btnCancelP').addEventListener('click',()=>renderProduits());
+
+  $('btnSaveP').addEventListener('click',async()=>{
+    const name=$('pName').value.trim();
+    const price=parseFloat($('pPrice').value)||0;
+    if(!name||!price){alert('Nom et prix requis');return;}
+    const data={
+      name,price,
+      promoPrice:$('pPromo').value?parseFloat($('pPromo').value):null,
+      stock:parseInt($('pStock').value)||0,
+      showStock:$('pShowStock').checked,
+      deliveryTime:$('pDelivery').value,
+      fastDelivery:$('pFast').checked,
+      categoryId:$('pCat').value||null,
+      description:$('pDesc').value.trim(),
+      images:editImages,
+      variantGroups:editGroups,
+      videoUrl:editVideoUrl||null,
+      videoKey:editVideoKey||null,
+      published:$('pPub').checked,
+      boutiqueId:boutiqueId,
+      boutiqueName:boutique.name||'',
+      updatedAt:serverTimestamp()
+    };
+    try{
+      if(p){await updateDoc(doc(db,'products',p.id),data);}
+      else{data.createdAt=serverTimestamp();await addDoc(collection(db,'products'),data);}
+      renderProduits();
+    }catch(e){alert(e.message);}
+  });
+}
+
+/* ================== COMMANDES ================== */
+async function renderCommandes(){
+  const el=$('tab-commandes');
+  el.innerHTML='<h3>Commandes</h3><div id="ordList">…</div>';
+  try{
+    const s=await getDocs(query(collection(db,'orders'),where('boutiqueId','==',boutiqueId)));
+    const list=s.docs.map(d=>({id:d.id,...d.data()}));
+    list.sort((a,b)=>((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));
+    $('ordList').innerHTML=list.length?list.map(o=>'<div class="item"><b>'+esc(o.orderNumber||o.id)+'</b> — '+(o.total||0)+' F<br/><span class="muted">'+esc((o.customer&&o.customer.name)||'')+' · '+esc(o.status||'')+'</span></div>').join(''):'<p class="muted">Aucune commande</p>';
+  }catch(e){$('ordList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}
+}
+
+/* ================== MESSAGES (liste) ================== */
+async function renderMessages(){
+  const el=$('tab-messages');
+  el.innerHTML='<h3>Messages</h3><div id="convList">…</div>';
+  try{
+    const s=await getDocs(query(collection(db,'conversations'),where('boutiqueId','==',boutiqueId)));
+    const list=s.docs.map(d=>({id:d.id,...d.data()}));
+    list.sort((a,b)=>((b.updatedAt&&b.updatedAt.seconds)||0)-((a.updatedAt&&a.updatedAt.seconds)||0));
+    $('convList').innerHTML=list.length?list.map(c=>{
+      const nm=c.customerName||c.customerEmail||'Client';
+      const initials=nm.charAt(0).toUpperCase();
+      return '<div class="item" data-cid="'+c.id+'" style="cursor:pointer;display:flex;gap:10px;align-items:center">'
+        +'<div style="width:38px;height:38px;flex-shrink:0;border-radius:50%;background:#00A854;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800">'+esc(initials)+'</div>'
+        +'<div style="flex:1;min-width:0"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(nm)+'</b>'
+        +'<span class="muted" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(c.lastMessage||'')+'</span></div>'
+        +'<span style="color:#888;font-size:16px">›</span></div>';
+    }).join(''):'<p class="muted">Aucun message</p>';
+    el.querySelectorAll('[data-cid]').forEach(row=>row.addEventListener('click',()=>openChat(row.getAttribute('data-cid'))));
+  }catch(e){$('convList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}
+}
+
+/* ================== CHAT PLEIN ÉCRAN ================== */
 let unsubChat=null;
-function openChat(cid){$('chatPanel').classList.remove('hidden');if(unsubChat)unsubChat();unsubChat=onSnapshot(query(collection(db,'conversations',cid,'messages'),orderBy('createdAt','asc')),snap=>{const box=$('chatBox');box.innerHTML=snap.docs.map(d=>{const m=d.data();const me=m.from==='boutique';return '<div class="msg-bubble '+(me?'msg-me':'msg-them')+'">'+esc(m.text||'')+'</div>';}).join('');box.scrollTop=box.scrollHeight;});$('chatSend').onclick=async()=>{const text=$('chatIn').value.trim();if(!text)return;await addDoc(collection(db,'conversations',cid,'messages'),{from:'boutique',text,createdAt:serverTimestamp()});await updateDoc(doc(db,'conversations',cid),{lastMessage:text,updatedAt:serverTimestamp()});$('chatIn').value='';};}
-function renderAuto(){const el=$('tab-auto');el.innerHTML='<h3>Auto-réponses</h3><p class="muted">Réponses automatiques (optionnel)</p><textarea id="autoText" rows="4" placeholder="Message auto…">'+esc((boutique&&boutique.autoReply)||'')+'</textarea><button type="button" class="p" id="btnSaveAuto">Enregistrer</button>';$('btnSaveAuto').addEventListener('click',async()=>{try{await updateDoc(doc(db,'boutiques',boutiqueId),{autoReply:$('autoText').value.trim()});boutique.autoReply=$('autoText').value.trim();alert('OK');}catch(e){alert(e.message);}});}
-onAuthStateChanged(auth,async(u)=>{if(!u){showLogin();return;}try{const b=await findBoutiqueByEmail(u.email||'');if(!b){showLogin();return;}if(!u.emailVerified){showLogin();return;}boutique=b;boutiqueId=b.id;enterDash();}catch(e){showLogin();}});
+let chatCurrentConvId=null;
+
+function closeChat(){
+  if(unsubChat){try{unsubChat();}catch(e){}unsubChat=null;}
+  chatCurrentConvId=null;
+  const v=$('view-chat');if(v)v.classList.add('hidden');
+  const inp=$('chatInput');if(inp)inp.value='';
+  const body=$('chatBody');if(body)body.innerHTML='';
+}
+
+$('chatBack').addEventListener('click',closeChat);
+// === Ouvre la page Produit (onglet boutique) pour un produit donné ===
+// === Ouvre la page Produit (onglet boutique) pour un produit donné ===
+async function openProductFromChat(pid){
+  if(!pid){alert('Produit introuvable');return;}
+
+  closeChat();
+  tab('produits');
+
+  try{
+    // 1) On va chercher le produit directement dans Firestore
+    const s=await getDoc(doc(db,'products',pid));
+    if(!s.exists()){
+      alert('Ce produit n\'existe plus.');
+      return;
+    }
+
+    const p={id:s.id,...s.data()};
+
+    // 2) Sécurité : vérifie qu'il appartient bien à cette boutique
+    if(p.boutiqueId && p.boutiqueId!==boutiqueId){
+      alert('Ce produit n\'appartient pas à votre boutique.');
+      return;
+    }
+
+    // 3) On attend que renderProduits ait fini de charger la liste
+    //    (pour que le tableau products contienne le produit)
+    setTimeout(()=>{
+      // On s'assure que le produit est dans le tableau products
+      if(!products.find(x=>x.id===pid)){
+        products.push(p);
+      }
+      openProdForm(pid);
+    },400);
+
+  }catch(e){
+    alert('Erreur : '+e.message);
+  }
+}
+
+// === Formate les prix (1000 → 1 000) ===
+function formatPrice(n){
+  return new Intl.NumberFormat('fr-FR').format(n||0);
+}
+async function openChat(cid){
+  chatCurrentConvId=cid;
+  const view=$('view-chat');
+  const body=$('chatBody');
+  const title=$('chatTitle');
+  const sub=$('chatSub');
+  const ava=$('chatAva');
+
+  // reset UI
+  body.innerHTML='<div class="chat-empty">Chargement…</div>';
+  title.textContent='Client';
+  sub.textContent='';
+  ava.textContent='C';
+  ava.innerHTML='C';
+  view.classList.remove('hidden');
+
+  // Charge les infos de la conversation
+  try{
+    const cdoc=await getDoc(doc(db,'conversations',cid));
+    if(cdoc.exists()){
+      const c=cdoc.data();
+      const nm=c.customerName||c.customerEmail||'Client';
+      title.textContent=nm;
+      sub.textContent=c.customerEmail||'';
+      const initials=nm.charAt(0).toUpperCase();
+      ava.innerHTML=esc(initials);
+    }
+  }catch(e){}
+
+  // Si un ancien onSnapshot traîne, on le coupe
+  if(unsubChat){try{unsubChat();}catch(e){}unsubChat=null;}
+
+  // Écoute en temps réel
+  // Écoute en temps réel
+  unsubChat=onSnapshot(
+    query(collection(db,'conversations',cid,'messages'),orderBy('createdAt','asc')),
+    snap=>{
+      if(chatCurrentConvId!==cid)return; // sécurité si l'utilisateur a changé de chat
+      if(snap.empty){
+        body.innerHTML='<div class="chat-empty">Aucun message pour le moment.</div>';
+        return;
+      }
+      body.innerHTML=snap.docs.map(d=>{
+        const m=d.data();
+        const me=m.from==='boutique';
+
+        // === CAS 1 : message avec cadre produit ===
+        if(m.productCard){
+          const pc=m.productCard;
+          const img=pc.image||'';
+          const name=pc.name||'';
+          const desc=pc.desc||'';
+          const price=pc.price||0;
+          const pid=pc.productId||pc.id||'';
+          return '<div style="text-align:'+(me?'right':'left')+';margin:8px 0">'
+            +'<div class="chat-prod-card" data-pid="'+esc(pid)+'" style="display:inline-block;width:200px;background:#111;border:2px solid #00A854;border-radius:12px;overflow:hidden;text-align:left;cursor:pointer">'
+            +(img?'<img src="'+esc(img)+'" style="width:100%;aspect-ratio:1;object-fit:cover;background:#222;display:block" onerror="fixBrokenImg(this)"/>':'<div style="width:100%;aspect-ratio:1;background:#222"></div>')
+            +'<div style="padding:8px 10px 10px">'
+            +'<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(name)+'</div>'
+            +(desc?'<div style="font-size:11px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px">'+esc(desc)+'</div>':'')
+            +'<div style="font-size:14px;font-weight:800;color:#E02E24;margin-top:6px">'+formatPrice(price)+' F</div>'
+            +'<div style="font-size:10px;color:#00A854;margin-top:4px;font-weight:700">Voir le produit ›</div>'
+            +'</div></div></div>';
+        }
+
+        // === CAS 2 : message texte normal ===
+        if(!m.text)return'';
+        return '<div class="msg-bubble '+(me?'msg-me':'msg-them')+'">'+esc(m.text||'')+'</div>';
+      }).join('');
+
+      // === Attache les clics sur les cadres produit ===
+      body.querySelectorAll('.chat-prod-card').forEach(card=>{
+        card.addEventListener('click',()=>{
+          const pid=card.getAttribute('data-pid');
+          if(pid)openProductFromChat(pid);
+        });
+      });
+
+      body.scrollTop=body.scrollHeight;
+    },
+    err=>{
+      body.innerHTML='<div class="chat-empty" style="color:#ef4444">'+esc(err.message)+'</div>';
+    }
+  );
+
+  // Envoi
+  $('chatSendBtn').onclick=async()=>{
+    const input=$('chatInput');
+    const text=input.value.trim();
+    if(!text||!chatCurrentConvId)return;
+    input.value='';
+    try{
+      await addDoc(collection(db,'conversations',chatCurrentConvId,'messages'),{
+        from:'boutique',
+        text,
+        createdAt:serverTimestamp()
+      });
+      await updateDoc(doc(db,'conversations',chatCurrentConvId),{
+        lastMessage:text,
+        updatedAt:serverTimestamp()
+      });
+    }catch(e){alert(e.message);}
+  };
+
+  // Entrée = envoyer
+  $('chatInput').onkeydown=(e)=>{
+    if(e.key==='Enter'){e.preventDefault();$('chatSendBtn').click();}
+  };
+
+  // focus input
+  setTimeout(()=>{const i=$('chatInput');if(i)i.focus();},100);
+}
+
+/* ================== AUTO-RÉPONSES ================== */
+function renderAuto(){
+  const el=$('tab-auto');
+  el.innerHTML='<h3>Auto-réponses</h3><p class="muted">Réponses automatiques (optionnel)</p>'
+    +'<textarea id="autoText" rows="4" placeholder="Message auto…">'+esc((boutique&&boutique.autoReply)||'')+'</textarea>'
+    +'<button type="button" class="p" id="btnSaveAuto">Enregistrer</button>';
+  $('btnSaveAuto').addEventListener('click',async()=>{
+    try{
+      await updateDoc(doc(db,'boutiques',boutiqueId),{autoReply:$('autoText').value.trim()});
+      boutique.autoReply=$('autoText').value.trim();
+      alert('OK');
+    }catch(e){alert(e.message);}
+  });
+}
+
+/* ================== AUTH STATE ================== */
+onAuthStateChanged(auth,async(u)=>{
+  if(!u){showLogin();return;}
+  try{
+    const b=await findBoutiqueByEmail(u.email||'');
+    if(!b){showLogin();return;}
+    if(!u.emailVerified){showLogin();return;}
+    boutique=b;boutiqueId=b.id;
+    enterDash();
+  }catch(e){showLogin();}
+});
+
+/* ================== FERMETURE PROPRE ================== */
+window.addEventListener('beforeunload',()=>{
+  if(unsubChat){try{unsubChat();}catch(e){}}
+});
 </script>
 </body>
 </html>
