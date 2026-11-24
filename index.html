@@ -828,8 +828,9 @@ function renderCheckout(){
     +'</div>'
     +'<div class="chk-section">'
       +'<div class="chk-section-title"><i class="fa-solid fa-truck-fast"></i>Livraison</div>'
-      +livraisonHtml
-    +'</div>'
+     +livraisonHtml
++'</div>'
++'<div id="chkPickupBox"></div>'
     +'<button type="button" class="chk-btn" id="btnPlace">Confirmer la commande</button>'
     +'<p style="text-align:center;font-size:11px;color:#888;margin-top:10px">En confirmant, vous acceptez les conditions IDA.</p>'
   +'</div>';
@@ -839,7 +840,57 @@ function renderCheckout(){
   if(e1)e1.addEventListener('click',function(){askDeliveryAddress(function(){renderCheckout()})});
   var e2=document.getElementById('chkAddAddr');
   if(e2)e2.addEventListener('click',function(){askDeliveryAddress(function(){renderCheckout()})});
+  // === Points relais disponibles (si produits pickupFree) ===
+  if(hasPickup){
+    var pickupBoutiques={};
+    cart.forEach(function(it){
+      var p=products.find(function(x){return x.id===it.productId});
+      if(p&&p.pickupFree===true&&p.boutiqueId)pickupBoutiques[p.boutiqueId]=true;
+    });
+    var bids=Object.keys(pickupBoutiques);
+    if(bids.length){
+      (async function(){
+        var box=document.getElementById('chkPickupBox');
+        if(!box)return;
+        var allHtml='';
+        for(var i=0;i<bids.length;i++){
+          var bid=bids[i];
+          var pts=await loadPickupPoints(bid);
+          if(!pts.length)continue;
+          var bname='Boutique';
+          try{var bd=await getDoc(doc(db,'boutiques',bid));if(bd.exists())bname=bd.data().name||'Boutique'}catch(e){}
+          allHtml+='<div class="chk-section">'
+            +'<div class="chk-section-title"><i class="fa-solid fa-location-dot"></i>Retrait gratuit — '+escapeHtml(bname)+'</div>'
+            +'<div class="chk-pickup-title">Choisissez un point relais :</div>'
+            +'<div class="chk-pickup-list" data-bid="'+bid+'">'
+              +pts.map(function(p){return pickupPointCardHtml(p,null,true)}).join('')
+            +'</div>'
+          +'</div>';
+        }
+        if(!allHtml){box.innerHTML='';return}
+        box.innerHTML=allHtml;
+        // Gestion du clic "Choisir"
+        box.querySelectorAll('[data-pick]').forEach(function(btn){
+          btn.addEventListener('click',function(){
+            var prId=btn.getAttribute('data-pick');
+            var card=btn.closest('.pr-card');
+            var list=btn.closest('.chk-pickup-list');
+            list.querySelectorAll('.pr-card').forEach(function(c){c.classList.remove('selected')});
+            list.querySelectorAll('.pr-pick').forEach(function(b){b.textContent='Choisir'});
+            card.classList.add('selected');
+            btn.textContent='Choisi';
+            // Sauvegarde en mémoire (sera lue par placeOrder)
+            var addr=card.querySelector('.pr-city').textContent+', '+card.querySelector('.pr-addr').textContent;
+            window._selectedPickup=window._selectedPickup||{};
+            window._selectedPickup[list.getAttribute('data-bid')]={id:prId,address:addr};
+            toast('Point relais sélectionné');
+          });
+        });
+      })();
+    }
+  }
 
+  document.getElementById('btnPlace').addEventListener('click',placeOrder);
   document.getElementById('btnPlace').addEventListener('click',placeOrder);
 }
 async function placeOrder(){
@@ -892,14 +943,16 @@ async function placeOrder(){
         subtotal:subB,
         shipping:k===0?(settings.shippingFee||0):0,
         total:subB+(k===0?(settings.shippingFee||0):0),
-        fromChina:originChine,
+               fromChina:originChine,
         pickupAvailable:hasPickup,
+        pickupPoint:(window._selectedPickup&&window._selectedPickup[bid||'_none'])?window._selectedPickup[bid||'_none']:null,
         status:'pending',
         createdAt:serverTimestamp()
       });
-    }
+    } 
 
     cart=[];saveCart();
+        window._selectedPickup=null;
     toast('Commande confirmée !');
     showPage('orders');
   }catch(e){
@@ -1270,7 +1323,51 @@ paintBoutique(bInfo,prods,false);
 /* 2) chargement Firestore en arrière-plan */
 try{var s=await getDoc(doc(db,'boutiques',id));if(!s.exists()){$('page-boutique').innerHTML='<div class="em"><p>Introuvable</p></div>';return}bInfo={id:s.id,...s.data()};var following=await isFollowing(id);paintBoutique(bInfo,products.filter(function(p){return p.boutiqueId===id}),following)}catch(e){$('page-boutique').innerHTML='<div class="em"><p>'+escapeHtml(e.message)+'</p></div>'}
 }
-function paintBoutique(b,prods,following){var heroBg=b.banner||b.logo||'';var hero='<div class="bq-hero"><div class="bq-hero-clip">'+(heroBg?'<img class="bq-hero-bg" src="'+escapeHtml(heroBg)+'" onerror="this.style.display=\'none\'"/>':'')+'<div class="bq-hero-frost"></div></div><div class="bq-logo-wrap">'+boutiqueLogoHtml(b)+'</div></div>';var followBtn='<button type="button" class="bq-btn-follow'+(following?' following':'')+'" id="bqFollow">'+(following?'Suivi':'S\'abonner')+'</button>';$('page-boutique').innerHTML='<div class="pd-top"><button type="button" id="bqBack"><i class="fa-solid fa-arrow-left"></i></button></div>'+hero+'<div class="bq-head"><div class="bq-name">'+escapeHtml(b.name||'')+'</div><div class="bq-desc">'+escapeHtml(b.description||'')+'</div></div><div class="bq-actions">'+followBtn+'<button type="button" class="bq-btn-msg" id="btnMsgBout">Message</button></div><div class="pg">'+prods.map(productCard).join('')+'</div>';document.getElementById('bqBack').addEventListener('click',goBack);document.getElementById('bqFollow').addEventListener('click',async function(){if(!currentUser){showPage('auth');return}var btn=this;var nowFollowing=btn.classList.contains('following');await setFollow(b.id,!nowFollowing);if(!nowFollowing){btn.classList.add('following');btn.textContent='Suivi';toast('Abonné')}else{btn.classList.remove('following');btn.textContent='S\'abonner';toast('Désabonné')}});document.getElementById('btnMsgBout').addEventListener('click',async function(){if(!currentUser){showPage('auth');return}var qy=await getDocs(query(collection(db,'conversations'),where('boutiqueId','==',b.id),where('userId','==',currentUser.uid)));var cid;if(!qy.empty)cid=qy.docs[0].id;else{var ref=await addDoc(collection(db,'conversations'),{boutiqueId:b.id,userId:currentUser.uid,customerEmail:currentUser.email,customerName:currentUser.email,boutiqueName:b.name||'',lastMessage:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});cid=ref.id}showPage('chat-thread',cid)});$('page-boutique').querySelectorAll('[data-pid]').forEach(function(el){el.addEventListener('click',function(){showPage('product',el.getAttribute('data-pid'))})})} 
+function paintBoutique(b,prods,following){
+  var heroBg=b.banner||b.logo||'';
+  var hero='<div class="bq-hero"><div class="bq-hero-clip">'+(heroBg?'<img class="bq-hero-bg" src="'+escapeHtml(heroBg)+'" onerror="this.style.display=\'none\'"/>':'')+'<div class="bq-hero-frost"></div></div><div class="bq-logo-wrap">'+boutiqueLogoHtml(b)+'</div></div>';
+  var followBtn='<button type="button" class="bq-btn-follow'+(following?' following':'')+'" id="bqFollow">'+(following?'Suivi':'S\'abonner')+'</button>';
+  $('page-boutique').innerHTML='<div class="pd-top"><button type="button" id="bqBack"><i class="fa-solid fa-arrow-left"></i></button></div>'
+    +hero
+    +'<div class="bq-head"><div class="bq-name">'+escapeHtml(b.name||'')+'</div><div class="bq-desc">'+escapeHtml(b.description||'')+'</div></div>'
+    +'<div class="bq-actions">'+followBtn+'<button type="button" class="bq-btn-msg" id="btnMsgBout">Message</button></div>'
+    +'<div class="pr-section" id="bqPickupSection" style="display:none"></div>'
+    +'<div class="pg">'+prods.map(productCard).join('')+'</div>';
+
+  document.getElementById('bqBack').addEventListener('click',goBack);
+  document.getElementById('bqFollow').addEventListener('click',async function(){
+    if(!currentUser){showPage('auth');return}
+    var btn=this;var nowFollowing=btn.classList.contains('following');
+    await setFollow(b.id,!nowFollowing);
+    if(!nowFollowing){btn.classList.add('following');btn.textContent='Suivi';toast('Abonné')}
+    else{btn.classList.remove('following');btn.textContent='S\'abonner';toast('Désabonné')}
+  });
+  document.getElementById('btnMsgBout').addEventListener('click',async function(){
+    if(!currentUser){showPage('auth');return}
+    var qy=await getDocs(query(collection(db,'conversations'),where('boutiqueId','==',b.id),where('userId','==',currentUser.uid)));
+    var cid;
+    if(!qy.empty)cid=qy.docs[0].id;
+    else{
+      var ref=await addDoc(collection(db,'conversations'),{boutiqueId:b.id,userId:currentUser.uid,customerEmail:currentUser.email,customerName:currentUser.email,boutiqueName:b.name||'',lastMessage:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      cid=ref.id;
+    }
+    showPage('chat-thread',cid);
+  });
+
+  // Charge les points relais en arrière-plan
+  loadPickupPoints(b.id).then(function(pts){
+    var sec=document.getElementById('bqPickupSection');
+    if(!sec)return;
+    if(!pts.length){sec.style.display='none';return}
+    sec.style.display='block';
+    sec.innerHTML='<div class="pr-section-head"><h3><i class="fa-solid fa-location-dot" style="color:#00A854;margin-right:6px"></i>Points relais</h3><span>'+pts.length+' disponible(s)</span></div>'
+      +'<div class="pr-list">'+pts.map(function(p){return pickupPointCardHtml(p,null,false)}).join('')+'</div>';
+  }).catch(function(){});
+
+  $('page-boutique').querySelectorAll('[data-pid]').forEach(function(el){
+    el.addEventListener('click',function(){showPage('product',el.getAttribute('data-pid'))});
+  });
+}
 async function renderFollows(){if(!currentUser){showPage('auth');return}$('page-follows').innerHTML='<div style="padding:12px;background:#fff;display:flex;gap:8px;align-items:center"><button type="button" id="flBack">←</button><b>Liste de suivi</b></div><div id="flList"><div class="em"><p>Chargement…</p></div></div>';document.getElementById('flBack').addEventListener('click',goBack);try{var s=await getDocs(query(collection(db,'follows'),where('userId','==',currentUser.uid)));var ids=s.docs.map(function(d){return d.data().boutiqueId});if(!ids.length){document.getElementById('flList').innerHTML='<div class="em"><p>Aucune boutique suivie</p></div>';return}var boutiques=[];for(var i=0;i<ids.length;i++){try{var bd=await getDoc(doc(db,'boutiques',ids[i]));if(bd.exists())boutiques.push({id:bd.id,...bd.data()})}catch(e){}}document.getElementById('flList').innerHTML=boutiques.map(function(b){var ava=b.logo?'<img src="'+escapeHtml(b.logo)+'"/>':escapeHtml((b.name||'?')[0].toUpperCase());return'<div class="follow-row"><div class="fr-ava" data-bid="'+b.id+'">'+ava+'</div><div class="fr-name">'+escapeHtml(b.name||'')+'</div><button type="button" data-unfollow="'+b.id+'">Ne plus suivre</button></div>'}).join('');document.querySelectorAll('#flList .fr-ava').forEach(function(el){el.addEventListener('click',function(){showPage('boutique',el.getAttribute('data-bid'))})});document.querySelectorAll('[data-unfollow]').forEach(function(btn){btn.addEventListener('click',async function(){await setFollow(btn.getAttribute('data-unfollow'),false);renderFollows()})})}catch(e){document.getElementById('flList').innerHTML='<div class="em"><p>'+escapeHtml(e.message)+'</p></div>'}}
 function convCacheKey(){return 'vl_convs_'+(currentUser?currentUser.uid:'anon')}
 function loadConvCache(){try{return JSON.parse(localStorage.getItem(convCacheKey())||'[]')}catch(e){return[]}}
