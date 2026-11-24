@@ -36,6 +36,13 @@ button{cursor:pointer}
 .pc .px{font-size:17px;font-weight:800;color:var(--danger)}
 .free-deliv{display:inline-block;background:#E02E24;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:3px;transform:skewX(-12deg);margin-right:4px;letter-spacing:.3px;text-transform:uppercase;line-height:1.4}
 .free-deliv span{display:inline-block;transform:skewX(12deg)}
+.chat-prod-float{position:fixed;right:12px;bottom:calc(var(--nav-h) + 20px + var(--safe-b));z-index:250;width:190px;background:#fff;border:2px solid #00A854;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden}
+.chat-prod-float .cpf-x{position:absolute;top:4px;right:4px;width:22px;height:22px;background:none;color:#E02E24;font-size:18px;font-weight:800;line-height:1;z-index:2}
+.chat-prod-float .cpf-img{width:100%;aspect-ratio:1;object-fit:cover;background:#eee;display:block}
+.chat-prod-float .cpf-body{padding:6px 8px 8px}
+.chat-prod-float .cpf-title{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-prod-float .cpf-desc{font-size:10px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.chat-prod-float .cpf-price{font-size:12px;font-weight:800;color:#E02E24;margin-top:3px}
 .em{text-align:center;padding:48px 20px;color:#888}
 .bn{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav-h)+var(--safe-b));padding-bottom:var(--safe-b);background:#fff;border-top:1px solid var(--border);display:flex;z-index:100}
 .bn button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;color:#666;height:var(--nav-h)}
@@ -378,7 +385,7 @@ function goBack(){
 document.getElementById('cartBtn').addEventListener('click',function(){setChrome(false);showPage('cart')});
 document.querySelectorAll('.bn button').forEach(function(btn){btn.addEventListener('click',function(){setChrome(false);showPage(btn.dataset.page)})});
 async function loadCategories(){try{var s=await getDocs(collection(db,'categories'));categories=s.docs.map(function(d){return{id:d.id,...d.data()}})}catch(e){categories=[]}}
-async function loadProducts(){try{var s=await getDocs(collection(db,'products'));products=s.docs.map(function(d){return{id:d.id,...d.data()}}).filter(function(p){return p.published!==false});saveProductCache(products)}catch(e){if(!products.length)products=loadProductCache()}return products}
+async function loadProducts(){try{var s=await getDocs(query(collection(db,'products'),where('published','==',true)));products=s.docs.map(function(d){return{id:d.id,...d.data()}});saveProductCache(products)}catch(e){console.warn('loadProducts',e);if(!products.length)products=loadProductCache()}return products}
 function productCard(p){var promo=p.promoPrice&&p.promoPrice<p.price;var price=minProductPrice(p);var img=(p.images&&p.images[0])||'';var deliv=p.deliveryTime||'2 jours';
 var freeDeliv=p.fastDelivery===true;var showStock=p.showStock!==false;var struck=promo?' <span style="text-decoration:line-through;color:#999;font-size:11px">'+formatPrice(p.price)+' F</span>':'';var stockLine=showStock?'<div style="font-size:10px;color:#888">Stock: '+(p.stock!=null?p.stock:0)+'</div>':'';return'<div class="pc" data-pid="'+p.id+'"><div class="im">'+(img?'<img src="'+escapeHtml(img)+'" loading="lazy" onerror="this.onerror=null;this.style.background=\'#eee\'"/>':'')+'</div><div class="bd"><div class="tt">'+escapeHtml(p.name)+'</div><div style="font-size:11px;color:#00A854;margin-bottom:4px">'+(freeDeliv?'<span class="free-deliv"><span>Livraison Gratuite</span></span>':'Livraison:')+' '+escapeHtml(deliv)+'</div>'+stockLine+'<div><span class="px">'+formatPrice(price)+' F</span>'+struck+'</div></div></div>'}
 function diversifyProducts(list){var sorted=list.slice().sort(function(a,b){var ta=(a.createdAt&&a.createdAt.seconds)?a.createdAt.seconds*1000:(a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0);var tb=(b.createdAt&&b.createdAt.seconds)?b.createdAt.seconds*1000:(b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0);if(ta===0)ta=(a.updatedAt&&a.updatedAt.seconds)?a.updatedAt.seconds*1000:0;if(tb===0)tb=(b.updatedAt&&b.updatedAt.seconds)?b.updatedAt.seconds*1000:0;return tb-ta});var byCat={};var noCat=[];sorted.forEach(function(p){var c=p.categoryId||'_none';if(c==='_none')noCat.push(p);else{if(!byCat[c])byCat[c]=[];byCat[c].push(p)}});var cats=Object.keys(byCat);var result=[];var maxLen=0;cats.forEach(function(c){if(byCat[c].length>maxLen)maxLen=byCat[c].length});for(var i=0;i<maxLen;i++){cats.forEach(function(c){if(byCat[c][i])result.push(byCat[c][i])})}noCat.forEach(function(p){result.push(p)});return result}
@@ -506,19 +513,52 @@ function saveThreadCache(cid,list){try{localStorage.setItem(threadCacheKey(cid),
 async function renderChatThread(cid){
 $('page-chat-thread').innerHTML=`
 <div class="ct-header">
-  <div class="ct-left">
-    <div class="ct-logo">IDA</div>
-    <div class="ct-heading">Messages</div>
+  <button type="button" id="ctBack" class="ct-more" style="grid-column:1;justify-self:start"><i class="fa-solid fa-arrow-left"></i></button>
+  <div style="grid-column:2;display:flex;align-items:center;gap:8px;justify-self:center;min-width:0">
+    <div id="ctAva" style="width:32px;height:32px;border-radius:50%;background:#eee;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00A854;flex-shrink:0"></div>
+    <div id="ctTitle" class="ct-heading" style="max-width:160px;overflow:hidden;text-overflow:ellipsis">Chat</div>
   </div>
-
-  <button type="button" id="ctMore" class="ct-more">
+  <button type="button" id="ctMore" class="ct-more" style="grid-column:3;justify-self:end">
     <i class="fa-solid fa-ellipsis-vertical"></i>
   </button>
 </div>
-<div id="ctBox" style="padding:12px;min-height:50vh"></div>
+<div id="ctBox" style="padding:12px;min-height:50vh;padding-bottom:80px"></div>
 <div id="ctBar"></div>`;
 
-var cached=loadThreadCache(cid);document.getElementById('ctBack').addEventListener('click',function(){goBack()});var cached=loadThreadCache(cid);if(cached.length){paintThread(cached)}var convCache=loadConvCache();var convCached=convCache.find(function(c){return c.id===cid})||{};var conv={id:cid,boutiqueId:convCached.boutiqueId||'',boutiqueName:convCached.boutiqueName||'Chat'};document.getElementById('ctTitle').textContent=conv.boutiqueName;renderChatBar(conv);try{var cdoc=await getDoc(doc(db,'conversations',cid));if(cdoc.exists()){var cdata=cdoc.data();conv={id:cid,boutiqueId:cdata.boutiqueId||'',boutiqueName:cdata.boutiqueName||'Chat'};document.getElementById('ctTitle').textContent=conv.boutiqueName;renderChatBar(conv);if(conv.boutiqueId){getDoc(doc(db,'boutiques',conv.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();var ava=document.getElementById('ctAva');if(ava)ava.innerHTML=b.logo?'<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>':escapeHtml((b.name||'B')[0].toUpperCase())}}).catch(function(){})}}document.getElementById('ctMore').addEventListener('click',function(){openChatSettings(conv)});onSnapshot(query(collection(db,'conversations',cid,'messages'),orderBy('createdAt','asc')),function(snap){var msgs=snap.docs.map(function(d){var m=d.data();return{from:m.from,text:m.text||''}});if(isBlockedBoutique(conv.boutiqueId)){msgs=msgs.filter(function(m){return m.from==='user'})}saveThreadCache(cid,msgs);paintThread(msgs)})}catch(e){toast(e.message)}}
+var cached=loadThreadCache(cid);
+document.getElementById('ctBack').addEventListener('click',function(){goBack()});
+if(cached.length){paintThread(cached)}
+var convCache=loadConvCache();
+var convCached=convCache.find(function(c){return c.id===cid})||{};
+var conv={id:cid,boutiqueId:convCached.boutiqueId||'',boutiqueName:convCached.boutiqueName||'Chat'};
+document.getElementById('ctTitle').textContent=conv.boutiqueName;
+renderChatBar(conv);
+try{
+  var cdoc=await getDoc(doc(db,'conversations',cid));
+  if(cdoc.exists()){
+    var cdata=cdoc.data();
+    conv={id:cid,boutiqueId:cdata.boutiqueId||'',boutiqueName:cdata.boutiqueName||'Chat'};
+    document.getElementById('ctTitle').textContent=conv.boutiqueName;
+    renderChatBar(conv);
+    if(conv.boutiqueId){
+      getDoc(doc(db,'boutiques',conv.boutiqueId)).then(function(bd){
+        if(bd.exists()){
+          var b=bd.data();
+          var ava=document.getElementById('ctAva');
+          if(ava)ava.innerHTML=b.logo?'<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>':escapeHtml((b.name||'B')[0].toUpperCase());
+        }
+      }).catch(function(){})
+    }
+  }
+  document.getElementById('ctMore').addEventListener('click',function(){openChatSettings(conv)});
+  onSnapshot(query(collection(db,'conversations',cid,'messages'),orderBy('createdAt','asc')),function(snap){
+    var msgs=snap.docs.map(function(d){var m=d.data();return{from:m.from,text:m.text||''}});
+    if(isBlockedBoutique(conv.boutiqueId)){msgs=msgs.filter(function(m){return m.from==='user'})}
+    saveThreadCache(cid,msgs);
+    paintThread(msgs);
+  });
+}catch(e){toast(e.message)}
+}
 function renderChatBar(conv){var bar=document.getElementById('ctBar');if(!bar)return;var bid=conv.boutiqueId||'';if(isBlockedBoutique(bid)){bar.innerHTML='<div style="position:fixed;left:0;right:0;bottom:0;background:#fff;padding:14px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid #eee;text-align:center"><div style="font-size:13px;color:#666;margin-bottom:8px">Vous avez bloqué cette entreprise</div><button type="button" id="ctUnblock" class="ba" style="width:100%;height:40px">Débloquer pour chatter</button></div>';document.getElementById('ctUnblock').addEventListener('click',function(){confirmAction('Débloquer cette boutique ?','Vous pourrez à nouveau échanger avec cette boutique.',function(){toggleBlockBoutique(conv)})})}else{bar.innerHTML='<div style="position:fixed;left:0;right:0;bottom:0;background:#fff;padding:8px;display:flex;gap:8px"><input id="ctIn" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:20px"/><button type="button" class="br" style="width:auto;padding:0 16px;height:40px;border-radius:20px" id="ctSend">Envoyer</button></div>';document.getElementById('ctSend').addEventListener('click',async function(){var text=document.getElementById('ctIn').value.trim();if(!text)return;var local=loadThreadCache(conv.id);local.push({from:'user',text:text});saveThreadCache(conv.id,local);paintThread(local);document.getElementById('ctIn').value='';try{await addDoc(collection(db,'conversations',conv.id,'messages'),{from:'user',text:text,createdAt:serverTimestamp()});await updateDoc(doc(db,'conversations',conv.id),{lastMessage:text,updatedAt:serverTimestamp()})}catch(e){toast(e.message)}})}}
 function paintThread(msgs){var box=document.getElementById('ctBox');if(!box)return;box.innerHTML=msgs.map(function(m){var me=m.from==='user';return'<div style="text-align:'+(me?'right':'left')+';margin:6px 0"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:'+(me?'#00A854':'#eee')+';color:'+(me?'#fff':'#333')+';font-size:13px">'+escapeHtml(m.text||'')+'</span></div>'}).join('')}
 function notifKey(bid){return 'vl_notif_'+(currentUser?currentUser.uid:'anon')+'_'+bid}
