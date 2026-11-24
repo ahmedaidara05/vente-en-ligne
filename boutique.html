@@ -144,6 +144,7 @@ button.d{color:var(--danger);border-color:var(--danger)}
       <button type="button" data-t="auto">Auto-réponses</button>
       
             <button type="button" data-t="points">Points relais</button>
+            <button type="button" data-t="suivi">Suivi</button>
     </div>
     <div id="tab-home" class="card"><h3>Dashboard</h3><p id="dashStats">…</p></div>
     <div id="tab-profil" class="card hidden"></div>
@@ -152,6 +153,7 @@ button.d{color:var(--danger);border-color:var(--danger)}
     <div id="tab-messages" class="card hidden"></div>
     <div id="tab-auto" class="card hidden"></div>
         <div id="tab-points" class="card hidden"></div>
+        <div id="tab-suivi" class="card hidden"></div>
   </div>
 </div>
 
@@ -286,7 +288,7 @@ document.querySelectorAll('.nav button').forEach(b=>{
 });
 
 function tab(id){
-  ['home','profil','produits','commandes','messages','auto','points'].forEach(t=>{
+  ['home','profil','produits','commandes','messages','auto','points','suivi'].forEach(t=>{
     const el=$('tab-'+t);
     if(el)el.classList.toggle('hidden',t!==id);
   });
@@ -296,6 +298,7 @@ function tab(id){
   if(id==='messages')renderMessages();
   if(id==='auto')renderAuto();
     if(id==='points')renderPoints();
+    if(id==='suivi')renderSuivi();
   if(id==='home')loadDashStats();
 }
 
@@ -942,7 +945,197 @@ async function renderPoints(){
     }catch(e){msg.className='err';msg.textContent=e.message;}
   });
 }
-/* ================== AUTH STATE ================== */
+  
+  /* ================== SUIVI LIVRAISON ================== */
+const CARRIERS_LIST=['DHL','FedEx','UPS','STO Express','La Poste','China Post','Cainiao','Colis Privé','SF Express','YunExpress','4PX','Autre'];
+
+const TRACKING_STATUSES=[
+  'Commande confirmée',
+  'En préparation',
+  'Emballée',
+  'Expédiée',
+  'En transit',
+  'Arrivée au pays de destination',
+  'En cours de dédouanement',
+  'Dédouanée',
+  'Arrivée au centre de tri local',
+  'En cours de livraison',
+  'Arrivée au point relais',
+  'Livrée',
+  'Retournée',
+  'Annulée'
+];
+
+async function generateTrackingOrderNumber(){
+  // 8 chiffres aléatoires, sans suite logique, jamais 2 fois le même
+  for(let i=0;i<10;i++){
+    let num='';
+    for(let j=0;j<8;j++)num+=Math.floor(Math.random()*10);
+    if(num[0]==='0')num='1'+num.slice(1); // évite de commencer par 0
+    const full='IDA'+num;
+    try{
+      const s=await getDocs(query(collection(db,'orders'),where('trackingOrderNumber','==',full)));
+      if(s.empty)return full;
+    }catch(e){return full;}
+  }
+  return 'IDA'+Date.now().toString().slice(-8);
+}
+
+async function renderSuivi(){
+  const el=$('tab-suivi');
+  el.innerHTML='<h3>Suivi livraison</h3><p class="muted" style="margin-bottom:12px">Gérez le suivi de chaque commande.</p><div id="suiviList"><p class="muted">Chargement…</p></div>';
+  try{
+    const s=await getDocs(query(collection(db,'orders'),where('boutiqueId','==',boutiqueId)));
+    const list=s.docs.map(d=>({id:d.id,...d.data()}));
+    list.sort((a,b)=>((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));
+    if(!list.length){$('suiviList').innerHTML='<p class="muted">Aucune commande</p>';return;}
+    $('suiviList').innerHTML=list.map(o=>{
+      const num=o.trackingOrderNumber||'— non configuré —';
+      const carrier=o.carrier||'—';
+      const status=o.trackingStatus||'—';
+      return '<div class="item" style="padding:12px 0">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+          +'<b style="font-size:13px">'+esc(o.orderNumber||o.id)+'</b>'
+          +'<button type="button" class="s" data-track="'+o.id+'">Configurer</button>'
+        +'</div>'
+        +'<div class="muted" style="font-size:11px;line-height:1.6">'
+          +'📦 Suivi : <b style="color:#00A854">'+esc(num)+'</b><br/>'
+          +'🚚 Transporteur : '+esc(carrier)+'<br/>'
+          +'📍 Statut : '+esc(status)
+        +'</div></div>';
+    }).join('');
+    el.querySelectorAll('[data-track]').forEach(b=>b.addEventListener('click',()=>openSuiviForm(b.getAttribute('data-track'))));
+  }catch(e){$('suiviList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}
+}
+
+async function openSuiviForm(orderId){
+  const el=$('tab-suivi');
+  try{
+    const s=await getDoc(doc(db,'orders',orderId));
+    if(!s.exists()){alert('Commande introuvable');return;}
+    const o={id:s.id,...s.data()};
+
+    // Charge les événements existants
+    let events=[];
+    try{
+      const evs=await getDocs(query(collection(db,'orders',orderId,'trackingEvents'),orderBy('timestamp','desc')));
+      events=evs.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(e){}
+
+    const curCarrier=o.carrier||'';
+    const curStatus=o.trackingStatus||'';
+    const curTracking=o.trackingNumber||'';
+    const curAddr=o.trackingAddress||((o.customer&&o.customer.address)||'');
+    const curRecipient=o.trackingRecipient||((o.customer&&o.customer.name)||'');
+    const curNum=o.trackingOrderNumber||'';
+
+    el.innerHTML='<h3>Suivi — '+esc(o.orderNumber||o.id)+'</h3>'
+      +'<button type="button" class="s" id="btnSuiviBack">← Retour</button>'
+      +'<div style="margin-top:12px;background:#111;padding:12px;border-radius:8px">'
+        +'<label>Numéro de suivi IDA</label>'
+        +'<input id="sfNum" value="'+esc(curNum)+'" readonly placeholder="Sera généré automatiquement"/>'
+        +'<label>Transporteur</label>'
+        +'<select id="sfCarrier">'
+          +'<option value="">—</option>'
+          +CARRIERS_LIST.map(c=>'<option value="'+c+'" '+(curCarrier===c?'selected':'')+'>'+c+'</option>').join('')
+        +'</select>'
+        +'<label>Numéro de tracking transporteur</label>'
+        +'<input id="sfTracking" value="'+esc(curTracking)+'" placeholder="Ex: 777465753021102"/>'
+        +'<label>Statut actuel</label>'
+        +'<select id="sfStatus">'
+          +'<option value="">—</option>'
+          +TRACKING_STATUSES.map(st=>'<option value="'+st+'" '+(curStatus===st?'selected':'')+'>'+st+'</option>').join('')
+        +'</select>'
+        +'<label>Adresse de livraison finale</label>'
+        +'<textarea id="sfAddr" rows="2">'+esc(curAddr)+'</textarea>'
+        +'<label>Destinataire</label>'
+        +'<input id="sfRecipient" value="'+esc(curRecipient)+'"/>'
+        +'<button type="button" class="p" id="btnSaveSuivi">Enregistrer les infos</button>'
+      +'</div>'
+      +'<div style="margin-top:16px">'
+        +'<h3 style="font-size:13px">Événements chronologiques</h3>'
+        +'<p class="muted" style="font-size:11px;margin-bottom:8px">Choisissez un statut : la date/heure est enregistrée automatiquement.</p>'
+        +'<select id="sfEvtStatus">'
+          +TRACKING_STATUSES.map(st=>'<option value="'+st+'">'+st+'</option>').join('')
+        +'</select>'
+        +'<input id="sfEvtLoc" placeholder="Lieu (optionnel) — ex: Kunming, Chine"/>'
+        +'<input id="sfEvtDesc" placeholder="Description (optionnel)"/>'
+        +'<button type="button" class="p" id="btnAddEvt">+ Ajouter l\'événement</button>'
+      +'</div>'
+      +'<div id="sfEvtList" style="margin-top:12px"></div>';
+
+    $('btnSuiviBack').addEventListener('click',()=>renderSuivi());
+
+    // Afficher les événements (plus récent en haut)
+    function paintEvents(){
+      const box=$('sfEvtList');
+      if(!events.length){box.innerHTML='<p class="muted">Aucun événement</p>';return;}
+      box.innerHTML=events.map(ev=>{
+        const d=ev.timestamp&&ev.timestamp.seconds?new Date(ev.timestamp.seconds*1000):null;
+        const dateStr=d?d.toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+        return '<div class="item" style="display:flex;gap:10px;align-items:flex-start">'
+          +'<div style="width:8px;height:8px;flex-shrink:0;border-radius:50%;background:#00A854;margin-top:6px"></div>'
+          +'<div style="flex:1"><b style="font-size:12px">'+esc(ev.status||'')+'</b>'
+            +'<div class="muted" style="font-size:11px">'+dateStr+(ev.location?' · '+esc(ev.location):'')+'</div>'
+            +(ev.description?'<div style="font-size:12px">'+esc(ev.description)+'</div>':'')
+          +'</div>'
+          +'<button type="button" class="s d" data-delve="'+ev.id+'">×</button>'
+        +'</div>';
+      }).join('');
+      box.querySelectorAll('[data-delve]').forEach(b=>{
+        b.addEventListener('click',async()=>{
+          if(!confirm('Supprimer cet événement ?'))return;
+          try{
+            await deleteDoc(doc(db,'orders',orderId,'trackingEvents',b.getAttribute('data-delve')));
+            events=events.filter(e=>e.id!==b.getAttribute('data-delve'));
+            paintEvents();
+          }catch(e){alert(e.message);}
+        });
+      });
+    }
+    paintEvents();
+
+    // Enregistrer les infos principales
+    $('btnSaveSuivi').addEventListener('click',async()=>{
+      let num=$('sfNum').value.trim();
+      if(!num){num=await generateTrackingOrderNumber();}
+      const data={
+        trackingOrderNumber:num,
+        carrier:$('sfCarrier').value||'',
+        trackingNumber:$('sfTracking').value.trim(),
+        trackingStatus:$('sfStatus').value||'',
+        trackingAddress:$('sfAddr').value.trim(),
+        trackingRecipient:$('sfRecipient').value.trim(),
+        updatedAt:serverTimestamp()
+      };
+      try{
+        await updateDoc(doc(db,'orders',orderId),data);
+        $('sfNum').value=num;
+        alert('Suivi enregistré ✅\nNuméro : '+num);
+      }catch(e){alert(e.message);}
+    });
+
+    // Ajouter un événement
+    $('btnAddEvt').addEventListener('click',async()=>{
+      const st=$('sfEvtStatus').value;
+      if(!st){alert('Choisis un statut');return;}
+      try{
+        const ref=await addDoc(collection(db,'orders',orderId,'trackingEvents'),{
+          status:st,
+          location:$('sfEvtLoc').value.trim(),
+          description:$('sfEvtDesc').value.trim(),
+          timestamp:serverTimestamp()
+        });
+        events.unshift({id:ref.id,status:st,location:$('sfEvtLoc').value.trim(),description:$('sfEvtDesc').value.trim(),timestamp:{seconds:Date.now()/1000}});
+        $('sfEvtLoc').value='';
+        $('sfEvtDesc').value='';
+        paintEvents();
+      }catch(e){alert(e.message);}
+    });
+
+  }catch(e){el.innerHTML='<span class="err">'+esc(e.message)+'</span>';}
+}
+/* ================== AUTH STATE ================== */ 
 onAuthStateChanged(auth,async(u)=>{
   if(!u){showLogin();return;}
   try{
