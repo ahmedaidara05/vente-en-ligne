@@ -473,6 +473,15 @@ function openProdForm(id){
     +'<label>Livraison</label><select id="pDelivery">'+delivs.map(d=>'<option value="'+d+'" '+(p&&p.deliveryTime===d?'selected':'')+'>'+d+'</option>').join('')+'</select>'
     +'<label style="margin-top:6px"><input type="checkbox" id="pFromChina" '+(p&&p.fromChina===true?'checked':'')+'/> <b style="color:#00A854">Produit venant de Chine</b></label>'
     +'<label style="margin-top:6px"><input type="checkbox" id="pPickupFree" '+(p&&p.pickupFree===true?'checked':'')+'/> <b style="color:#00A854">Retrait gratuit en point relais</b></label>'
+      +'<div style="margin-top:12px;padding:10px;background:#111;border:1px solid #333;border-radius:8px">'
+      +'<div style="font-size:12px;font-weight:800;color:#00A854;margin-bottom:8px">💳 Mode de paiement accepté</div>'
+      +'<label style="display:block;margin-bottom:6px;font-size:12px"><input type="radio" name="payMode" value="cod" '+((!p||!p.paymentMode||p.paymentMode==='cod')?'checked':'')+'/> Paiement à la livraison (0% avant)</label>'
+      +'<label style="display:block;margin-bottom:6px;font-size:12px"><input type="radio" name="payMode" value="deposit30" '+((p&&p.paymentMode==='deposit30')?'checked':'')+'/> Acompte 30% minimum avant</label>'
+      +'<label style="display:block;margin-bottom:6px;font-size:12px"><input type="radio" name="payMode" value="deposit50" '+((p&&p.paymentMode==='deposit50')?'checked':'')+'/> Acompte 50% minimum avant</label>'
+      +'<label style="display:block;margin-bottom:8px;font-size:12px"><input type="radio" name="payMode" value="full" '+((p&&p.paymentMode==='full')?'checked':'')+'/> Paiement total avant livraison (100%)</label>'
+      +'<label style="display:block;font-size:11px;color:#aaa;margin-bottom:4px">Numéro Mobile Money / Wave / OM</label>'
+      +'<input id="pMobileMoney" placeholder="Ex: +221 77 000 00 00" value="'+esc((p&&p.mobileMoney)||'')+'"/>'
+    +'</div>'
     +'<label>Catégorie</label><select id="pCat"><option value="">—</option>'+categories.map(c=>'<option value="'+c.id+'" '+(p&&p.categoryId===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select>'
     +'<label>Description</label><textarea id="pDesc" rows="2">'+esc(p?p.description:'')+'</textarea>'
     +'<label>Images (max 20)</label><div id="imgList" class="img-grid"></div>'
@@ -585,6 +594,8 @@ function openProdForm(id){
       deliveryTime:$('pDelivery').value,
       fromChina:$('pFromChina').checked,
       pickupFree:$('pPickupFree').checked,
+            paymentMode:(document.querySelector('input[name="payMode"]:checked')||{}).value||'cod',
+      mobileMoney:$('pMobileMoney').value.trim(),
       categoryId:$('pCat').value||null,
       description:$('pDesc').value.trim(),
       images:editImages,
@@ -649,6 +660,14 @@ async function renderCommandes(){
         +(o.fromChina?'<div style="margin-bottom:6px"><span style="font-size:10px;background:#00A85422;color:#00A854;padding:2px 8px;border-radius:999px;font-weight:700">🐢 Origine : Chine</span></div>':'')
         +(o.pickupAvailable?'<div style="margin-bottom:6px"><span style="font-size:10px;background:#3B82F622;color:#3B82F6;padding:2px 8px;border-radius:999px;font-weight:700">📍 Retrait point relais</span>'
           +(o.pickupPoint&&o.pickupPoint.address?'<div class="muted" style="font-size:11px;margin-top:4px;padding-left:4px">→ '+esc(o.pickupPoint.address)+'</div>':'')
+          
+          +'</div>':'')
+              +((o.status==='pending_payment'||o.status==='payment_declared')?
+          '<div style="background:#FCD34D22;border:1px solid #FCD34D;border-radius:8px;padding:8px;margin-bottom:8px">'
+            +'<div style="font-size:11px;font-weight:800;color:#92400E">💳 Paiement — '+(o.status==='payment_declared'?'Client déclare avoir payé':'En attente de paiement')+'</div>'
+            +'<div style="font-size:11px;color:#92400E;margin-top:4px">À payer maintenant : <b>'+formatPrice(o.payNow||0)+' F</b></div>'
+            +(o.payLater?'<div style="font-size:11px;color:#92400E">À la livraison : <b>'+formatPrice(o.payLater)+' F</b></div>':'')
+            +(o.status==='payment_declared'?'<button type="button" class="s" data-confirm-pay="'+o.id+'" style="margin-top:6px;background:#00A854;color:#fff;border:none">✅ Confirmer le paiement reçu</button>':'')
           +'</div>':'')
         +'<div style="background:#111;border-radius:8px;padding:8px;margin-bottom:8px">'
           +'<div class="muted" style="font-size:10px;margin-bottom:4px">📦 Articles</div>'
@@ -659,7 +678,16 @@ async function renderCommandes(){
           +'<b style="font-size:15px;color:#E02E24">'+formatPrice(o.total||0)+' F</b>'
         +'</div>'
       +'</div>';
-    }).join('');
+      }).join('');
+    el.querySelectorAll('[data-confirm-pay]').forEach(function(b){
+      b.addEventListener('click',async function(){
+        if(!confirm('Confirmer avoir reçu le paiement ?'))return;
+        try{
+          await updateDoc(doc(db,'orders',b.getAttribute('data-confirm-pay')),{status:'paid',paidAt:serverTimestamp()});
+          renderCommandes();
+        }catch(e){alert(e.message);}
+      });
+    });
   }catch(e){$('ordList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}
 }
 
