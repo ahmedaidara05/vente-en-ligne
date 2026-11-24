@@ -536,12 +536,15 @@ function openVariantSheet(mode){
   var addr=prof.address&&prof.address.trim()?prof.address:'';
 
   // === Bandeau livraison (collé en haut) ===
-  var delivBanner='<div style="position:absolute;top:0;left:0;right:0;padding:8px 12px;font-size:11px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;z-index:2;'
+  // === Bandeau livraison (collé en haut, cliquable pour changer l'adresse) ===
+  var delivBanner='<div id="vsDelivBanner" style="position:absolute;top:0;left:0;right:0;padding:8px 12px;font-size:11px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;z-index:2;cursor:pointer;'
     +(freeDeliv?'background:#00A854':'background:#333')
     +'">'
     +'<i class="fa-solid fa-truck-fast"></i>'
     +'<span>Livraison '+(freeDeliv?'gratuite':'')+' '+escapeHtml(deliv)+'</span>'
-    +(addr?'<span style="margin-left:auto;font-weight:400;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50%">→ '+escapeHtml(addr)+'</span>':'<span style="margin-left:auto;font-weight:400;opacity:.9">Compte</span>')
+    +(addr
+      ? '<span id="vsDelivAddr" style="margin-left:auto;font-weight:400;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%">→ '+escapeHtml(addr)+' <i class="fa-solid fa-pencil" style="font-size:9px;opacity:.8"></i></span>'
+      : '<span id="vsDelivAddr" style="margin-left:auto;font-weight:400;opacity:.95">+ Ajouter adresse <i class="fa-solid fa-pencil" style="font-size:9px"></i></span>')
     +'</div>';
 
   // === En-tête produit ===
@@ -587,7 +590,22 @@ function openVariantSheet(mode){
   document.body.insertAdjacentHTML('beforeend',html);
 
   document.getElementById('vsClose').addEventListener('click',function(){document.getElementById('variantSheet').remove()});
-
+  // === Clic sur le bandeau livraison → modifier l'adresse ===
+  var delivBannerEl=document.getElementById('vsDelivBanner');
+  if(delivBannerEl){
+    delivBannerEl.addEventListener('click',function(e){
+      e.stopPropagation();
+      askDeliveryAddress(function(newAddr){
+        // Met à jour l'affichage du bandeau
+        var addrEl=document.getElementById('vsDelivAddr');
+        if(addrEl){
+          addrEl.innerHTML='→ '+escapeHtml(newAddr)+' <i class="fa-solid fa-pencil" style="font-size:9px;opacity:.8"></i>';
+        }
+        // Met à jour l'adresse du produit courant (sera utilisée dans la commande)
+        if(currentProduct)currentProduct._deliveryAddr=newAddr;
+      });
+    });
+  }
   document.querySelectorAll('.vs-opt').forEach(function(b){
     b.addEventListener('click',function(){
       selectedVariants[b.getAttribute('data-g')]=b.getAttribute('data-l');
@@ -608,7 +626,19 @@ function openVariantSheet(mode){
   document.getElementById('vsConfirm').addEventListener('click',function(){
     var finalPrice=calcVariantPrice(p,selectedVariants);
     var finalImg=variantImage(p,selectedVariants)||(p.images&&p.images[0])||'';
-    var item={productId:p.id,name:p.name,price:finalPrice,qty:qty,image:finalImg,variants:Object.assign({},selectedVariants),boutiqueId:p.boutiqueId||null};
+    // Adresse : celle modifiée dans le panneau, sinon celle du profil local
+    var prof=loadLocalProfile();
+    var itemAddr=(currentProduct&&currentProduct._deliveryAddr)||prof.address||'';
+    var item={
+      productId:p.id,
+      name:p.name,
+      price:finalPrice,
+      qty:qty,
+      image:finalImg,
+      variants:Object.assign({},selectedVariants),
+      boutiqueId:p.boutiqueId||null,
+      deliveryAddress:itemAddr
+    };
     if(mode==='cart'){cart.push(item);saveCart();toast('Ajouté au panier')}
     else{cart=[item];saveCart();showPage('checkout')}
     document.getElementById('variantSheet').remove();
@@ -660,7 +690,7 @@ async function placeOrder(){
         orderNumber:'CMD-'+Date.now().toString(36).toUpperCase(),
         userId:currentUser?currentUser.uid:null,
         boutiqueId:bid,
-        customer:{name:name,phone:phone,address:address,email:currentUser?currentUser.email:''},
+        customer:{name:name,phone:phone,address:(items[0]&&items[0].deliveryAddress)||address,email:currentUser?currentUser.email:''},
         items:items,subtotal:subB,
         shipping:k===0?(settings.shippingFee||0):0,
         total:subB+(k===0?(settings.shippingFee||0):0),
@@ -716,6 +746,30 @@ function saveLocalProfile(data){
     if(data.address)p.address=data.address;
     localStorage.setItem('vl_profile',JSON.stringify(p));
   }catch(e){}
+}
+  function askDeliveryAddress(callback){
+  var prof=loadLocalProfile();
+  var current=prof.address||'';
+  var old=document.getElementById('addrBox');if(old)old.remove();
+  var html='<div id="addrBox" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:350;display:flex;align-items:center;justify-content:center;padding:20px">'
+    +'<div style="background:#fff;border-radius:12px;width:100%;max-width:360px;padding:16px">'
+    +'<b style="font-size:15px;display:block;margin-bottom:8px">Adresse de livraison</b>'
+    +'<p style="font-size:12px;color:#666;margin-bottom:10px">Le colis partira à cette adresse.</p>'
+    +'<textarea id="addrInput" placeholder="Ex: Dakar, Sacré-Cœur 3, villa 12…" style="width:100%;min-height:70px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px">'+escapeHtml(current)+'</textarea>'
+    +'<div style="display:flex;gap:8px;margin-top:12px">'
+    +'<button type="button" id="addrCancel" class="ba" style="flex:1;height:40px">Annuler</button>'
+    +'<button type="button" id="addrSave" class="br" style="flex:1;height:40px;border-radius:20px;margin:0">Enregistrer</button>'
+    +'</div></div></div>';
+  document.body.insertAdjacentHTML('beforeend',html);
+  document.getElementById('addrCancel').addEventListener('click',function(){document.getElementById('addrBox').remove()});
+  document.getElementById('addrSave').addEventListener('click',function(){
+    var val=document.getElementById('addrInput').value.trim();
+    if(!val){toast('Adresse vide');return;}
+    saveLocalProfile({address:val});
+    document.getElementById('addrBox').remove();
+    toast('Adresse mise à jour');
+    if(typeof callback==='function')callback(val);
+  });
 }
 function renderAuth(){
   $('page-auth').innerHTML=
