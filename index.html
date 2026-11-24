@@ -169,6 +169,94 @@ button{cursor:pointer}
 .pay-status-badge.paid{background:#E8FFF0;color:#0a7a3e;border:1px solid #A7F3D0}
 .pay-btn{width:100%;height:44px;border-radius:22px;font-weight:800;font-size:14px;margin-top:10px;background:#00A854;color:#fff}
 .pay-btn.secondary{background:#fff;color:#00A854;border:2px solid #00A854}
+  /* === Masquer recherche + panier + nav sur Checkout === */
+/* === Masquer seulement la 1ère ligne du header (logo + recherche + panier) + nav du bas sur Checkout === */
+body.page-checkout-active .hi,
+body.page-checkout-active .bn {
+  display: none !important;
+}
+
+/* === Idem sur Mes commandes / Détail / Paniers sauvegardés === */
+body.page-orders-active .hi,
+body.page-orders-active .bn {
+  display: none !important;
+}
+
+/* === Cacher aussi les onglets catégories sur checkout (car pas utiles) === */
+body.page-checkout-active .ct {
+  display: none !important;
+}
+  /* === Checkout header + sauvegardes === */
+.chk-topbar{position:sticky;top:0;z-index:110;background:#fff;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;gap:8px}
+.chk-topbar button{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#333;background:#f5f5f5}
+.chk-topbar .chk-logo{font-size:20px;font-weight:800;color:#00A854;flex:1;text-align:center}
+.chk-topbar .chk-fav{background:#FFF7E6;color:#E02E24}
+.chk-topbar .chk-fav.saved{background:#E02E24;color:#fff}
+/* === Boutons checkout fixes en bas === */
+.chk-fixed-actions{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+  background:#fff;
+  border-top:1px solid #eee;
+  display:flex;
+  gap:8px;
+  z-index:115;
+  box-shadow:0 -2px 10px rgba(0,0,0,.05);
+}
+.chk-fixed-actions button{
+  flex:1;height:46px;border-radius:23px;font-weight:800;font-size:14px;
+}
+.chk-fixed-actions .sv-cancel{background:#fff;color:#E02E24;border:2px solid #E02E24}
+.chk-fixed-actions .sv-validate{background:#00A854;color:#fff;border:2px solid #00A854}
+
+/* Compense la hauteur des boutons fixes pour ne rien cacher */
+body.page-checkout-active .chk-page{padding-bottom:90px}
+  /* === Masquer le header + nav sur le panier === */
+body.page-cart-active .hi,
+body.page-cart-active .ct,
+body.page-cart-active .bn {
+  display: none !important;
+}
+
+/* === Header personnalisé panier === */
+.cart-topbar{
+  position:sticky;top:0;z-index:110;background:#fff;border-bottom:1px solid #eee;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;gap:8px;
+}
+.cart-topbar button{
+  width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#333;background:#f5f5f5;
+}
+.cart-topbar .cart-logo{
+  font-size:20px;font-weight:800;color:#00A854;flex:1;text-align:center;
+}
+.cart-search-bar{
+  display:none;padding:8px 12px;background:#fff;border-bottom:1px solid #eee;
+}
+.cart-search-bar.on{display:flex;gap:8px;align-items:center}
+.cart-search-bar input{
+  flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:20px;font-size:14px;
+}
+.cart-search-bar .cs-close{
+  width:34px;height:34px;border-radius:50%;background:#eee;font-size:16px;color:#333;
+  display:flex;align-items:center;justify-content:center;
+}
+/* === Liste checkouts sauvegardés === */
+.sv-list{padding:0}
+.sv-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin:10px;display:flex;gap:10px;align-items:flex-start;position:relative}
+.sv-card img{width:60px;height:60px;object-fit:cover;border-radius:8px;background:#eee;flex-shrink:0}
+.sv-card .sv-body{flex:1;min-width:0}
+.sv-card .sv-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-card .sv-meta{font-size:11px;color:#888;margin-top:2px}
+.sv-card .sv-total{font-size:13px;font-weight:800;color:#E02E24;margin-top:4px}
+.sv-card .sv-del{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:#FFF0F1;color:#E02E24;font-size:14px;display:flex;align-items:center;justify-content:center}
+.sv-actions{display:flex;gap:8px;margin-top:10px}
+.sv-actions button{flex:1;height:38px;border-radius:19px;font-weight:700;font-size:12px}
+.sv-actions .sv-cancel{background:#fff;color:#E02E24;border:2px solid #E02E24}
+.sv-actions .sv-validate{background:#00A854;color:#fff;border:2px solid #00A854}
 .free-deliv span{display:inline-block;transform:skewX(12deg)}
 .chat-prod-float{position:fixed;right:12px;bottom:calc(var(--nav-h) + 20px + var(--safe-b));z-index:250;width:150px;background:#fff;border:2px solid #00A854;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden}
 .chat-prod-float .cpf-x{position:absolute;top:4px;right:4px;width:22px;height:22px;background:none;color:#E02E24;font-size:18px;font-weight:800;line-height:1;z-index:2}
@@ -455,6 +543,7 @@ button{cursor:pointer}
 <div id="page-follows" class="page"></div>
   <div id="page-orders" class="page"></div>
 <div id="page-order-detail" class="page"></div>
+  <div id="page-saved-checkouts" class="page"></div>
 <nav class="bn">
 <button type="button" data-page="home" class="on"><i class="fa-solid fa-house"></i>Accueil</button>
 <button type="button" data-page="video"><i class="fa-solid fa-play"></i>Video</button>
@@ -503,7 +592,8 @@ function setChrome(hide,headerOnly){
   );
 }  
   let lastPageArgs={};
-function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'||page==='messages'){setChrome(true)}else{setChrome(page==='product'||page==='boutique'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}document.body.classList.toggle('page-account-active', page === 'account');if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows();else if(page==='orders')renderOrders();else if(page==='order-detail'&&data)renderOrderDetail(data)}
+function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'||page==='messages'){setChrome(true)}else{setChrome(page==='product'||page==='boutique'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}document.body.classList.toggle('page-account-active', page === 'account');document.body.classList.toggle('page-cart-active', page === 'cart');
+document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows();else if(page==='orders')renderOrders();else if(page==='order-detail'&&data)renderOrderDetail(data);else if(page==='saved-checkouts')renderSavedCheckouts()}
 function goBack(){
     var fs=document.getElementById('fsViewer');
     if(fs){fs.remove();return}
@@ -666,14 +756,15 @@ function openVariantSheet(mode){
 
   // === Bandeau livraison (collé en haut) ===
   // === Bandeau livraison (collé en haut, cliquable pour changer l'adresse) — Lot 1 : compact ===
-  var delivBanner='<div id="vsDelivBanner" style="position:absolute;top:0;left:0;right:0;padding:6px 10px;font-size:11px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;z-index:2;cursor:pointer;'
+  var delivBanner='<div id="vsDelivBanner" style="padding:8px 12px;font-size:11px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;border:none;'
     +(freeDeliv?'background:#00A854':'background:#333')
     +'">'
     +'<i class="fa-solid fa-truck-fast"></i>'
-    +'<span>Livraison '+(freeDeliv?'gratuite':'')+' '+escapeHtml(deliv)+'</span>'
+    +'<span>'+(freeDeliv?'Livraison gratuite':'Livraison '+escapeHtml(deliv))+'</span>'
     +(addr
-      ? '<span id="vsDelivAddr" style="margin-left:auto;font-weight:400;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%">→ '+escapeHtml(addr)+' <i class="fa-solid fa-pencil" style="font-size:9px;opacity:.8"></i></span>'
-      : '<span id="vsDelivAddr" style="margin-left:auto;font-weight:400;opacity:.95">+ Ajouter adresse <i class="fa-solid fa-pencil" style="font-size:9px"></i></span>')
+      ? '<span id="vsDelivAddr" style="margin-left:auto;font-weight:400;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%;cursor:pointer">→ '+escapeHtml(addr)+' <i class="fa-solid fa-pencil" style="font-size:9px;opacity:.8"></i></span>'
+      : '<span id="vsDelivAddr" style="margin-left:auto;font-weight:400;opacity:.95;cursor:pointer">+ Ajouter adresse <i class="fa-solid fa-pencil" style="font-size:9px"></i></span>')
+    +'<button type="button" id="vsClose" style="margin-left:6px;width:24px;height:24px;background:none;border:none;color:#fff;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0">×</button>'
     +'</div>';
 
   // === Badges livraison (à droite de "Livraison X") ===
@@ -716,39 +807,64 @@ function openVariantSheet(mode){
     +'<span style="margin-left:auto;font-weight:800;color:#E02E24;font-size:18px" id="vsPrice">'+formatPrice(total)+' F</span>'
     +'</div>';
 
+  // === Structure : HEADER fixe + BODY scrollable + FOOTER fixe ===
   var html='<div id="variantSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:flex;align-items:flex-end">'
-    +'<div style="background:#fff;width:100%;max-height:85vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px;position:relative">'
-    +delivBanner
-    +'<div style="display:flex;justify-content:flex-end;margin-bottom:4px"><button type="button" id="vsClose" style="width:30px;height:30px;border-radius:50%;background:#f0f0f0;font-size:18px;line-height:1">×</button></div>'
-    +header
-    +optsHtml
-    +qtyHtml
-          +'<div id="vsPayBox">'
-    +(()=>{
-      var pm=computePaymentForItem({productId:p.id,price:calcVariantPrice(p,selectedVariants),qty:qty});
-      var html='<div class="pay-box"><div class="pay-box-title"><i class="fa-solid fa-credit-card"></i>'+escapeHtml(pm.label)+'</div>';
-      if(pm.mode==='cod'){
-        html+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">0 F</span></div>';
-        html+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(pm.payLater)+' F</span></div>';
-      }else{
-        html+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">'+formatPrice(pm.payNow)+' F</span></div>';
-        if(pm.payLater>0)html+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(pm.payLater)+' F</span></div>';
-        if(pm.mobileMoney)html+='<div class="pay-mobile"><i class="fa-solid fa-mobile-screen"></i> '+escapeHtml(pm.mobileMoney)+'</div>';
-      }
-           return html+'</div>';
-    })()
+    +'<div style="background:#fff;width:100%;max-height:85vh;border-radius:16px 16px 0 0;position:relative;display:flex;flex-direction:column;overflow:hidden">'
+
+    // === HEADER FIXE (bandeau + bouton ×) ===
+      // === HEADER FIXE (bandeau + bouton × en dessous, séparés) ===
+    +'<div style="flex-shrink:0">'
+      +delivBanner
     +'</div>'
-    +'<button type="button" class="br" id="vsConfirm">'+(mode==='buy'?'Acheter maintenant':'Ajouter au panier')+'</button>'
+
+
+    // === BODY SCROLLABLE (image, titre, variantes, qty, paiement) ===
+    +'<div style="flex:1;overflow-y:auto;padding:0 16px 8px;-webkit-overflow-scrolling:touch">'
+      +header
+      +optsHtml
+      +qtyHtml
+      +'<div id="vsPayBox">'
+      +(()=>{
+        var pm=computePaymentForItem({productId:p.id,price:calcVariantPrice(p,selectedVariants),qty:qty});
+        var inner='<div class="pay-box"><div class="pay-box-title"><i class="fa-solid fa-credit-card"></i>'+escapeHtml(pm.label)+'</div>';
+        if(pm.mode==='cod'){
+          inner+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">0 F</span></div>';
+          inner+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(pm.payLater)+' F</span></div>';
+        }else{
+          inner+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">'+formatPrice(pm.payNow)+' F</span></div>';
+          if(pm.payLater>0)inner+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(pm.payLater)+' F</span></div>';
+          if(pm.mobileMoney)inner+='<div class="pay-mobile"><i class="fa-solid fa-mobile-screen"></i> '+escapeHtml(pm.mobileMoney)+'</div>';
+        }
+        return inner+'</div>';
+      })()
+      +'</div>'
+    +'</div>'
+
+    // === FOOTER FIXE (bouton Acheter/Ajouter) ===
+    +'<div style="flex-shrink:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid #eee;background:#fff">'
+      +'<button type="button" class="br" id="vsConfirm" style="margin:0">'+(mode==='buy'?'Acheter maintenant':'Ajouter au panier')+'</button>'
+    +'</div>'
+
     +'</div></div>';
 
   var old=document.getElementById('variantSheet');if(old)old.remove();
   document.body.insertAdjacentHTML('beforeend',html);
+    document.getElementById('vsClose').addEventListener('click',function(){document.getElementById('variantSheet').remove()});
 
-  document.getElementById('vsClose').addEventListener('click',function(){document.getElementById('variantSheet').remove()});
+  // Fermer en cliquant sur le fond sombre (hors de la feuille)
+  var _vs=document.getElementById('variantSheet');
+  if(_vs){
+    _vs.addEventListener('click',function(e){
+      // Si le clic est directement sur le fond (pas sur la feuille blanche)
+      if(e.target===_vs){
+        _vs.remove();
+      }
+    });
+  }
   // === Clic sur le bandeau livraison → modifier l'adresse ===
-  var delivBannerEl=document.getElementById('vsDelivBanner');
-  if(delivBannerEl){
-    delivBannerEl.addEventListener('click',function(e){
+  var delivAddrEl=document.getElementById('vsDelivAddr');
+  if(delivAddrEl){
+    delivAddrEl.addEventListener('click',function(e){
       e.stopPropagation();
       askDeliveryAddress(function(newAddr){
         // Met à jour l'affichage du bandeau
@@ -814,7 +930,84 @@ function openVariantSheet(mode){
     document.getElementById('variantSheet').remove();
   });
 }
-function renderCart(){var sub=cart.reduce(function(s,i){return s+i.price*i.qty},0);$('page-cart').innerHTML=cart.length?cart.map(function(it,idx){return'<div style="display:flex;gap:10px;padding:12px;background:#fff;border-bottom:1px solid #eee"><img src="'+escapeHtml(it.image||'')+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;background:#eee" onerror="this.style.background=\'#eee\'"/><div style="flex:1"><div style="font-weight:600">'+escapeHtml(it.name)+'</div><div style="font-size:12px;color:#888">'+Object.keys(it.variants||{}).map(function(k){return k+': '+it.variants[k]}).join(', ')+'</div><div style="color:#E02E24;font-weight:700">'+formatPrice(it.price)+' F × '+it.qty+'</div></div><button type="button" data-rm="'+idx+'" style="color:#E02E24">🗑</button></div>'}).join('')+'<div style="padding:12px;background:#fff"><div style="font-weight:700">Total: '+formatPrice(sub+(settings.shippingFee||0))+' F</div><button type="button" class="br" id="btnCheckout">Commander</button></div>':'<div class="em"><p>Panier vide</p></div>';document.querySelectorAll('[data-rm]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Supprimer ?'))return;cart.splice(+b.getAttribute('data-rm'),1);saveCart();renderCart()})});var bc=document.getElementById('btnCheckout');if(bc)bc.addEventListener('click',function(){if(!currentUser){showPage('auth');return}showPage('checkout')})}
+function renderCart(){
+  var sub=cart.reduce(function(s,i){return s+i.price*i.qty},0);
+
+  // === Header personnalisé ===
+  var cartHeader='<div class="cart-topbar">'
+    +'<button type="button" id="cartBackBtn"><i class="fa-solid fa-arrow-left"></i></button>'
+    +'<div class="cart-logo">IDA</div>'
+    +'<button type="button" id="cartSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>'
+  +'</div>'
+  +'<div class="cart-search-bar" id="cartSearchBar">'
+    +'<input type="search" id="cartSearchInput" placeholder="Rechercher dans le panier…"/>'
+    +'<button type="button" class="cs-close" id="cartSearchClose">×</button>'
+  +'</div>';
+
+  // === Contenu ===
+  var contentHtml='';
+  if(!cart.length){
+    contentHtml='<div class="em"><p>Panier vide</p></div>';
+  }else{
+    contentHtml=cart.map(function(it,idx){
+      return '<div class="cart-item" data-cidx="'+idx+'" style="display:flex;gap:10px;padding:12px;background:#fff;border-bottom:1px solid #eee">'
+        +'<img src="'+escapeHtml(it.image||'')+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;background:#eee" onerror="this.style.background=\'#eee\'"/>'
+        +'<div style="flex:1"><div style="font-weight:600">'+escapeHtml(it.name)+'</div>'
+        +'<div style="font-size:12px;color:#888">'+Object.keys(it.variants||{}).map(function(k){return k+': '+it.variants[k]}).join(', ')+'</div>'
+        +'<div style="color:#E02E24;font-weight:700">'+formatPrice(it.price)+' F × '+it.qty+'</div></div>'
+        +'<button type="button" data-rm="'+idx+'" style="color:#E02E24">🗑</button>'
+      +'</div>';
+    }).join('')
+    +'<div style="padding:12px;background:#fff"><div style="font-weight:700">Total: '+formatPrice(sub+(settings.shippingFee||0))+' F</div>'
+    +'<button type="button" class="br" id="btnCheckout">Commander</button></div>';
+  }
+
+  $('page-cart').innerHTML=cartHeader+contentHtml;
+
+  // === Bind des boutons header ===
+  document.getElementById('cartBackBtn').addEventListener('click',function(){goBack()});
+
+  var searchBar=document.getElementById('cartSearchBar');
+  var searchInput=document.getElementById('cartSearchInput');
+  document.getElementById('cartSearchBtn').addEventListener('click',function(){
+    searchBar.classList.toggle('on');
+    if(searchBar.classList.contains('on'))setTimeout(function(){searchInput.focus()},50);
+  });
+  document.getElementById('cartSearchClose').addEventListener('click',function(){
+    searchBar.classList.remove('on');
+    searchInput.value='';
+    renderCart();
+  });
+
+  // === Recherche dans le panier ===
+  if(searchInput){
+    searchInput.addEventListener('input',function(){
+      var term=searchInput.value.trim().toLowerCase();
+      var items=$('page-cart').querySelectorAll('[data-cidx]');
+      items.forEach(function(el){
+        var txt=el.textContent.toLowerCase();
+        el.style.display=(!term||txt.indexOf(term)>=0)?'flex':'none';
+      });
+    });
+  }
+
+  // === Suppression d'article ===
+  document.querySelectorAll('[data-rm]').forEach(function(b){
+    b.addEventListener('click',function(){
+      if(!confirm('Supprimer ?'))return;
+      cart.splice(+b.getAttribute('data-rm'),1);
+      saveCart();
+      renderCart();
+    });
+  });
+
+  // === Bouton commande ===
+  var bc=document.getElementById('btnCheckout');
+  if(bc)bc.addEventListener('click',function(){
+    if(!currentUser){showPage('auth');return}
+    showPage('checkout');
+  });
+}
   /* === Paiement : calcule les montants selon le mode du produit === */
 function getPaymentModeLabel(mode){
   return {cod:'Paiement à la livraison',deposit30:'Acompte 30% avant',deposit50:'Acompte 50% avant',full:'Paiement total avant livraison'}[mode]||'Paiement à la livraison';
@@ -834,6 +1027,107 @@ function computePaymentForItem(item){
   var payNow=Math.round(lineTotal*ratio);
   var payLater=lineTotal-payNow;
   return {mode:mode,label:getPaymentModeLabel(mode),mobileMoney:mobileMoney,payNow:payNow,payLater:payLater,lineTotal:lineTotal};
+}
+  
+  /* === Checkouts sauvegardés === */
+function loadSavedCheckouts(){
+  try{
+    var uid=currentUser?currentUser.uid:'anon';
+    return JSON.parse(localStorage.getItem('vl_saved_checkouts_'+uid)||'[]');
+  }catch(e){return[]}
+}
+function saveSavedCheckouts(list){
+  try{
+    var uid=currentUser?currentUser.uid:'anon';
+    localStorage.setItem('vl_saved_checkouts_'+uid,JSON.stringify(list.slice(0,30)));
+  }catch(e){}
+}
+function isCheckoutSaved(){
+  if(!cart.length)return false;
+  var list=loadSavedCheckouts();
+  var sig=JSON.stringify(cart.map(function(i){return{id:i.productId,price:i.price,qty:i.qty,v:i.variants}}));
+  return list.some(function(c){return c.sig===sig});
+}
+function saveCurrentCheckout(){
+  if(!cart.length){toast('Panier vide');return}
+  var list=loadSavedCheckouts();
+  var prof=loadLocalProfile();
+  var sig=JSON.stringify(cart.map(function(i){return{id:i.productId,price:i.price,qty:i.qty,v:i.variants}}));
+  // Evite doublons
+  list=list.filter(function(c){return c.sig!==sig});
+  list.unshift({
+    id:'sv_'+Date.now(),
+    sig:sig,
+    items:JSON.parse(JSON.stringify(cart)),
+    profile:{name:prof.name||'',phone:prof.phone||'',address:prof.address||''},
+    pickup:window._selectedPickup?JSON.parse(JSON.stringify(window._selectedPickup)):null,
+    total:cart.reduce(function(s,i){return s+i.price*i.qty},0),
+    savedAt:Date.now()
+  });
+  saveSavedCheckouts(list);
+}
+function deleteSavedCheckout(id){
+  var list=loadSavedCheckouts();
+  list=list.filter(function(c){return c.id!==id});
+  saveSavedCheckouts(list);
+}
+function restoreSavedCheckout(id){
+  var list=loadSavedCheckouts();
+  var c=list.find(function(x){return x.id===id});
+  if(!c)return;
+  cart=JSON.parse(JSON.stringify(c.items));
+  saveCart();
+  // Restaure profil
+  saveLocalProfile(c.profile||{});
+  // Restaure point relais
+  window._selectedPickup=c.pickup||null;
+  try{
+    if(window._selectedPickup)localStorage.setItem('vl_selected_pickup',JSON.stringify(window._selectedPickup));
+    else localStorage.removeItem('vl_selected_pickup');
+  }catch(e){}
+  // Supprime de la liste (il a été restauré)
+  deleteSavedCheckout(id);
+  showPage('checkout');
+  toast('Panier restauré');
+}
+async function renderSavedCheckouts(){
+  if(!currentUser){showPage('auth');return}
+  $('page-saved-checkouts').innerHTML='<div class="ord-head"><button type="button" id="svBack"><i class="fa-solid fa-arrow-left"></i></button><b>Paniers sauvegardés</b></div><div id="svList" class="sv-list"><div class="chk-empty">Chargement…</div></div>';
+  document.getElementById('svBack').addEventListener('click',goBack);
+  var list=loadSavedCheckouts();
+  var box=document.getElementById('svList');
+  if(!list.length){box.innerHTML='<div class="chk-empty"><i class="fa-regular fa-bookmark" style="font-size:36px;color:#ddd;margin-bottom:10px"></i><p>Aucun panier sauvegardé</p></div>';return}
+  box.innerHTML=list.map(function(c){
+    var it=(c.items&&c.items[0])||{};
+    var nb=c.items?c.items.length:0;
+    var date=c.savedAt?new Date(c.savedAt).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+    return '<div class="sv-card" data-svid="'+c.id+'">'
+      +(it.image?'<img src="'+escapeHtml(it.image)+'" onerror="this.style.background=\'#eee\'"/>':'<div style="width:60px;height:60px;background:#eee;border-radius:8px;flex-shrink:0"></div>')
+      +'<div class="sv-body">'
+        +'<div class="sv-title">'+escapeHtml(it.name||'Article')+'</div>'
+        +'<div class="sv-meta">'+(nb>1?nb+' articles':'1 article')+' · '+date+'</div>'
+        +'<div class="sv-total">'+formatPrice(c.total||0)+' F</div>'
+        +'<div class="sv-actions">'
+          +'<button type="button" class="sv-cancel" data-svdel="'+c.id+'">Annuler</button>'
+          +'<button type="button" class="sv-validate" data-svrestore="'+c.id+'">Valider</button>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+  box.querySelectorAll('[data-svdel]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(!confirm('Supprimer ce panier sauvegardé ?'))return;
+      deleteSavedCheckout(b.getAttribute('data-svdel'));
+      renderSavedCheckouts();
+    });
+  });
+  box.querySelectorAll('[data-svrestore]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      restoreSavedCheckout(b.getAttribute('data-svrestore'));
+    });
+  });
 }
 function renderCheckout(){
   var prof=loadLocalProfile();
@@ -884,7 +1178,14 @@ function renderCheckout(){
       : '<div class="chk-row"><span class="lbl">Livraison → '+(hasAddr?escapeHtml(prof.address):'adresse')+'</span><span class="val">'+(ship>0?'<span class="chk-badge warn">Payante '+formatPrice(ship)+' F</span>':'<span class="chk-badge">Gratuite</span>')+'</span></div>')
      +(hasPickup?'<div class="chk-row"><span class="lbl">Retrait point relais</span><span class="val"><span class="chk-badge">Disponible — récupération gratuite</span></span></div>':'');
 
-  $('page-checkout').innerHTML='<div class="chk-page">'
+  // Header : flèche retour + logo IDA centré + icône favoris
+  var chkHeader='<div class="chk-topbar">'
+    +'<button type="button" id="chkBackBtn"><i class="fa-solid fa-arrow-left"></i></button>'
+    +'<div class="chk-logo">IDA</div>'
+    +'<button type="button" class="chk-fav" id="chkSaveBtn" title="Sauvegarder ce panier"><i class="fa-regular fa-bookmark"></i></button>'
+  +'</div>';
+
+  $('page-checkout').innerHTML=chkHeader+'<div class="chk-page">'
       +(()=>{
       var totalPayNow=0,totalPayLater=0,modes={},mobileMoney='';
       cart.forEach(function(it){
@@ -918,8 +1219,12 @@ function renderCheckout(){
      +livraisonHtml
 +'</div>'
 +'<div id="chkPickupBox"></div>'
-    +'<button type="button" class="chk-btn" id="btnPlace">Confirmer la commande</button>'
-    +'<p style="text-align:center;font-size:11px;color:#888;margin-top:10px">En confirmant, vous acceptez les conditions IDA.</p>'
+          +'<p style="text-align:center;font-size:11px;color:#888;margin:0">En confirmant, vous acceptez les conditions IDA.</p>'
+  +'</div>'
+  // === BOUTONS FIXES EN BAS ===
+  +'<div class="chk-fixed-actions">'
+    +'<button type="button" class="sv-cancel" id="chkCancelBtn">Annuler la commande</button>'
+    +'<button type="button" class="sv-validate" id="btnPlace">Valider la commande</button>'
   +'</div>';
 
   // === Boutons adresse ===
@@ -981,6 +1286,34 @@ function renderCheckout(){
       })();
     }
   }
+
+  // Bouton retour
+  var backBtn=document.getElementById('chkBackBtn');
+  if(backBtn)backBtn.addEventListener('click',function(){goBack()});
+
+  // Bouton favoris (sauvegarder le checkout)
+  var saveBtn=document.getElementById('chkSaveBtn');
+  if(saveBtn){
+    // Vérifie si déjà sauvegardé
+    var alreadySaved=isCheckoutSaved();
+    if(alreadySaved){saveBtn.classList.add('saved');saveBtn.innerHTML='<i class="fa-solid fa-bookmark"></i>'}
+    saveBtn.addEventListener('click',function(){
+      if(isCheckoutSaved()){toast('Déjà sauvegardé');return}
+      saveCurrentCheckout();
+      saveBtn.classList.add('saved');
+      saveBtn.innerHTML='<i class="fa-solid fa-bookmark"></i>';
+      toast('Panier sauvegardé ✅');
+    });
+  }
+
+  // Bouton annuler (rouge, sans fond)
+  var cancelBtn=document.getElementById('chkCancelBtn');
+  if(cancelBtn)cancelBtn.addEventListener('click',function(){
+    if(!confirm('Annuler cette commande ? Le panier sera vidé.'))return;
+    cart=[];saveCart();
+    toast('Commande annulée');
+    showPage('home');
+  });
 
   document.getElementById('btnPlace').addEventListener('click',placeOrder);
   document.getElementById('btnPlace').addEventListener('click',placeOrder);
@@ -1285,6 +1618,7 @@ $('page-account').innerHTML=`
   <div class="account-section-head"><h2>Mon activité</h2><span>Accès rapide</span></div>
   <section class="account-shortcuts">
     <button type="button" class="account-shortcut" id="btnOrders2"><span class="account-shortcut-icon messages"><i class="fa-solid fa-receipt"></i></span><strong>Mes commandes</strong><small>Vos commandes passées</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+    <button type="button" class="account-shortcut" id="btnSavedChk"><span class="account-shortcut-icon" style="background:#FFF7E6;color:#E02E24"><i class="fa-regular fa-bookmark"></i></span><strong>Paniers sauvegardés</strong><small>Vos commandes en attente</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
     <button type="button" class="account-shortcut" id="btnFavs"><span class="account-shortcut-icon favorites"><i class="fa-regular fa-heart"></i></span><strong>Favoris</strong><small>Produits enregistrés</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
     <button type="button" class="account-shortcut" id="btnFollows"><span class="account-shortcut-icon follows"><i class="fa-solid fa-store"></i></span><strong>Liste de suivi</strong><small>Vos boutiques suivies</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
   </section>
@@ -1297,6 +1631,7 @@ $('page-account').innerHTML=`
   <div class="account-footer">IDA · Votre boutique, simplement.</div>
 </div>`;
 document.getElementById('btnOrders2').addEventListener('click',function(){showPage('orders')});
+  document.getElementById('btnSavedChk').addEventListener('click',function(){showPage('saved-checkouts')});
 document.getElementById('btnFavs').addEventListener('click',function(){showPage('favorites')});
 document.getElementById('btnFollows').addEventListener('click',function(){showPage('follows')});
   document.getElementById('btnOrders').addEventListener('click',function(){showPage('orders')});
@@ -1377,12 +1712,63 @@ function askDeliveryAddress(callback){
       +'<button type="button" class="addr-save" id="addrSave">Enregistrer</button>'
     +'</div>';
 
-  var html='<div id="addrBox" class="addr-box"><div class="addr-card">'
-    +'<span class="addr-title">Adresse de livraison</span>'
-    +'<p class="addr-sub">Le colis partira à cette adresse.</p>'
-    +savedHtml
-    +formHtml
-    +'</div></div>';
+  // === Structure : HEADER fixe + BODY scrollable + FOOTER fixe ===
+  // === Structure : HEADER fixe + BODY scrollable + FOOTER fixe ===
+  var html='<div id="addrBox" class="addr-box"><div class="addr-card" style="display:flex;flex-direction:column;max-height:90vh;padding:0;overflow:hidden">'
+
+    // === HEADER FIXE ===
+    +'<div style="flex-shrink:0;padding:16px 16px 8px">'
+      +'<span class="addr-title">Adresse de livraison</span>'
+      +'<p class="addr-sub" style="margin:0">Le colis partira à cette adresse.</p>'
+    +'</div>'
+
+    // === BODY SCROLLABLE ===
+    +'<div style="flex:1;overflow-y:auto;padding:0 16px;-webkit-overflow-scrolling:touch">'
+      +savedHtml
+      +'<div class="addr-saved-title" style="margin-top:'+(saved.length?'0':'8px')+'">'+(saved.length?'Nouvelle adresse':'Adresse de livraison')+'</div>'
+      +'<div class="addr-field"><label>Pays</label>'
+        +'<select id="addrCountry">'
+          +'<option value="Sénégal" selected>Sénégal</option>'
+          +'<option value="Niger">Niger</option>'
+          +'<option value="France">France</option>'
+        +'</select></div>'
+      +'<div class="addr-field"><label>Région</label>'
+        +'<select id="addrRegion"><option value="Dakar">Dakar</option></select></div>'
+      +'<div class="addr-field"><label>Adresse complète</label>'
+        +'<textarea id="addrFull" placeholder="Ex: Sacré-Cœur 3, villa 12, Dakar">'+escapeHtml(currentAddr)+'</textarea></div>'
+    +'</div>'
+
+    // === FOOTER FIXE ===
+    +'<div style="flex-shrink:0;padding:12px 16px 16px;border-top:1px solid #eee;background:#fff;display:flex;gap:8px">'
+      +'<button type="button" class="addr-cancel" id="addrCancel" style="flex:1">Annuler</button>'
+      +'<button type="button" class="addr-save" id="addrSave" style="flex:1">Enregistrer</button>'
+    +'</div>'
+
+  +'</div></div>';
+
+    // === BODY SCROLLABLE ===
+    +'<div style="flex:1;overflow-y:auto;padding:0 16px;-webkit-overflow-scrolling:touch">'
+      +savedHtml
+      +'<div class="addr-saved-title" style="margin-top:'+(saved.length?'0':'8px')+'">'+(saved.length?'Nouvelle adresse':'Adresse de livraison')+'</div>'
+      +'<div class="addr-field"><label>Pays</label>'
+        +'<select id="addrCountry">'
+          +'<option value="Sénégal" selected>Sénégal</option>'
+          +'<option value="Niger">Niger</option>'
+          +'<option value="France">France</option>'
+        +'</select></div>'
+      +'<div class="addr-field"><label>Région</label>'
+        +'<select id="addrRegion"><option value="Dakar">Dakar</option></select></div>'
+      +'<div class="addr-field"><label>Adresse complète</label>'
+        +'<textarea id="addrFull" placeholder="Ex: Sacré-Cœur 3, villa 12, Dakar">'+escapeHtml(currentAddr)+'</textarea></div>'
+    +'</div>'
+
+    // === FOOTER FIXE ===
+    +'<div style="flex-shrink:0;padding:12px 16px 16px;border-top:1px solid #eee;background:#fff;display:flex;gap:8px">'
+      +'<button type="button" class="addr-cancel" id="addrCancel" style="flex:1">Annuler</button>'
+      +'<button type="button" class="addr-save" id="addrSave" style="flex:1">Enregistrer</button>'
+    +'</div>'
+
+  +'</div></div>';
 
   document.body.insertAdjacentHTML('beforeend',html);
 
@@ -1917,5 +2303,5 @@ async function init(){
 init();
 </script>
 <script src="img-fix.js"></script>
-</body>
-</html>    
+</body>                      
+</html>                           
