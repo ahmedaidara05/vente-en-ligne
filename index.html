@@ -155,6 +155,20 @@ button{cursor:pointer}
 .pr-empty{padding:20px;text-align:center;font-size:12px;color:#999;border:1px dashed #ddd;border-radius:12px;margin-bottom:8px}
 .chk-pickup-list{margin-top:8px}
 .chk-pickup-title{font-size:12px;font-weight:700;color:#333;margin-bottom:6px}
+  /* === PAIEMENT (Paiement) === */
+.pay-box{margin-top:10px;padding:10px;background:#F0FFF7;border:1px solid #A7F3D0;border-radius:10px}
+.pay-box-title{font-size:11px;font-weight:800;color:#0a7a3e;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.pay-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0}
+.pay-row .lbl{color:#555}
+.pay-row .val{font-weight:800;color:#0a7a3e}
+.pay-row .val.red{color:#E02E24}
+.pay-mobile{margin-top:6px;padding:8px;background:#fff;border-radius:6px;font-size:12px;text-align:center;font-weight:700;color:#0a7a3e;border:1px dashed #A7F3D0}
+.pay-status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:800}
+.pay-status-badge.pending{background:#FCD34D22;color:#92400E;border:1px solid #FCD34D}
+.pay-status-badge.declared{background:#3B82F622;color:#075985;border:1px solid #3B82F6}
+.pay-status-badge.paid{background:#E8FFF0;color:#0a7a3e;border:1px solid #A7F3D0}
+.pay-btn{width:100%;height:44px;border-radius:22px;font-weight:800;font-size:14px;margin-top:10px;background:#00A854;color:#fff}
+.pay-btn.secondary{background:#fff;color:#00A854;border:2px solid #00A854}
 .free-deliv span{display:inline-block;transform:skewX(12deg)}
 .chat-prod-float{position:fixed;right:12px;bottom:calc(var(--nav-h) + 20px + var(--safe-b));z-index:250;width:150px;background:#fff;border:2px solid #00A854;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden}
 .chat-prod-float .cpf-x{position:absolute;top:4px;right:4px;width:22px;height:22px;background:none;color:#E02E24;font-size:18px;font-weight:800;line-height:1;z-index:2}
@@ -665,8 +679,9 @@ function openVariantSheet(mode){
   // === Badges livraison (à droite de "Livraison X") ===
   // NOTE : "Sénégal" est statique ici, deviendra dynamique au Lot 2
   var pickupFree = (p.pickupFree===true);
+    var fromChina = (p.fromChina===true);
   var badgesHtml=''
-    +'<span class="vs-badge"><i class="fa-solid fa-ship"></i> Chine → Sénégal</span>'
+    +(fromChina?'<span class="vs-badge"><i class="fa-solid fa-ship"></i> Chine → Sénégal</span>':'')
     +(pickupFree?'<span class="vs-badge"><i class="fa-solid fa-location-dot"></i> Retrait gratuit</span>':'');
 
   // === En-tête produit (Lot 1 : espace réduit + badges à droite) ===
@@ -708,6 +723,21 @@ function openVariantSheet(mode){
     +header
     +optsHtml
     +qtyHtml
+          +'<div id="vsPayBox">'
+    +(()=>{
+      var pm=computePaymentForItem({productId:p.id,price:calcVariantPrice(p,selectedVariants),qty:qty});
+      var html='<div class="pay-box"><div class="pay-box-title"><i class="fa-solid fa-credit-card"></i>'+escapeHtml(pm.label)+'</div>';
+      if(pm.mode==='cod'){
+        html+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">0 F</span></div>';
+        html+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(pm.payLater)+' F</span></div>';
+      }else{
+        html+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">'+formatPrice(pm.payNow)+' F</span></div>';
+        if(pm.payLater>0)html+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(pm.payLater)+' F</span></div>';
+        if(pm.mobileMoney)html+='<div class="pay-mobile"><i class="fa-solid fa-mobile-screen"></i> '+escapeHtml(pm.mobileMoney)+'</div>';
+      }
+           return html+'</div>';
+    })()
+    +'</div>'
     +'<button type="button" class="br" id="vsConfirm">'+(mode==='buy'?'Acheter maintenant':'Ajouter au panier')+'</button>'
     +'</div></div>';
 
@@ -738,14 +768,29 @@ function openVariantSheet(mode){
       openVariantSheet(mode);
     })
   });
-
+  function refreshPayBox(){
+    var box=document.getElementById('vsPayBox');
+    if(!box)return;
+    var pm=computePaymentForItem({productId:p.id,price:calcVariantPrice(p,selectedVariants),qty:qty});
+    var html='<div class="pay-box"><div class="pay-box-title"><i class="fa-solid fa-credit-card"></i>'+escapeHtml(pm.label)+'</div>';
+    if(pm.mode==='cod'){
+      html+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">0 F</span></div>';
+      html+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(pm.payLater)+' F</span></div>';
+    }else{
+      html+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">'+formatPrice(pm.payNow)+' F</span></div>';
+      if(pm.payLater>0)html+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(pm.payLater)+' F</span></div>';
+      if(pm.mobileMoney)html+='<div class="pay-mobile"><i class="fa-solid fa-mobile-screen"></i> '+escapeHtml(pm.mobileMoney)+'</div>';
+    }
+    box.innerHTML=html+'</div>';
+  }
   document.getElementById('vsMinus').addEventListener('click',function(){
-    if(qty>1){qty--;document.getElementById('vsQty').textContent=qty;document.getElementById('vsPrice').textContent=formatPrice(calcVariantPrice(p,selectedVariants)*qty)+' F'}
+    if(qty>1){qty--;document.getElementById('vsQty').textContent=qty;document.getElementById('vsPrice').textContent=formatPrice(calcVariantPrice(p,selectedVariants)*qty)+' F';refreshPayBox();}
   });
   document.getElementById('vsPlus').addEventListener('click',function(){
     qty++;
     document.getElementById('vsQty').textContent=qty;
     document.getElementById('vsPrice').textContent=formatPrice(calcVariantPrice(p,selectedVariants)*qty)+' F';
+    refreshPayBox();
   });
 
   document.getElementById('vsConfirm').addEventListener('click',function(){
@@ -770,6 +815,26 @@ function openVariantSheet(mode){
   });
 }
 function renderCart(){var sub=cart.reduce(function(s,i){return s+i.price*i.qty},0);$('page-cart').innerHTML=cart.length?cart.map(function(it,idx){return'<div style="display:flex;gap:10px;padding:12px;background:#fff;border-bottom:1px solid #eee"><img src="'+escapeHtml(it.image||'')+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;background:#eee" onerror="this.style.background=\'#eee\'"/><div style="flex:1"><div style="font-weight:600">'+escapeHtml(it.name)+'</div><div style="font-size:12px;color:#888">'+Object.keys(it.variants||{}).map(function(k){return k+': '+it.variants[k]}).join(', ')+'</div><div style="color:#E02E24;font-weight:700">'+formatPrice(it.price)+' F × '+it.qty+'</div></div><button type="button" data-rm="'+idx+'" style="color:#E02E24">🗑</button></div>'}).join('')+'<div style="padding:12px;background:#fff"><div style="font-weight:700">Total: '+formatPrice(sub+(settings.shippingFee||0))+' F</div><button type="button" class="br" id="btnCheckout">Commander</button></div>':'<div class="em"><p>Panier vide</p></div>';document.querySelectorAll('[data-rm]').forEach(function(b){b.addEventListener('click',function(){if(!confirm('Supprimer ?'))return;cart.splice(+b.getAttribute('data-rm'),1);saveCart();renderCart()})});var bc=document.getElementById('btnCheckout');if(bc)bc.addEventListener('click',function(){if(!currentUser){showPage('auth');return}showPage('checkout')})}
+  /* === Paiement : calcule les montants selon le mode du produit === */
+function getPaymentModeLabel(mode){
+  return {cod:'Paiement à la livraison',deposit30:'Acompte 30% avant',deposit50:'Acompte 50% avant',full:'Paiement total avant livraison'}[mode]||'Paiement à la livraison';
+}
+function getPaymentRatio(mode){
+  if(mode==='deposit30')return 0.30;
+  if(mode==='deposit50')return 0.50;
+  if(mode==='full')return 1.0;
+  return 0; // cod
+}
+function computePaymentForItem(item){
+  var p=products.find(function(x){return x.id===item.productId});
+  var mode=(p&&p.paymentMode)||'cod';
+  var mobileMoney=(p&&p.mobileMoney)||'';
+  var lineTotal=(item.price||0)*(item.qty||1);
+  var ratio=getPaymentRatio(mode);
+  var payNow=Math.round(lineTotal*ratio);
+  var payLater=lineTotal-payNow;
+  return {mode:mode,label:getPaymentModeLabel(mode),mobileMoney:mobileMoney,payNow:payNow,payLater:payLater,lineTotal:lineTotal};
+}
 function renderCheckout(){
   var prof=loadLocalProfile();
   var hasAddr=prof.address&&prof.address.trim();
@@ -793,7 +858,8 @@ function renderCheckout(){
   }).join('');
 
   var sub=cart.reduce(function(s,i){return s+i.price*i.qty},0);
-  var ship=settings.shippingFee||0;
+  var pickupSelected=!!(window._selectedPickup&&Object.keys(window._selectedPickup).length>0);
+  var ship=pickupSelected?0:(settings.shippingFee||0);
   var total=sub+ship;
 
   // === Récap livraison (Chine + retrait) ===
@@ -810,10 +876,30 @@ function renderCheckout(){
     +'<div class="chk-row"><span class="lbl"><i class="fa-solid fa-ship" style="color:#00A854;margin-right:4px"></i>Origine du colis</span><span class="val">'+(originChine?'Chine':'Locale')+'</span></div>'
     +'<div class="chk-row"><span class="lbl"><i class="fa-solid fa-location-dot" style="color:#00A854;margin-right:4px"></i>Adresse finale</span><span class="val">'+(hasAddr?escapeHtml(prof.address):'—')+'</span></div>'
     +'<div class="chk-row"><span class="lbl">Livraison Chine → pays</span><span class="val"><span class="chk-badge">'+(originChine?'Gratuite':'—')+'</span></span></div>'
-    +'<div class="chk-row"><span class="lbl">Livraison → adresse</span><span class="val">'+(ship>0?'<span class="chk-badge warn">Payante '+formatPrice(ship)+' F</span>':'<span class="chk-badge">Gratuite</span>')+'</span></div>'
+    +'<div class="chk-row"><span class="lbl">Livraison → adresse</span><span class="val">'
+      +(pickupSelected
+        ? '<span class="chk-badge">Gratuite (retrait relais)</span>'
+        : (ship>0?'<span class="chk-badge warn">Payante '+formatPrice(ship)+' F</span>':'<span class="chk-badge">Gratuite</span>'))
+    +'</span></div>'
     +(hasPickup?'<div class="chk-row"><span class="lbl">Retrait point relais</span><span class="val"><span class="chk-badge">Disponible</span></span></div>':'');
 
   $('page-checkout').innerHTML='<div class="chk-page">'
+      +(()=>{
+      var totalPayNow=0,totalPayLater=0,modes={},mobileMoney='';
+      cart.forEach(function(it){
+        var pm=computePaymentForItem(it);
+        totalPayNow+=pm.payNow;
+        totalPayLater+=pm.payLater;
+        modes[pm.mode]=true;
+        if(pm.mobileMoney&&!mobileMoney)mobileMoney=pm.mobileMoney;
+      });
+      var modeList=Object.keys(modes).map(function(m){return getPaymentModeLabel(m)}).join(' • ');
+      var html='<div class="pay-box" style="margin-bottom:10px"><div class="pay-box-title"><i class="fa-solid fa-credit-card"></i>Paiement — '+escapeHtml(modeList)+'</div>';
+      html+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">'+formatPrice(totalPayNow)+' F</span></div>';
+      if(totalPayLater>0)html+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(totalPayLater)+' F</span></div>';
+      if(totalPayNow>0&&mobileMoney)html+='<div class="pay-mobile"><i class="fa-solid fa-mobile-screen"></i> '+escapeHtml(mobileMoney)+'</div>';
+      return html+'</div>';
+    })()
     +addrBanner
     +'<div class="chk-section">'
       +'<div class="chk-section-title"><i class="fa-solid fa-user"></i>Informations client</div>'
@@ -881,9 +967,10 @@ function renderCheckout(){
             btn.textContent='Choisi';
             // Sauvegarde en mémoire (sera lue par placeOrder)
             var addr=card.querySelector('.pr-city').textContent+', '+card.querySelector('.pr-addr').textContent;
-            window._selectedPickup=window._selectedPickup||{};
+                      window._selectedPickup=window._selectedPickup||{};
             window._selectedPickup[list.getAttribute('data-bid')]={id:prId,address:addr};
             toast('Point relais sélectionné');
+            renderCheckout(); // rafraîchit le récap livraison
           });
         });
       })();
@@ -926,14 +1013,29 @@ async function placeOrder(){
       var key=keys[k];var items=byBout[key];
       var subB=items.reduce(function(s,i){return s+i.price*i.qty},0);
       var bid=key==='_none'?null:key;
-      var originChine=items.some(function(it){
-        var p=products.find(function(x){return x.id===it.productId});
-        return p&&p.fromChina===true;
-      });
+       var originChine=cart.some(function(it){
+    var p=products.find(function(x){return x.id===it.productId});
+    if(!p)return false;
+    return p.fromChina===true;
+  });
+  // Fallback : si products vide, on regarde dans le panier
+  if(!originChine&&!products.length){
+    originChine=cart.some(function(it){return it.fromChina===true});
+  }
       var hasPickup=items.some(function(it){
         var p=products.find(function(x){return x.id===it.productId});
         return p&&p.pickupFree===true;
       });
+            var payNowB=0,payLaterB=0,payModes={},mobileMoneyB='';
+      items.forEach(function(it){
+        var pm=computePaymentForItem(it);
+        payNowB+=pm.payNow;
+        payLaterB+=pm.payLater;
+        payModes[pm.mode]=true;
+        if(pm.mobileMoney&&!mobileMoneyB)mobileMoneyB=pm.mobileMoney;
+      });
+      var needsPrepayment=payNowB>0;
+      var initialStatus=needsPrepayment?'pending_payment':'pending';
       await addDoc(collection(db,'orders'),{
         orderNumber:'CMD-'+Date.now().toString(36).toUpperCase()+'-'+k,
         userId:currentUser?currentUser.uid:null,
@@ -945,8 +1047,12 @@ async function placeOrder(){
         total:subB+(k===0?(settings.shippingFee||0):0),
                fromChina:originChine,
         pickupAvailable:hasPickup,
+        paymentMode:Object.keys(payModes).join(','),
+        payNow:payNowB,
+        payLater:payLaterB,
+        mobileMoney:mobileMoneyB,
         pickupPoint:(window._selectedPickup&&window._selectedPickup[bid||'_none'])?window._selectedPickup[bid||'_none']:null,
-        status:'pending',
+        status:initialStatus,
         createdAt:serverTimestamp()
       });
     } 
@@ -999,7 +1105,7 @@ async function renderOrders(){
         if(o.status==='paid')statusClass='paid';
         else if(o.status==='shipped')statusClass='shipped';
         else if(o.status==='cancelled')statusClass='cancelled';
-        var statusLabel=({pending:'En attente',paid:'Payée',shipped:'Expédiée',cancelled:'Annulée'})[o.status]||o.status||'—';
+        var statusLabel=({pending:'En attente',pending_payment:'⏳ En attente de paiement',payment_declared:'✓ Payé (validation)',paid:'Payée',shipped:'Expédiée',cancelled:'Annulée'})[o.status]||o.status||'—';
         var items=o.items||[];
         var first=items[0]||{};
         var img=first.image||'';
@@ -1013,7 +1119,7 @@ async function renderOrders(){
             +'<div style="flex:1;min-width:0">'
               +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">'
                 +'<div class="ord-num">'+(o.orderNumber||'—')+'</div>'
-                +'<span class="ord-status '+statusClass+'">'+statusLabel+'</span>'
+                +((o.status==='pending_payment')?' <span class="pay-status-badge pending">⏳ À payer</span>':(o.status==='payment_declared')?' <span class="pay-status-badge declared">✓ Payé (en attente validation)</span>':(o.status==='paid')?' <span class="pay-status-badge paid">✓ Payé</span>':'')
               +'</div>'
               +'<div style="font-size:13px;font-weight:600">'+escapeHtml(first.name||'—')+'</div>'
               +(optStr?'<div style="font-size:11px;color:#888">'+escapeHtml(optStr)+'</div>':'')
@@ -1054,7 +1160,27 @@ async function renderOrderDetail(oid){
 
     var date=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()).toLocaleString('fr-FR'):'—';
     var c=o.customer||{};
-
+    // === Bandeau paiement si besoin ===
+    var payBanner='';
+    if(o.status==='pending_payment'||o.status==='payment_declared'||(o.status==='paid'&&o.payNow>0)){
+      var pmLabel=o.paymentMode?o.paymentMode.split(',').map(getPaymentModeLabel).join(' • '):'Paiement';
+      payBanner+='<div class="pay-box" style="margin-bottom:10px">'
+        +'<div class="pay-box-title"><i class="fa-solid fa-credit-card"></i>'+escapeHtml(pmLabel)+'</div>';
+      if(o.payNow>0){
+        payBanner+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">'+formatPrice(o.payNow)+' F</span></div>';
+        if(o.mobileMoney)payBanner+='<div class="pay-mobile"><i class="fa-solid fa-mobile-screen"></i> '+escapeHtml(o.mobileMoney)+'</div>';
+      }
+      if(o.payLater>0)payBanner+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(o.payLater)+' F</span></div>';
+      if(o.status==='pending_payment'){
+        payBanner+='<button type="button" class="pay-btn" id="btnDeclarePaid">✅ J\'ai payé</button>';
+        payBanner+='<p style="font-size:11px;color:#666;text-align:center;margin-top:6px">Après paiement sur le numéro ci-dessus, cliquez pour prévenir la boutique.</p>';
+      }else if(o.status==='payment_declared'){
+        payBanner+='<p style="font-size:12px;color:#075985;text-align:center;margin-top:8px"><i class="fa-solid fa-clock"></i> En attente de validation par la boutique</p>';
+      }else if(o.status==='paid'){
+        payBanner+='<p style="font-size:12px;color:#0a7a3e;text-align:center;margin-top:8px"><i class="fa-solid fa-check-circle"></i> Paiement confirmé</p>';
+      }
+      payBanner+='</div>';
+    }
     // === Statut livraison en haut (bandeau vert) ===
     var statusBanner='<div style="background:linear-gradient(120deg,#073d27,#087b45);color:#fff;border-radius:14px;padding:16px;margin-bottom:12px">'
       +'<div style="font-size:11px;letter-spacing:1.2px;font-weight:800;opacity:.7;margin-bottom:4px">STATUT DE LIVRAISON</div>'
@@ -1093,8 +1219,9 @@ async function renderOrderDetail(oid){
         +'</div></div>';
     }
 
-    document.getElementById('oddBody').innerHTML=''
+       document.getElementById('oddBody').innerHTML=''
       +statusBanner
+      +payBanner
       +'<div class="ord-detail-section">'
         +'<div class="ord-detail-title">Commande '+(o.orderNumber||'')+'</div>'
         +'<div class="chk-row"><span class="lbl">Date</span><span class="val">'+date+'</span></div>'
@@ -1119,6 +1246,18 @@ async function renderOrderDetail(oid){
         +'<div class="chk-row"><span class="lbl">Livraison</span><span class="val">'+(o.shipping>0?formatPrice(o.shipping)+' F':'Gratuite')+'</span></div>'
         +'<div class="chk-total"><span>Total</span><span class="val">'+formatPrice(o.total||0)+' F</span></div>'
       +'</div>';
+        // === Bouton "J'ai payé" ===
+    var btnPaid=document.getElementById('btnDeclarePaid');
+    if(btnPaid){
+      btnPaid.addEventListener('click',async function(){
+        if(!confirm('Confirmer que vous avez effectué le paiement ?'))return;
+        try{
+          await updateDoc(doc(db,'orders',oid),{status:'payment_declared',paymentDeclaredAt:serverTimestamp(),updatedAt:serverTimestamp()});
+          toast('Boutique prévenue ✅');
+          renderOrderDetail(oid);
+        }catch(e){toast(e.message)}
+      });
+    }
   }catch(e){document.getElementById('oddBody').innerHTML='<div class="chk-empty">'+escapeHtml(e.message)+'</div>'}
 }
     
