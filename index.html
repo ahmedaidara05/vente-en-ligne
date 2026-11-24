@@ -580,11 +580,19 @@ body.page-cart-active .cart-pro-summary{background:#fff}
 .cart-pro-item .cpi-qty span{
   min-width:20px;text-align:center;font-weight:700;font-size:13px;
 }
-.cart-pro-item .cpi-edit{
-  position:absolute;top:8px;right:8px;
-  width:28px;height:28px;border-radius:50%;background:#F0FFF7;
-  color:#00A854;font-size:13px;display:flex;align-items:center;justify-content:center;
+.cart-pro-item .cpi-actions{
+  position:absolute;top:6px;right:6px;
+  display:flex;gap:10px;align-items:center;
 }
+.cart-pro-item .cpi-edit,
+.cart-pro-item .cpi-del{
+  background:none;border:none;padding:0;
+  width:20px;height:20px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;cursor:pointer;
+}
+.cart-pro-item .cpi-edit{color:#00A854}
+.cart-pro-item .cpi-del{color:#E02E24}
 .cart-pro-summary{
   background:#fff;padding:14px 16px;
   border-top:1px solid #eee;
@@ -1076,7 +1084,10 @@ function renderCart(){
     var lineTotal=it.price*it.qty;
 
     html+='<div class="cart-pro-item" data-idx="'+idx+'">'
-      +'<button type="button" class="cpi-edit" data-edit="'+idx+'" title="Modifier"><i class="fa-solid fa-pen"></i></button>'
+      +'<div class="cpi-actions">'
+        +'<button type="button" class="cpi-edit" data-edit="'+idx+'" title="Modifier"><i class="fa-solid fa-pen"></i></button>'
+        +'<button type="button" class="cpi-del" data-del="'+idx+'" title="Supprimer"><i class="fa-solid fa-trash-can"></i></button>'
+      +'</div>'
       +(it.image?'<img class="cpi-img" src="'+escapeHtml(it.image)+'" onerror="this.style.background=\'#eee\'"/>':'<div class="cpi-img"></div>')
       +'<div class="cpi-body">'
         +'<div class="cpi-title">'+escapeHtml(shortName)+'</div>'
@@ -1150,12 +1161,56 @@ function renderCart(){
     });
   });
 
+  // === SUPPRIMER un article (avec confirmation) ===
+  page.querySelectorAll('[data-del]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      var i=+b.getAttribute('data-del');
+      if(!cart[i]) return;
+      if(!confirm('Supprimer cet article du panier ?')) return;
+      cart.splice(i,1);
+      saveCart();
+      renderCart();
+      toast('Article supprimé');
+    });
+  });
+
   var bc=document.getElementById('btnCheckout');
   if(bc)bc.addEventListener('click',function(){
     if(!currentUser){showPage('auth');return}
     showPage('checkout');
   });
-}  /* === Paiement : calcule les montants selon le mode du produit === */
+
+  // === Clic sur une carte article → page détail produit ===
+  // (sauf si clic sur −, +, ✏️ ou si l'utilisateur a scrollé)
+  page.querySelectorAll('.cart-pro-item').forEach(function(card){
+    var startX=0, startY=0, moved=false;
+
+    card.addEventListener('touchstart',function(e){
+      var t=e.touches[0];
+      startX=t.clientX; startY=t.clientY; moved=false;
+    },{passive:true});
+
+    card.addEventListener('touchmove',function(e){
+      var t=e.touches[0];
+      var dx=Math.abs(t.clientX-startX);
+      var dy=Math.abs(t.clientY-startY);
+      if(dx>10||dy>10) moved=true;
+    },{passive:true});
+
+    card.addEventListener('click',function(e){
+      // Ignore si clic sur bouton −, +, ✏️
+      if(e.target.closest('button')) return;
+      // Ignore si l'utilisateur a scrollé
+      if(moved) return;
+
+      var idx=+card.getAttribute('data-idx');
+      var it=cart[idx];
+      if(!it) return;
+      showPage('product', it.productId);
+    });
+  });
+}/* === Paiement : calcule les montants selon le mode du produit === */
 function getPaymentModeLabel(mode){
   return {cod:'Paiement à la livraison',deposit30:'Acompte 30% avant',deposit50:'Acompte 50% avant',full:'Paiement total avant livraison'}[mode]||'Paiement à la livraison';
 }
