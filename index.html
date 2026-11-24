@@ -861,7 +861,10 @@ function renderCheckout(){
   var pickupSelected=!!(window._selectedPickup&&Object.keys(window._selectedPickup).length>0);
   var ship=pickupSelected?0:(settings.shippingFee||0);
   var total=sub+ship;
-
+  // Récupère le pays depuis l'adresse sauvegardée
+  var countryMatch=(prof.address||'').match(/^(Sénégal|Niger|France)/i);
+  var clientCountry=countryMatch?countryMatch[1]:'Sénégal';
+  var clientRegion=(prof.address||'').split(',')[0]||'';
   // === Récap livraison (Chine + retrait) ===
   var hasPickup=cart.some(function(it){
     var p=products.find(function(x){return x.id===it.productId});
@@ -875,13 +878,11 @@ function renderCheckout(){
   var livraisonHtml=''
     +'<div class="chk-row"><span class="lbl"><i class="fa-solid fa-ship" style="color:#00A854;margin-right:4px"></i>Origine du colis</span><span class="val">'+(originChine?'Chine':'Locale')+'</span></div>'
     +'<div class="chk-row"><span class="lbl"><i class="fa-solid fa-location-dot" style="color:#00A854;margin-right:4px"></i>Adresse finale</span><span class="val">'+(hasAddr?escapeHtml(prof.address):'—')+'</span></div>'
-    +'<div class="chk-row"><span class="lbl">Livraison Chine → pays</span><span class="val"><span class="chk-badge">'+(originChine?'Gratuite':'—')+'</span></span></div>'
-    +'<div class="chk-row"><span class="lbl">Livraison → adresse</span><span class="val">'
-      +(pickupSelected
-        ? '<span class="chk-badge">Gratuite (retrait relais)</span>'
-        : (ship>0?'<span class="chk-badge warn">Payante '+formatPrice(ship)+' F</span>':'<span class="chk-badge">Gratuite</span>'))
-    +'</span></div>'
-    +(hasPickup?'<div class="chk-row"><span class="lbl">Retrait point relais</span><span class="val"><span class="chk-badge">Disponible</span></span></div>':'');
+    +'<div class="chk-row"><span class="lbl">Livraison Chine → '+(originChine?escapeHtml(clientCountry):'—')+'</span><span class="val"><span class="chk-badge">'+(originChine?'Gratuite':'—')+'</span></span></div>'
+     +(pickupSelected
+      ? ''
+      : '<div class="chk-row"><span class="lbl">Livraison → '+(hasAddr?escapeHtml(prof.address):'adresse')+'</span><span class="val">'+(ship>0?'<span class="chk-badge warn">Payante '+formatPrice(ship)+' F</span>':'<span class="chk-badge">Gratuite</span>')+'</span></div>')
+     +(hasPickup?'<div class="chk-row"><span class="lbl">Retrait point relais</span><span class="val"><span class="chk-badge">Disponible — récupération gratuite</span></span></div>':'');
 
   $('page-checkout').innerHTML='<div class="chk-page">'
       +(()=>{
@@ -949,7 +950,10 @@ function renderCheckout(){
             +'<div class="chk-section-title"><i class="fa-solid fa-location-dot"></i>Retrait gratuit — '+escapeHtml(bname)+'</div>'
             +'<div class="chk-pickup-title">Choisissez un point relais :</div>'
             +'<div class="chk-pickup-list" data-bid="'+bid+'">'
-              +pts.map(function(p){return pickupPointCardHtml(p,null,true)}).join('')
+              +pts.map(function(p){
+                var isSel=(window._selectedPickup&&window._selectedPickup[bid]&&window._selectedPickup[bid].id===p.id);
+                return pickupPointCardHtml(p,isSel?p.id:null,true);
+              }).join('')
             +'</div>'
           +'</div>';
         }
@@ -967,8 +971,9 @@ function renderCheckout(){
             btn.textContent='Choisi';
             // Sauvegarde en mémoire (sera lue par placeOrder)
             var addr=card.querySelector('.pr-city').textContent+', '+card.querySelector('.pr-addr').textContent;
-                      window._selectedPickup=window._selectedPickup||{};
+                           window._selectedPickup=window._selectedPickup||{};
             window._selectedPickup[list.getAttribute('data-bid')]={id:prId,address:addr};
+            try{localStorage.setItem('vl_selected_pickup',JSON.stringify(window._selectedPickup));}catch(e){}
             toast('Point relais sélectionné');
             renderCheckout(); // rafraîchit le récap livraison
           });
@@ -1059,6 +1064,7 @@ async function placeOrder(){
 
     cart=[];saveCart();
         window._selectedPickup=null;
+    try{localStorage.removeItem('vl_selected_pickup');}catch(e){}
     toast('Commande confirmée !');
     showPage('orders');
   }catch(e){
