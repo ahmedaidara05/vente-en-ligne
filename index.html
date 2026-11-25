@@ -1117,6 +1117,45 @@ body:not(.hide-chrome) #page-home .pg,
 body:not(.hide-chrome) #page-catalog .pg{
   padding-bottom: calc(var(--nav-h) + var(--safe-b) + 16px) !important;
 }
+  /* === Ligne point relais compacte (checkout) === */
+.pr-line{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;background:#fff;border:1px solid #eee;border-radius:10px;
+  margin-bottom:8px;
+}
+.pr-line .pr-ico{
+  width:34px;height:34px;flex:0 0 34px;border-radius:50%;
+  background:#E8FFF0;color:#00A854;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  overflow:hidden;
+}
+.pr-line .pr-ico img{
+  width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;
+}
+.pr-line .pr-body{flex:1;min-width:0}
+.pr-line .pr-title{font-size:12px;font-weight:800;color:#1a1a1a;line-height:1.2}
+.pr-line .pr-sub{font-size:11px;color:#777;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-line .pr-edit{
+  width:34px;height:34px;flex:0 0 34px;border-radius:50%;
+  background:#F0FFF7;color:#00A854;font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  border:none;cursor:pointer;
+}
+.pr-line .pr-edit:active{transform:scale(.92)}
+
+/* Modale point relais */
+.pr-modal{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);z-index:600;display:flex;align-items:center;justify-content:center;padding:16px}
+.pr-modal-box{background:#fff;width:100%;max-width:420px;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden;display:flex;flex-direction:column;max-height:85vh;animation:prIn .2s cubic-bezier(.16,1,.3,1) both}
+@keyframes prIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.pr-modal-head{background:linear-gradient(120deg,#073d27,#087b45);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.pr-modal-head h3{font-size:14px;font-weight:800;flex:1;margin:0}
+.pr-modal-head button{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer}
+.pr-modal-body{flex:1;overflow-y:auto;padding:12px}
+.pr-modal-body .pr-card{margin-bottom:8px}
+.pr-modal-foot{padding:10px 14px;background:#f8fafc;border-top:1px solid #eef2f0;display:flex;gap:8px}
+.pr-modal-foot button{flex:1;height:42px;border-radius:21px;font-weight:800;font-size:13px}
+.pr-modal-foot .pr-clear{background:#fff;color:#E02E24;border:2px solid #E02E24}
+.pr-modal-foot .pr-close{background:#00A854;color:#fff;border:2px solid #00A854}
 </style>
 </head>
 <body>
@@ -2058,7 +2097,77 @@ async function renderSavedCheckouts(){
       +'</div>'
     +'</div>';
 }
-  
+  /* === Modale de sélection du point relais === */
+function openPickupModal(bid, bname, pts){
+  var old=document.getElementById('pickupModal');if(old)old.remove();
+  var current=(window._selectedPickup&&window._selectedPickup[bid])||null;
+
+  var modal=document.createElement('div');
+  modal.className='pr-modal';
+  modal.id='pickupModal';
+  modal.innerHTML=''
+    +'<div class="pr-modal-box">'
+      +'<div class="pr-modal-head">'
+        +'<h3>Choisir un point relais</h3>'
+        +'<button type="button" id="prModalClose"><i class="fa-solid fa-xmark"></i></button>'
+      +'</div>'
+      +'<div class="pr-modal-body">'
+        +pts.map(function(p){
+          var isSel=current&&current.id===p.id;
+          return '<div class="pr-card'+(isSel?' selected':'')+'" data-prid="'+p.id+'">'
+            +'<div class="pr-ico"><i class="fa-solid fa-location-dot"></i></div>'
+            +'<div class="pr-body">'
+              +'<div class="pr-city">'+escapeHtml(p.city||'')+'</div>'
+              +'<div class="pr-addr">'+escapeHtml(p.address||'')+'</div>'
+              +'<div class="pr-hours">'+escapeHtml(p.hours||'')+'</div>'
+            +'</div>'
+            +'<button type="button" class="pr-pick" data-pick="'+p.id+'">'+(isSel?'Choisi':'Choisir')+'</button>'
+          +'</div>';
+        }).join('')
+      +'</div>'
+      +'<div class="pr-modal-foot">'
+        +(current?'<button type="button" class="pr-clear" id="prModalClear">Ne plus sélectionner</button>':'')
+        +'<button type="button" class="pr-close" id="prModalOk">Fermer</button>'
+      +'</div>'
+    +'</div>';
+  document.body.appendChild(modal);
+
+  function close(){modal.remove()}
+  document.getElementById('prModalClose').addEventListener('click',close);
+  document.getElementById('prModalOk').addEventListener('click',close);
+  modal.addEventListener('click',function(e){if(e.target===modal)close()});
+
+  // Sélection d'un point
+  modal.querySelectorAll('[data-pick]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var pid=b.getAttribute('data-pick');
+      var pt=pts.find(function(x){return x.id===pid});
+      if(!pt)return;
+      window._selectedPickup=window._selectedPickup||{};
+      window._selectedPickup[bid]={id:pt.id,address:(pt.city||'')+', '+(pt.address||'')};
+      try{localStorage.setItem('vl_selected_pickup',JSON.stringify(window._selectedPickup));}catch(e){}
+      close();
+      toast('Point relais sélectionné');
+      renderCheckout();
+    });
+  });
+
+  // Désélectionner
+  var clr=document.getElementById('prModalClear');
+  if(clr)clr.addEventListener('click',function(){
+    if(window._selectedPickup)delete window._selectedPickup[bid];
+    try{
+      if(window._selectedPickup&&Object.keys(window._selectedPickup).length){
+        localStorage.setItem('vl_selected_pickup',JSON.stringify(window._selectedPickup));
+      }else{
+        localStorage.removeItem('vl_selected_pickup');
+      }
+    }catch(e){}
+    close();
+    toast('Point relais retiré');
+    renderCheckout();
+  });
+}
 function renderCheckout(){
   var prof=loadLocalProfile();
   var hasAddr=prof.address&&prof.address.trim();
@@ -2119,7 +2228,21 @@ function renderCheckout(){
      +(pickupSelected
       ? ''
       : '<div class="chk-row"><span class="lbl">Livraison → '+(hasAddr?escapeHtml(prof.address):'adresse')+'</span><span class="val">'+(ship>0?'<span class="chk-badge warn">Payante '+formatPrice(ship)+' F</span>':'<span class="chk-badge">Gratuite</span>')+'</span></div>')
-     +(hasPickup?'<div class="chk-row"><span class="lbl">Retrait point relais</span><span class="val"><span class="chk-badge">Disponible — récupération gratuite</span></span></div>':'');
+     +(hasPickup?(()=>{
+        // Récupère l'adresse du point relais sélectionné (1ère boutique avec sélection)
+        var selAddr='';
+        if(window._selectedPickup){
+          var bids=Object.keys(window._selectedPickup);
+          if(bids.length){
+            var first=window._selectedPickup[bids[0]];
+            if(first&&first.address)selAddr=first.address;
+          }
+        }
+        if(selAddr){
+          return '<div class="chk-row"><span class="lbl">Récupération</span><span class="val"><span class="chk-badge" style="background:#E8FFF0;color:#0a7a3e;border-color:#A7F3D0">À '+escapeHtml(selAddr)+'</span></span></div>';
+        }
+        return '<div class="chk-row"><span class="lbl">Retrait point relais</span><span class="val"><span class="chk-badge">Disponible — récupération gratuite</span></span></div>';
+      })():'');
 
   // Header : flèche retour + logo IDA centré + icône favoris
 var chkHeader='<div class="chk-topbar">'
@@ -2150,7 +2273,7 @@ var chkHeader='<div class="chk-topbar">'
     +'<div class="chk-section">'
       +'<div class="chk-section-title"><i class="fa-solid fa-box"></i>Articles ('+cart.length+')</div>'
       +itemsHtml
-      +'<div class="chk-total"><span>Total</span><span class="val">'+formatPrice(total)+' F</span></div>'
+      
     +'</div>'
     +'<div class="chk-section">'
       +'<div class="chk-section-title"><i class="fa-solid fa-truck-fast"></i>Livraison</div>'
@@ -2160,9 +2283,13 @@ var chkHeader='<div class="chk-topbar">'
           +'<p style="text-align:center;font-size:11px;color:#888;margin:0">En confirmant, vous acceptez les <a href="#" id="chkPrivacyLink" style="color:#00A854;text-decoration:underline;font-weight:700;cursor:pointer">conditions IDA</a>.</p>'
   +'</div>'
   // === BOUTONS FIXES EN BAS ===
-  +'<div class="chk-fixed-actions">'
-    +'<button type="button" class="sv-cancel" id="chkCancelBtn">Annuler la commande</button>'
-    +'<button type="button" class="sv-validate" id="btnPlace">Valider la commande</button>'
+  // === BARRE FIXE : Total à gauche + Valider à droite ===
+  +'<div class="chk-fixed-actions" style="display:flex;align-items:center;gap:10px">'
+    +'<div style="flex:1;min-width:0;padding:0 4px">'
+      +'<div style="font-family:\'Georgia\',\'Times New Roman\',serif;font-size:11px;font-weight:700;color:#555;letter-spacing:.3px;line-height:1">TOTAL + LIVRAISON</div>'
+      +'<div style="font-family:\'Georgia\',\'Times New Roman\',serif;font-size:18px;font-weight:800;color:#E02E24;margin-top:4px;line-height:1">'+formatPrice(total)+' F</div>'
+    +'</div>'
+    +'<button type="button" class="sv-validate" id="btnPlace" style="flex:0 0 auto;min-width:150px;height:50px;border:none;border-radius:0;background:linear-gradient(135deg,#00A854,#008C46);color:#fff;font-weight:800;font-size:14px;letter-spacing:.3px;padding:0 18px 0 26px;margin:0;-webkit-clip-path:polygon(18px 0, 100% 0, 100% 100%, 0 100%);clip-path:polygon(18px 0, 100% 0, 100% 100%, 0 100%);box-shadow:0 3px 10px rgba(0,168,84,.25)">Valider la commande</button>'
   +'</div>';
 
   // === Boutons adresse ===
@@ -2171,7 +2298,7 @@ var chkHeader='<div class="chk-topbar">'
   var e2=document.getElementById('chkAddAddr');
   if(e2)e2.addEventListener('click',function(){askDeliveryAddress(function(){renderCheckout()})});
   // === Points relais disponibles (si produits pickupFree) ===
-  if(hasPickup){
+   if(hasPickup){
     var pickupBoutiques={};
     cart.forEach(function(it){
       var p=products.find(function(x){return x.id===it.productId});
@@ -2182,43 +2309,54 @@ var chkHeader='<div class="chk-topbar">'
       (async function(){
         var box=document.getElementById('chkPickupBox');
         if(!box)return;
-        var allHtml='';
+        // Charge toutes les données (boutique + points) une seule fois
+        var data=[];
         for(var i=0;i<bids.length;i++){
           var bid=bids[i];
           var pts=await loadPickupPoints(bid);
           if(!pts.length)continue;
-          var bname='Boutique';
-          try{var bd=await getDoc(doc(db,'boutiques',bid));if(bd.exists())bname=bd.data().name||'Boutique'}catch(e){}
-          allHtml+='<div class="chk-section">'
-            +'<div class="chk-section-title"><i class="fa-solid fa-location-dot"></i>Retrait gratuit — '+escapeHtml(bname)+'</div>'
-            +'<div class="chk-pickup-title">Choisissez un point relais :</div>'
-            +'<div class="chk-pickup-list" data-bid="'+bid+'">'
-              +pts.map(function(p){
-                var isSel=(window._selectedPickup&&window._selectedPickup[bid]&&window._selectedPickup[bid].id===p.id);
-                return pickupPointCardHtml(p,isSel?p.id:null,true);
-              }).join('')
-            +'</div>'
-          +'</div>';
+                   var bname='Boutique';
+          var blogo='';
+          try{
+            var bd=await getDoc(doc(db,'boutiques',bid));
+            if(bd.exists()){
+              var bdata=bd.data();
+              bname=bdata.name||'Boutique';
+              blogo=bdata.logo||bdata.logoUrl||bdata.image||'';
+            }
+          }catch(e){}
+          data.push({bid:bid,name:bname,pts:pts,logo:blogo});
         }
-        if(!allHtml){box.innerHTML='';return}
-        box.innerHTML=allHtml;
-        // Gestion du clic "Choisir"
-        box.querySelectorAll('[data-pick]').forEach(function(btn){
+        if(!data.length){box.innerHTML='';return}
+
+        // Rendu : une ligne par boutique
+        box.innerHTML=data.map(function(d){
+          var sel=(window._selectedPickup&&window._selectedPickup[d.bid])||null;
+          var selPt=sel?d.pts.find(function(p){return p.id===sel.id}):null;
+          var subTxt=selPt
+            ? 'Récupération à '+(selPt.city||'')+', '+(selPt.address||'')
+            : 'Choisissez un point relais';
+                  var logoUrl=d.logo||'';
+          var icoHtml=logoUrl
+            ? '<div class="pr-ico" style="padding:0;overflow:hidden;background:#fff"><img src="'+escapeHtml(logoUrl)+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentNode.innerHTML=\'<i class=&quot;fa-solid fa-location-dot&quot;></i>\';this.parentNode.style.background=\'#E8FFF0\'"/></div>'
+            : '<div class="pr-ico" style="border-radius:50%"><i class="fa-solid fa-location-dot"></i></div>';
+          return '<div class="pr-line" data-line-bid="'+d.bid+'">'
+            +icoHtml
+            +'<div class="pr-body">'
+              +'<div class="pr-title">Point relais — '+escapeHtml(d.name)+'</div>'
+              +'<div class="pr-sub">'+escapeHtml(subTxt)+'</div>'
+            +'</div>'
+            +'<button type="button" class="pr-edit" data-edit-pick="'+d.bid+'"><i class="fa-solid fa-pen"></i></button>'
+          +'</div>';
+        }).join('');
+
+        // Ouvre la modale au clic sur le crayon
+        box.querySelectorAll('[data-edit-pick]').forEach(function(btn){
           btn.addEventListener('click',function(){
-            var prId=btn.getAttribute('data-pick');
-            var card=btn.closest('.pr-card');
-            var list=btn.closest('.chk-pickup-list');
-            list.querySelectorAll('.pr-card').forEach(function(c){c.classList.remove('selected')});
-            list.querySelectorAll('.pr-pick').forEach(function(b){b.textContent='Choisir'});
-            card.classList.add('selected');
-            btn.textContent='Choisi';
-            // Sauvegarde en mémoire (sera lue par placeOrder)
-            var addr=card.querySelector('.pr-city').textContent+', '+card.querySelector('.pr-addr').textContent;
-                           window._selectedPickup=window._selectedPickup||{};
-            window._selectedPickup[list.getAttribute('data-bid')]={id:prId,address:addr};
-            try{localStorage.setItem('vl_selected_pickup',JSON.stringify(window._selectedPickup));}catch(e){}
-            toast('Point relais sélectionné');
-            renderCheckout(); // rafraîchit le récap livraison
+            var bid=btn.getAttribute('data-edit-pick');
+            var d=data.find(function(x){return x.bid===bid});
+            if(!d)return;
+            openPickupModal(bid,d.name,d.pts);
           });
         });
       })();
@@ -2245,13 +2383,7 @@ var chkHeader='<div class="chk-topbar">'
   }
 
   // Bouton annuler (rouge, sans fond)
-  var cancelBtn=document.getElementById('chkCancelBtn');
-  if(cancelBtn)cancelBtn.addEventListener('click',function(){
-    if(!confirm('Annuler cette commande ? Le panier sera vidé.'))return;
-    cart=[];saveCart();
-    toast('Commande annulée');
-    showPage('home');
-  });
+ 
 
   document.getElementById('btnPlace').addEventListener('click',placeOrder);
     // === +/- quantité sur le checkout ===
