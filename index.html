@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#00A854"/>
 <title>IDA</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root{--red:#00A854;--danger:#E02E24;--bg:#F4F4F4;--border:#EBEBEB;--nav-h:52px;--safe-b:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -708,6 +709,296 @@ body.page-cart-active .cart-pro-summary{background:#fff}
 .cart-pro-empty{
   text-align:center;padding:60px 20px;color:#888;
 }
+  /* === CARTE PROFIL FORMAT CARTE DE VISITE (fixe) === */
+.account-profile{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  width:100%;
+  max-width:360px;
+  height:200px;
+  padding:16px;
+  background:linear-gradient(120deg,#073d27,#087b45);
+  border-radius:18px;
+  color:#fff;
+  box-shadow:0 8px 22px rgba(0,110,57,.14);
+  overflow:hidden;
+  margin:0 auto;
+}
+.account-profile:after{
+  content:"";position:absolute;
+  width:150px;height:150px;
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:50%;
+  right:-52px;top:-78px;
+  box-shadow:0 0 0 18px rgba(255,255,255,.035),0 0 0 38px rgba(255,255,255,.025);
+}
+.account-avatar{
+  width:56px;height:56px;flex:0 0 56px;
+  border-radius:14px;
+  background:rgba(255,255,255,.15);
+  color:#d0d0d0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+  overflow:hidden;
+  position:relative;z-index:1;
+}
+.account-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.account-profile-info{
+  min-width:0;position:relative;z-index:1;flex:1;
+  display:flex;flex-direction:column;gap:4px;
+}
+.account-profile-name{
+  font-size:15px;font-weight:800;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.account-profile-line{
+  font-size:11.5px;color:rgba(255,255,255,.88);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  display:flex;align-items:center;gap:6px;
+}
+.account-profile-line i{font-size:10px;opacity:.85;flex-shrink:0}
+.account-privacy-btn{
+  position:absolute;top:10px;right:10px;z-index:2;
+  width:26px;height:26px;border-radius:50%;
+  background:rgba(255,255,255,.13);
+  color:#fff;font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+  border:none;cursor:pointer;
+}
+.account-card-logo{
+  position:absolute;bottom:10px;right:10px;z-index:2;
+  height:34px;width:auto;max-width:90px;object-fit:contain;
+  filter:brightness(0) invert(1);
+  opacity:.95;
+}
+.account-card-client{
+  position:absolute;bottom:12px;left:16px;z-index:2;
+  font-size:10px;font-weight:700;letter-spacing:1.5px;
+  color:rgba(255,255,255,.75);text-transform:uppercase;
+}
+/* === Modale politique de confidentialité === */
+.privacy-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:500;display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.privacy-box{
+  background:#fff;border-radius:14px;max-width:420px;width:100%;
+  max-height:80vh;overflow:auto;padding:18px;position:relative;
+}
+.privacy-box h3{font-size:16px;font-weight:800;margin-bottom:10px;color:#1a1a1a}
+.privacy-box p{font-size:12.5px;line-height:1.55;color:#444;margin-bottom:10px}
+.privacy-box .privacy-close{
+  position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;
+  background:#f5f5f5;color:#333;font-size:16px;display:flex;align-items:center;justify-content:center;
+}
+  /* ============================================================
+   === CARTE CLIENT PVC — design fidèle (CSS pur, sans Tailwind)
+   ============================================================ */
+.ida-card-wrap{
+  width:100%;
+  max-width:720px;
+  margin:0 auto 6px;
+  position:relative;
+}
+.ida-pvc-card{
+  aspect-ratio:85.6 / 53.98;
+  width:100%;
+  border-radius:3.8% / 6%;
+  box-shadow:
+    0 25px 50px -12px rgba(15,76,41,.25),
+    0 10px 20px -8px rgba(15,76,41,.14),
+    inset 0 0 0 1px rgba(255,255,255,.9),
+    inset 0 1px 2px rgba(255,255,255,.95);
+  position:relative;
+  overflow:hidden;
+  background:#fff;
+  user-select:none;
+  font-family:'Inter',system-ui,sans-serif;
+}
+.ida-pvc-card .pvc-gloss{
+  background:linear-gradient(125deg,
+    rgba(255,255,255,.36) 0%,
+    rgba(255,255,255,.05) 35%,
+    rgba(255,255,255,0) 50%,
+    rgba(255,255,255,.08) 100%);
+  pointer-events:none;
+}
+.ida-pvc-card .card-serif{
+  font-family:'PT Serif','Times New Roman',Georgia,serif;
+}
+.ida-pvc-card .curved-badge-text{
+  font-family:'PT Serif','Times New Roman',serif;
+  font-weight:700;
+  letter-spacing:.06em;
+  fill:#fff;
+}
+/* Bande dorée verticale */
+.ida-pvc-card .pvc-gold-band{
+  position:absolute;top:0;left:6.8%;width:16.5%;height:78%;
+  background:linear-gradient(180deg,#C9A24B 0%,#d4af5a 55%,#C9A24B 100%);
+}
+/* En-tête */
+.ida-pvc-card .pvc-head{
+  position:absolute;top:11%;left:32.5%;right:24%;
+}
+.ida-pvc-card .pvc-title{
+  color:#0F4C29;font-weight:400;letter-spacing:.04em;text-transform:uppercase;line-height:1;
+  font-size:clamp(16px,3.4vw,31px);
+}
+.ida-pvc-card .pvc-subtitle{
+  color:#0F4C29;font-weight:700;text-transform:uppercase;letter-spacing:.015em;line-height:1.35;margin-top:2.2%;
+  font-size:clamp(7.5px,1.24vw,11.5px);
+}
+/* Logo fixe en haut à droite */
+.ida-pvc-card .pvc-logo{
+  position:absolute;top:5.5%;right:3.5%;width:18.5%;aspect-ratio:1;
+  border-radius:12px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.ida-pvc-card .pvc-logo img{
+  width:100%;height:100%;object-fit:contain;padding:2px;
+}
+/* Médaillon circulaire */
+.ida-pvc-card .pvc-medallion{
+  position:absolute;left:1.6%;top:27.5%;width:27.2%;aspect-ratio:1;border-radius:50%;
+}
+.ida-pvc-card .pvc-medallion svg{
+  width:100%;height:100%;filter:drop-shadow(0 1px 1px rgba(0,0,0,.06));
+}
+.ida-pvc-card .pvc-photo-inner{
+  position:absolute;inset:12%;border-radius:50%;overflow:hidden;
+  background:#f1f5f9;border:1px solid rgba(201,162,75,.4);
+  display:flex;align-items:center;justify-content:center;
+}
+.ida-pvc-card .pvc-photo-inner img{
+  width:100%;height:100%;object-fit:cover;
+}
+.ida-pvc-card .pvc-photo-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#94a3b8;text-align:center;padding:4px;
+}
+.ida-pvc-card .pvc-photo-empty i{
+  font-size:clamp(12px,2.2vw,20px);margin-bottom:2px;color:rgba(148,163,184,.8);
+}
+.ida-pvc-card .pvc-photo-empty span{
+  font-weight:500;text-transform:uppercase;letter-spacing:.05em;line-height:1.1;
+  font-size:clamp(6px,.9vw,8.5px);
+}
+/* Séparateur vertical doré */
+.ida-pvc-card .pvc-sep{
+  position:absolute;left:33.8%;top:34.5%;width:1.5px;height:35.5%;background:#C9A24B;
+}
+/* Bloc infos */
+.ida-pvc-card .pvc-infos{
+  position:absolute;left:36.8%;top:36%;right:21%;
+  display:flex;flex-direction:column;justify-content:space-between;height:32.5%;
+  color:#0F4C29;
+  font-size:clamp(10px,1.85vw,17px);
+}
+.ida-pvc-card .pvc-info-line{
+  line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ida-pvc-card .pvc-info-line .k{font-weight:400;color:#254434}
+.ida-pvc-card .pvc-info-line .v{font-weight:700;color:#0F4C29}
+/* Vague décorative */
+.ida-pvc-card .pvc-wave{
+  position:absolute;bottom:0;left:0;width:100%;height:27.5%;pointer-events:none;
+}
+/* QR fixe en bas à droite */
+.ida-pvc-card .pvc-qr{
+  position:absolute;bottom:4.5%;right:4%;width:14.2%;aspect-ratio:1;
+  border-radius:8px;overflow:hidden;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,.15);
+}
+.ida-pvc-card .pvc-qr img{
+  width:100%;height:100%;object-fit:contain;background:#fff;border-radius:8px;
+  padding:4px;border:1px solid #C9A24B;
+}
+/* Bouton crayon (caché à l'export) */
+.ida-card-tools{
+  position:absolute;top:-4px;left:-4px;z-index:5;display:flex;gap:8px;
+}
+.ida-card-tools button{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+  transition:transform .15s, background .15s;
+}
+.ida-card-tools button:active{transform:scale(.95)}
+.ida-card-tools .tool-edit{background:#fff;color:#0F4C29;border:1px solid #e2e8f0}
+.ida-card-tools .tool-dl{background:#0F4C29;color:#C9A24B;border:1px solid #0F4C29}
+.ida-card-tools .tool-dl:hover{background:#145C32}
+/* Modale d'édition */
+.ida-edit-modal{
+  position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);
+  z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.ida-edit-box{
+  background:#fff;width:100%;max-width:480px;border-radius:16px;
+  box-shadow:0 20px 40px rgba(0,0,0,.2);overflow:hidden;
+  display:flex;flex-direction:column;max-height:90vh;
+  animation:idaModalIn .2s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes idaModalIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.ida-edit-head{
+  padding:14px 18px;background:#0F4C29;color:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ida-edit-head .etitle{font-size:13px;font-weight:800;letter-spacing:.3px}
+.ida-edit-head .esub{font-size:11px;color:rgba(209,250,229,.8);margin-top:2px}
+.ida-edit-head button{
+  width:30px;height:30px;border-radius:8px;color:rgba(209,250,229,.85);
+  display:flex;align-items:center;justify-content:center;
+}
+.ida-edit-head button:hover{background:rgba(255,255,255,.1);color:#fff}
+.ida-edit-body{padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.ida-edit-body label{display:block;font-size:11px;font-weight:700;color:#334155;margin-bottom:6px}
+.ida-edit-body input[type=text],
+.ida-edit-body input[type=tel]{
+  width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:10px;
+  font-size:13.5px;background:#fff;font-family:inherit;
+}
+.ida-edit-body input:focus{outline:none;border-color:#C9A24B;box-shadow:0 0 0 3px rgba(201,162,75,.2)}
+.ida-edit-body input:disabled{background:#f1f5f9;color:#64748b;cursor:not-allowed}
+.ida-edit-body .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:420px){.ida-edit-body .row2{grid-template-columns:1fr}}
+.ida-edit-body .photo-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;
+}
+.ida-edit-body .photo-preview{
+  width:42px;height:42px;border-radius:50%;background:#0F4C29;border:2px solid #C9A24B;
+  display:flex;align-items:center;justify-content:center;color:#C9A24B;overflow:hidden;flex-shrink:0;
+}
+.ida-edit-body .photo-preview img{width:100%;height:100%;object-fit:cover}
+.ida-edit-body .photo-preview i{font-size:14px}
+.ida-edit-body .photo-meta{flex:1;min-width:0}
+.ida-edit-body .photo-meta p:first-child{font-size:12px;font-weight:700;color:#0F2937}
+.ida-edit-body .photo-meta p:last-child{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.ida-edit-body .photo-btns{display:flex;gap:6px;flex-shrink:0}
+.ida-edit-body .btn-upload{
+  padding:6px 10px;font-size:11px;font-weight:700;background:#0F4C29;color:#fff;
+  border-radius:8px;display:flex;align-items:center;gap:5px;
+}
+.ida-edit-body .btn-upload i{color:#C9A24B;font-size:10px}
+.ida-edit-body .btn-clear{
+  padding:6px 8px;font-size:11px;font-weight:700;
+  background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;
+}
+.ida-edit-foot{
+  padding:10px 18px;background:#f8fafc;border-top:1px solid #e2e8f0;
+  display:flex;justify-content:flex-end;gap:8px;
+}
+.ida-edit-foot button{
+  padding:9px 16px;font-size:12px;font-weight:700;border-radius:10px;
+  display:flex;align-items:center;gap:6px;
+}
+.ida-edit-foot .btn-cancel{background:#fff;color:#475569;border:1px solid #cbd5e1}
+.ida-edit-foot .btn-validate{background:#0F4C29;color:#fff}
+.ida-edit-foot .btn-validate i{color:#C9A24B}
 </style>
 </head>
 <body>
@@ -2054,44 +2345,279 @@ async function renderOrderDetail(oid){
 }
     
 function renderAccount(){
-if(!currentUser){showPage('auth');return}
-var email=currentUser.email||'Compte IDA';
-var initial=(email.trim().charAt(0)||'I').toUpperCase();
-$('page-account').innerHTML=`
-<div class="account-page">
-  <div class="account-intro">
-    <div><div class="account-eyebrow">ESPACE PERSONNEL</div><h1>Mon compte</h1><p>Gérez votre activité sur IDA.</p></div>
-    <div class="account-brand-mark"><img src="logo.png" alt="IDA" style="height:28px;width:auto;object-fit:contain"/></div>
+  if(!currentUser){showPage('auth');return}
+  var email=currentUser.email||'Compte IDA';
+  var prof=loadLocalProfile();
+  var displayName=prof.name||'Client IDA';
+  var phone=prof.phone||'Téléphone non renseigné';
+  var address=prof.address||'Adresse non renseignée';
+
+  $('page-account').innerHTML=`
+  <div class="account-page">
+    <div class="account-intro">
+      <div><div class="account-eyebrow">ESPACE PERSONNEL</div><h1>Mon compte</h1><p>Gérez votre activité sur IDA.</p></div>
+      <div class="account-brand-mark"><img src="${escapeHtml(getSiteLogo())}" alt="IDA" style="height:28px;width:auto;object-fit:contain"/></div>
+    </div>
+
+  <div class="ida-card-wrap">
+  <div class="ida-card-tools" data-html2canvas-ignore="true">
+    <button type="button" class="tool-edit" id="idaCardEditBtn" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+    <button type="button" class="tool-dl" id="idaCardDlBtn" title="Télécharger"><i class="fa-solid fa-download"></i></button>
   </div>
-  <section class="account-profile">
-    <div class="account-avatar">${escapeHtml(initial)}</div>
-    <div class="account-profile-info"><div class="account-profile-name">Mon espace IDA</div><div class="account-email">${escapeHtml(email)}</div><span class="account-status"><span></span> Compte connecté</span></div>
-    <i class="fa-solid fa-shield-halved account-profile-shield"></i>
-  </section>
-  <div class="account-section-head"><h2>Mon activité</h2><span>Accès rapide</span></div>
-  <section class="account-shortcuts">
-    <button type="button" class="account-shortcut" id="btnOrders2"><span class="account-shortcut-icon messages"><i class="fa-solid fa-receipt"></i></span><strong>Mes commandes</strong><small>Vos commandes passées</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
-    <button type="button" class="account-shortcut" id="btnSavedChk"><span class="account-shortcut-icon" style="background:#FFF7E6;color:#E02E24"><i class="fa-regular fa-bookmark"></i></span><strong>Paniers sauvegardés</strong><small>Vos commandes en attente</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
-    <button type="button" class="account-shortcut" id="btnFavs"><span class="account-shortcut-icon favorites"><i class="fa-regular fa-heart"></i></span><strong>Favoris</strong><small>Produits enregistrés</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
-    <button type="button" class="account-shortcut" id="btnFollows"><span class="account-shortcut-icon follows"><i class="fa-solid fa-store"></i></span><strong>Liste de suivi</strong><small>Vos boutiques suivies</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
-  </section>
-  <div class="account-section-head account-options-head"><h2>Compte et sécurité</h2></div>
-  <section class="account-options">
-    <div class="account-option-row"><span class="account-option-icon"><i class="fa-regular fa-envelope"></i></span><span class="account-option-copy"><strong>Adresse e-mail</strong><small>${escapeHtml(email)}</small></span><i class="fa-solid fa-check account-option-check"></i></div>
-    <div class="account-option-row"><span class="account-option-icon"><i class="fa-solid fa-lock"></i></span><span class="account-option-copy"><strong>Connexion sécurisée</strong><small>Votre session est active</small></span><i class="fa-solid fa-check account-option-check"></i></div>
-  </section>
-  <button type="button" class="account-logout" id="btnOut"><i class="fa-solid fa-arrow-right-from-bracket"></i> Déconnexion</button>
-  <div class="account-footer">IDA · Votre boutique, simplement.</div>
-</div>`;
-document.getElementById('btnOrders2').addEventListener('click',function(){showPage('orders')});
+  <div class="ida-pvc-card" id="idaPvcCard">
+    <!-- 1. Bande dorée -->
+    <div class="pvc-gold-band"></div>
+    <!-- 2. En-tête -->
+    <div class="pvc-head">
+      <h1 class="card-serif pvc-title">IDA SHOPP</h1>
+      <p class="card-serif pvc-subtitle">SIMPLIFIER VOS ACHATS</p>
+    </div>
+    <!-- 3. Logo fixe -->
+    <div class="pvc-logo">
+      <img src="logo1.png" alt="IDA SHOPP" onerror="this.style.display='none'"/>
+    </div>
+    <!-- 4. Médaillon (photo + citation incurvée) -->
+    <div class="pvc-medallion">
+      <svg viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="98" fill="#0F4C29" stroke="#C9A24B" stroke-width="2.5"/>
+        <circle cx="100" cy="100" r="76" fill="#f8fafc" stroke="#C9A24B" stroke-width="2"/>
+        <defs>
+          <path id="idaBadgeArc" d="M 15,100 A 85,85 0 1,1 185,100"/>
+        </defs>
+        <text class="curved-badge-text" font-size="10.4">
+          <textPath id="idaBadgeCitation" href="#idaBadgeArc" startOffset="50%" text-anchor="middle">★ ${escapeHtml((prof.citation||'VOTRE FIDÉLITÉ, NOTRE PRIORITÉ').toUpperCase())} ★</textPath>
+        </text>
+      </svg>
+      <div class="pvc-photo-inner">
+        ${prof.photo
+          ? '<img id="idaCardPhoto" src="'+escapeHtml(prof.photo)+'" onerror="this.style.display=\'none\'"/>'
+          : '<div class="pvc-photo-empty" id="idaCardPhotoEmpty"><i class="fa-solid fa-camera"></i><span>Photo</span></div>'}
+      </div>
+    </div>
+    <!-- 5. Séparateur -->
+    <div class="pvc-sep"></div>
+    <!-- 6. Infos -->
+    <div class="pvc-infos">
+      <div class="pvc-info-line"><span class="k">Nom : </span><span class="v">${escapeHtml(prof.name||'Client IDA')}</span></div>
+      <div class="pvc-info-line"><span class="k">Adresse : </span><span class="v">${escapeHtml(prof.address||'—')}</span></div>
+      <div class="pvc-info-line"><span class="k">Téléphone : </span><span class="v">${escapeHtml(prof.phone||'—')}</span></div>
+      <div class="pvc-info-line"><span class="k">Adresse mail : </span><span class="v">${escapeHtml(email)}</span></div>
+    </div>
+    <!-- 7. Vague -->
+    <svg class="pvc-wave" viewBox="0 0 856 170" preserveAspectRatio="none">
+      <path d="M 0,48 C 130,108 265,126 395,112 C 260,138 125,126 0,74 Z" fill="#C9A24B"/>
+      <path d="M 0,136 C 145,146 270,132 425,92 C 580,52 720,16 856,6 L 856,170 L 0,170 Z" fill="#0F4C29"/>
+    </svg>
+    <!-- 8. QR fixe -->
+    <div class="pvc-qr">
+      <img src="qrcode.png" alt="QR Code" onerror="this.style.display='none'"/>
+    </div>
+    <!-- 9. Reflet PVC -->
+    <div class="pvc-gloss"></div>
+  </div>
+</div>
+
+    <div class="account-section-head"><h2>Mon activité</h2><span>Accès rapide</span></div>
+    <section class="account-shortcuts">
+      <button type="button" class="account-shortcut" id="btnOrders2"><span class="account-shortcut-icon messages"><i class="fa-solid fa-receipt"></i></span><strong>Mes commandes</strong><small>Vos commandes passées</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+      <button type="button" class="account-shortcut" id="btnSavedChk"><span class="account-shortcut-icon" style="background:#FFF7E6;color:#E02E24"><i class="fa-regular fa-bookmark"></i></span><strong>Paniers sauvegardés</strong><small>Vos commandes en attente</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+      <button type="button" class="account-shortcut" id="btnFavs"><span class="account-shortcut-icon favorites"><i class="fa-regular fa-heart"></i></span><strong>Favoris</strong><small>Produits enregistrés</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+      <button type="button" class="account-shortcut" id="btnFollows"><span class="account-shortcut-icon follows"><i class="fa-solid fa-store"></i></span><strong>Liste de suivi</strong><small>Vos boutiques suivies</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+    </section>
+
+    <div class="account-section-head account-options-head"><h2>Compte et sécurité</h2></div>
+    <section class="account-options">
+      <div class="account-option-row"><span class="account-option-icon"><i class="fa-regular fa-envelope"></i></span><span class="account-option-copy"><strong>Adresse e-mail</strong><small>${escapeHtml(email)}</small></span><i class="fa-solid fa-check account-option-check"></i></div>
+      <div class="account-option-row"><span class="account-option-icon"><i class="fa-solid fa-lock"></i></span><span class="account-option-copy"><strong>Connexion sécurisée</strong><small>Votre session est active</small></span><i class="fa-solid fa-check account-option-check"></i></div>
+    </section>
+
+    <button type="button" class="account-logout" id="btnOut"><i class="fa-solid fa-arrow-right-from-bracket"></i> Déconnexion</button>
+    <div class="account-footer">IDA · Votre boutique, simplement.</div>
+  </div>`;
+
+  // === Boutons activité ===
+  document.getElementById('btnOrders2').addEventListener('click',function(){showPage('orders')});
   document.getElementById('btnSavedChk').addEventListener('click',function(){showPage('saved-checkouts')});
-document.getElementById('btnFavs').addEventListener('click',function(){showPage('favorites')});
-document.getElementById('btnFollows').addEventListener('click',function(){showPage('follows')});
-  document.getElementById('btnOrders').addEventListener('click',function(){showPage('orders')});
-document.getElementById('btnOut').addEventListener('click',function(){signOut(auth).catch(function(e){toast(e.message)})});
-}
-  
-  function loadLocalProfile(){
+  document.getElementById('btnFavs').addEventListener('click',function(){showPage('favorites')});
+  document.getElementById('btnFollows').addEventListener('click',function(){showPage('follows')});
+  document.getElementById('btnOut').addEventListener('click',function(){signOut(auth).catch(function(e){toast(e.message)})});
+
+  // ============ CARTE PVC : handlers ============
+  (function(){
+    var editBtn=document.getElementById('idaCardEditBtn');
+    var dlBtn=document.getElementById('idaCardDlBtn');
+    if(!editBtn||!dlBtn)return;
+
+    // --- Modale d'édition ---
+    editBtn.addEventListener('click',function(){
+      var p=loadLocalProfile();
+      var old=document.getElementById('idaEditModal');
+      if(old)old.remove();
+
+      var modal=document.createElement('div');
+      modal.className='ida-edit-modal';
+      modal.id='idaEditModal';
+      modal.innerHTML=''
+        +'<div class="ida-edit-box">'
+          +'<div class="ida-edit-head">'
+            +'<div><div class="etitle">Informations de la carte client</div><div class="esub">IDA SHOPP • Édition du titulaire</div></div>'
+            +'<button type="button" id="idaEditClose"><i class="fa-solid fa-xmark"></i></button>'
+          +'</div>'
+          +'<div class="ida-edit-body">'
+            // Photo
+            +'<div class="photo-row">'
+              +'<div class="photo-preview">'
+                +(p.photo?'<img id="idaEditMiniPhoto" src="'+escapeHtml(p.photo)+'"/>':'<i class="fa-solid fa-camera" id="idaEditMiniIcon"></i>')
+              +'</div>'
+              +'<div class="photo-meta">'
+                +'<p>Photo du client</p>'
+                +'<p id="idaEditPhotoName">'+(p.photo?'Photo importée':'Aucune photo importée')+'</p>'
+              +'</div>'
+              +'<div class="photo-btns">'
+                +'<button type="button" class="btn-upload" id="idaEditPhotoBtn"><i class="fa-solid fa-upload"></i>Choisir</button>'
+                +(p.photo?'<button type="button" class="btn-clear" id="idaEditPhotoClear"><i class="fa-solid fa-trash-can"></i></button>':'')
+              +'</div>'
+            +'</div>'
+            // Nom + Adresse
+            +'<div class="row2">'
+              +'<div><label>Nom</label><input type="text" id="idaEditNom" value="'+escapeHtml(p.name||'')+'" placeholder="Ex : Saar"/></div>'
+              +'<div><label>Adresse</label><input type="text" id="idaEditAdresse" value="'+escapeHtml(p.address||'')+'" placeholder="Ex : Ngaleel"/></div>'
+            +'</div>'
+            // Téléphone + Email (disabled)
+            +'<div class="row2">'
+              +'<div><label>Téléphone</label><input type="tel" id="idaEditTel" value="'+escapeHtml(p.phone||'')+'" placeholder="Ex : 774108039"/></div>'
+              +'<div><label>Adresse mail (non modifiable)</label><input type="text" value="'+escapeHtml(email)+'" disabled/></div>'
+            +'</div>'
+            // Citation
+            +'<div><label>Citation sur le cercle</label><input type="text" id="idaEditCitation" value="'+escapeHtml(p.citation||'VOTRE FIDÉLITÉ, NOTRE PRIORITÉ')+'" placeholder="Citation commerciale"/></div>'
+          +'</div>'
+          +'<div class="ida-edit-foot">'
+            +'<button type="button" class="btn-cancel" id="idaEditCancel">Annuler</button>'
+            +'<button type="button" class="btn-validate" id="idaEditSave"><i class="fa-solid fa-check"></i>Valider</button>'
+          +'</div>'
+        +'</div>';
+      document.body.appendChild(modal);
+
+      // input file caché
+      var photoInput=document.createElement('input');
+      photoInput.type='file';photoInput.accept='image/*';photoInput.style.display='none';photoInput.id='idaEditPhotoInput';
+      document.body.appendChild(photoInput);
+
+      function closeM(){modal.remove();photoInput.remove()}
+      document.getElementById('idaEditClose').addEventListener('click',closeM);
+      document.getElementById('idaEditCancel').addEventListener('click',closeM);
+      modal.addEventListener('click',function(e){if(e.target===modal)closeM()});
+
+      // Photo upload
+      var photoBtn=document.getElementById('idaEditPhotoBtn');
+      if(photoBtn)photoBtn.addEventListener('click',function(){photoInput.click()});
+      photoInput.addEventListener('change',function(e){
+        var f=e.target.files[0];if(!f)return;
+        var r=new FileReader();
+        r.onload=function(ev){
+          var mini=document.getElementById('idaEditMiniPhoto');
+          var icon=document.getElementById('idaEditMiniIcon');
+          if(mini){mini.src=ev.target.result}
+          else{
+            var wrap=document.querySelector('#idaEditModal .photo-preview');
+            if(wrap){wrap.innerHTML='<img id="idaEditMiniPhoto" src="'+ev.target.result+'"/>'}
+          }
+          if(icon)icon.style.display='none';
+          var nm=document.getElementById('idaEditPhotoName');
+          if(nm)nm.textContent=f.name;
+        };
+        r.readAsDataURL(f);
+      });
+      var clr=document.getElementById('idaEditPhotoClear');
+      if(clr)clr.addEventListener('click',function(){
+        var wrap=document.querySelector('#idaEditModal .photo-preview');
+        if(wrap)wrap.innerHTML='<i class="fa-solid fa-camera" id="idaEditMiniIcon"></i>';
+        var nm=document.getElementById('idaEditPhotoName');
+        if(nm)nm.textContent='Aucune photo importée';
+        photoInput.value='';
+        // marquer comme supprimée : on met un flag
+        wrap.setAttribute('data-cleared','1');
+      });
+
+      // Save
+      document.getElementById('idaEditSave').addEventListener('click',function(){
+        var nom=document.getElementById('idaEditNom').value.trim();
+        var adresse=document.getElementById('idaEditAdresse').value.trim();
+        var tel=document.getElementById('idaEditTel').value.trim();
+        var citation=document.getElementById('idaEditCitation').value.trim();
+        var pp=loadLocalProfile();
+        pp.name=nom||pp.name;
+        pp.address=adresse||pp.address;
+        pp.phone=tel||pp.phone;
+        pp.citation=citation||'VOTRE FIDÉLITÉ, NOTRE PRIORITÉ';
+        // Photo : si input a une nouvelle valeur OU si marquée comme supprimée
+        var wrapP=document.querySelector('#idaEditModal .photo-preview');
+        var miniImg=document.getElementById('idaEditMiniPhoto');
+        if(wrapP && wrapP.getAttribute('data-cleared')==='1'){
+          delete pp.photo;
+        }else if(miniImg && miniImg.src && miniImg.src.indexOf('data:')===0){
+          pp.photo=miniImg.src;
+        }
+        try{localStorage.setItem('vl_profile',JSON.stringify(pp))}catch(e){}
+        closeM();
+        toast('Carte mise à jour');
+        renderAccount();
+      });
+    });
+
+    // --- Téléchargement PNG ---
+    dlBtn.addEventListener('click',async function(){
+      var card=document.getElementById('idaPvcCard');
+      if(!card||typeof html2canvas==='undefined'){toast('Export indisponible');return}
+      var oldIcon=dlBtn.innerHTML;
+      dlBtn.disabled=true;dlBtn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
+      // cacher les placeholders vides pour un rendu propre
+      var pe=document.getElementById('idaCardPhotoEmpty');
+      if(pe)pe.style.opacity='0';
+      try{
+        var canvas=await html2canvas(card,{scale:3,useCORS:true,backgroundColor:null});
+        var a=document.createElement('a');
+        var p=loadLocalProfile();
+        var safe=((p.name||'client')+'').toLowerCase().replace(/\s+/g,'_');
+        a.download='carte_ida_'+safe+'.png';
+        a.href=canvas.toDataURL('image/png');
+        a.click();
+        toast('Carte téléchargée');
+      }catch(e){
+        console.error(e);toast('Erreur export');
+      }finally{
+        if(pe)pe.style.opacity='1';
+        dlBtn.disabled=false;dlBtn.innerHTML=oldIcon;
+      }
+    });
+  })();
+
+
+  // === Bouton confidentialité ===
+  var privBtn=document.getElementById('accountPrivacyBtn');
+  if(privBtn){
+    privBtn.addEventListener('click',function(){
+      var old=document.getElementById('privacyModal');if(old)old.remove();
+      var modal=document.createElement('div');
+      modal.className='privacy-modal';
+      modal.id='privacyModal';
+      modal.innerHTML='<div class="privacy-box">'
+        +'<button type="button" class="privacy-close" id="privacyClose"><i class="fa-solid fa-xmark"></i></button>'
+        +'<h3>Politique de confidentialité</h3>'
+        +'<p>IDA collecte uniquement les informations nécessaires au traitement de vos commandes : nom, téléphone, adresse de livraison et email.</p>'
+        +'<p>Vos données ne sont jamais revendues à des tiers. Elles sont utilisées exclusivement pour :</p>'
+        +'<p>• Traiter et livrer vos commandes<br/>• Vous contacter en cas de besoin<br/>• Améliorer votre expérience sur IDA</p>'
+        +'<p>Vous pouvez demander la suppression de vos données à tout moment en nous contactant via le chat.</p>'
+        +'<p style="font-size:11px;color:#888;margin-top:14px">Dernière mise à jour : 2026</p>'
+        +'</div>';
+      document.body.appendChild(modal);
+      document.getElementById('privacyClose').addEventListener('click',function(){modal.remove()});
+      modal.addEventListener('click',function(e){if(e.target===modal)modal.remove()});
+    });
+  }
+} 
+   
+function loadLocalProfile(){
   try{return JSON.parse(localStorage.getItem('vl_profile')||'{}')}catch(e){return{}}
 }
 function saveLocalProfile(data){
@@ -2100,6 +2626,8 @@ function saveLocalProfile(data){
     if(data.name)p.name=data.name;
     if(data.phone)p.phone=data.phone;
     if(data.address)p.address=data.address;
+    if(data.citation)p.citation=data.citation;
+    if(data.photo!==undefined)p.photo=data.photo;
     localStorage.setItem('vl_profile',JSON.stringify(p));
   }catch(e){}
 }
