@@ -2361,7 +2361,7 @@ function renderAccount(){
   $('page-account').innerHTML=`
   <div class="account-page">
 <div class="account-intro">
-  <div><div class="account-eyebrow">ESPACE PERSONNEL</div><h1>Mon compte</h1><p>Gérez votre activité sur IDA.</p></div>
+  <div><div class="account-eyebrow">Confidentialité</div><h1>Mon compte</h1><p>Vos informations sont protégées et sécurisées.</p></div>
   <div class="ida-card-tools" data-html2canvas-ignore="true">
     <button type="button" class="tool-edit" id="idaCardEditBtn" title="Modifier"><i class="fa-solid fa-pen"></i></button>
     <button type="button" class="tool-dl" id="idaCardDlBtn" title="Télécharger"><i class="fa-solid fa-download"></i></button>
@@ -2465,7 +2465,7 @@ function renderAccount(){
       modal.innerHTML=''
         +'<div class="ida-edit-box">'
           +'<div class="ida-edit-head">'
-            +'<div><div class="etitle">Informations de la carte client</div><div class="esub">IDA SHOPP • Édition du titulaire</div></div>'
+            +'<div><div class="etitle">Informations personnelles </div><div class="esub">IDA SHOPP • Édition du client</div></div>'
             +'<button type="button" id="idaEditClose"><i class="fa-solid fa-xmark"></i></button>'
           +'</div>'
           +'<div class="ida-edit-body">'
@@ -2476,7 +2476,7 @@ function renderAccount(){
               +'</div>'
               +'<div class="photo-meta">'
                 +'<p>Photo du client</p>'
-                +'<p id="idaEditPhotoName">'+(p.photo?'Photo importée':'Aucune photo importée')+'</p>'
+                +'<p id="idaEditPhotoName">'+(p.photo?'Photo importée':'Aucune photo choisie')+'</p>'
               +'</div>'
               +'<div class="photo-btns">'
                 +'<button type="button" class="btn-upload" id="idaEditPhotoBtn"><i class="fa-solid fa-upload"></i>Choisir</button>'
@@ -2485,7 +2485,7 @@ function renderAccount(){
             +'</div>'
             // Nom + Adresse
             +'<div class="row2">'
-              +'<div><label>Nom</label><input type="text" id="idaEditNom" value="'+escapeHtml(p.name||'')+'" placeholder="Ex : Saar"/></div>'
+              +'<div><label>Nom et prénom</label><input type="text" id="idaEditNom" value="'+escapeHtml(p.name||'')+'" placeholder="Ex : Saar"/></div>'
               +'<div><label>Adresse</label><input type="text" id="idaEditAdresse" value="'+escapeHtml(p.address||'')+'" placeholder="Ex : Ngaleel"/></div>'
             +'</div>'
             // Téléphone + Email (disabled)
