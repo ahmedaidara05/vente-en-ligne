@@ -1156,6 +1156,29 @@ body:not(.hide-chrome) #page-catalog .pg{
 .pr-modal-foot button{flex:1;height:42px;border-radius:21px;font-weight:800;font-size:13px}
 .pr-modal-foot .pr-clear{background:#fff;color:#E02E24;border:2px solid #E02E24}
 .pr-modal-foot .pr-close{background:#00A854;color:#fff;border:2px solid #00A854}
+  /* === Checkout : réduire l'espace entre "conditions IDA" et "Vous pourriez aussi aimer" === */
+#chkTermsLine{
+  margin:0 !important;
+  padding:0 !important;
+  line-height:1.3 !important;
+}
+#chkRecoBar{
+  margin:0 !important;
+  padding:2px 16px 4px !important;
+  border-top:none !important;
+}
+#chkRecoBar:before,
+#chkRecoBar:after{
+  display:none !important;
+}
+/* Neutralise la marge basse du conteneur chk-page dans cette zone */
+body.page-checkout-active #chkTermsLine + #chkRecoBar{
+  margin-top:-2px !important;
+}
+  /* === Checkout : espace en bas de la grille reco pour ne pas cacher les produits === */
+body.page-checkout-active #chkRecoGrid{
+  padding-bottom:130px !important;
+}
 </style>
 </head>
 <body>
@@ -2280,9 +2303,11 @@ var chkHeader='<div class="chk-topbar">'
      +livraisonHtml
 +'</div>'
 +'<div id="chkPickupBox"></div>'
-          +'<p style="text-align:center;font-size:11px;color:#888;margin:0">En confirmant, vous acceptez les <a href="#" id="chkPrivacyLink" style="color:#00A854;text-decoration:underline;font-weight:700;cursor:pointer">conditions IDA</a>.</p>'
+          +'<p id="chkTermsLine" style="text-align:center;font-size:11px;color:#888;margin:0;padding:0">En confirmant, vous acceptez les <a href="#" id="chkPrivacyLink" style="color:#00A854;text-decoration:underline;font-weight:700;cursor:pointer">conditions IDA</a>.</p>'
   +'</div>'
-  // === BOUTONS FIXES EN BAS ===
+  +'<div class="cart-reco-bar" id="chkRecoBar" style="margin:0;padding:2px 16px 4px"><span>Vous pourriez aussi aimer</span></div>'
+    +'<div class="pg" id="chkRecoGrid"></div>'
+   // === BOUTONS FIXES EN BAS ===
   // === BARRE FIXE : Total à gauche + Valider à droite ===
   +'<div class="chk-fixed-actions" style="display:flex;align-items:center;gap:10px">'
     +'<div style="flex:1;min-width:0;padding:0 4px">'
@@ -2419,6 +2444,24 @@ var chkHeader='<div class="chk-topbar">'
     if(!box)return;
     var prof2=loadLocalProfile();
     box.innerHTML=buildSimpleIdaCard(prof2, userEmail);
+  })();
+    // === Reco produits en bas du checkout ===
+  (function(){
+    var g=document.getElementById('chkRecoGrid');
+    if(!g)return;
+    var inCartIds=cart.map(function(i){return i.productId});
+    var recos=getRecommendedProducts(6,inCartIds);
+    if(!recos.length){
+      // Fallback : mélange de produits si aucune reco pertinente
+      recos=products.slice(0,6);
+    }
+    if(!recos.length){g.innerHTML='';return}
+    g.innerHTML=recos.map(productCard).join('');
+    g.querySelectorAll('[data-pid]').forEach(function(el){
+      el.addEventListener('click',function(){
+        showPage('product',el.getAttribute('data-pid'));
+      });
+    });
   })();
 }
 async function placeOrder(){
