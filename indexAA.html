@@ -714,7 +714,7 @@ body.page-cart-active .cart-pro-summary{background:#fff}
 <div id="app">
 <header class="header"><div class="hi"><div class="sr">
 <div class="logo" id="logoBtn">
-  <img src="logo.png" alt="IDA" class="logo-img"/>
+  <img id="siteLogoImg" src="logo.png" alt="IDA" class="logo-img"/>
 </div>
 <div class="sp"><i class="fa-solid fa-magnifying-glass" style="color:#999;font-size:14px"></i>
 <input type="search" id="searchInput" placeholder="Rechercher…"/></div>
@@ -755,6 +755,17 @@ import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateD
 const firebaseConfig={apiKey:"AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",authDomain:"idus-a87a6.firebaseapp.com",projectId:"idus-a87a6",storageBucket:"idus-a87a6.firebasestorage.app",messagingSenderId:"284785552985",appId:"1:284785552985:web:4cb12a71465a0e167bcb48",measurementId:"G-M0EKXCDV3R"};
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
 setPersistence(auth,browserLocalPersistence).catch(function(){});
+// Précharge le logo du site une seule fois (cache localStorage)
+setTimeout(function(){ prefetchSiteLogo(); }, 0);
+  // Applique le logo du site mis en cache dès que possible
+document.addEventListener('DOMContentLoaded',function(){
+  var el=document.getElementById('siteLogoImg');
+  if(el){var u=getSiteLogo(); if(u) el.src=u;}
+});
+setTimeout(function(){
+  var el=document.getElementById('siteLogoImg');
+  if(el){var u=getSiteLogo(); if(u) el.src=u;}
+},300);
 let favorites=JSON.parse(localStorage.getItem('vl_favs')||'[]');
 let currentUser=null,cart=JSON.parse(localStorage.getItem('vl_cart')||'[]'),products=[],categories=[],settings={shippingFee:1500},currentProduct=null,selectedVariants={},qty=1,searchTerm='',sheetMode='cart',pageHistory=[];
 let videoFeed=[],videoFeedIdx=0,videoHideTimer=null;
@@ -1267,7 +1278,7 @@ function openVariantSheet(mode){
 }
 function renderCart(){
   var page=$('page-cart');
-  var logoHtml='<div class="cp-logo"><img src="logo.png" alt="IDA" style="height:30px;width:auto;max-width:110px;object-fit:contain;display:inline-block;vertical-align:middle"/></div>';
+  var logoHtml='<div class="cp-logo"><img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" style="height:30px;width:auto;max-width:110px;object-fit:contain;display:inline-block;vertical-align:middle"/></div>';
 
   // ========== PANIER VIDE ==========
   if(!cart.length){
@@ -1621,11 +1632,11 @@ function renderCheckout(){
      +(hasPickup?'<div class="chk-row"><span class="lbl">Retrait point relais</span><span class="val"><span class="chk-badge">Disponible — récupération gratuite</span></span></div>':'');
 
   // Header : flèche retour + logo IDA centré + icône favoris
-  var chkHeader='<div class="chk-topbar">'
-    +'<button type="button" id="chkBackBtn"><i class="fa-solid fa-arrow-left"></i></button>'
-    +'<div class="chk-logo"><img src="logo.png" alt="IDA" class="logo-img"/></div>'
-    +'<button type="button" class="chk-fav" id="chkSaveBtn" title="Sauvegarder ce panier"><i class="fa-regular fa-bookmark"></i></button>'
-  +'</div>';
+var chkHeader='<div class="chk-topbar">'
+  +'<button type="button" id="chkBackBtn"><i class="fa-solid fa-arrow-left"></i></button>'
+  +'<div class="chk-logo"><img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" class="logo-img"/></div>'
+  +'<button type="button" class="chk-fav" id="chkSaveBtn" title="Sauvegarder ce panier"><i class="fa-regular fa-bookmark"></i></button>'
++'</div>';
 
   $('page-checkout').innerHTML=chkHeader+'<div class="chk-page">'
       +(()=>{
@@ -2442,7 +2453,7 @@ if(!currentUser){$('page-messages').innerHTML='<div class="em"><p>Connectez-vous
 var target=document.querySelector('.page.on')||$('page-messages');
 var archived=loadArchived();var pinned=loadPinned();var deleted=loadDeleted();
 var cached=loadConvCache();
-var html='<div class="msg-head"><div class="ct-logo" style="width:36px;flex-shrink:0"><img src="logo.png" alt="IDA" style="height:26px;width:auto;max-width:90px;object-fit:contain;display:block"/></div><b>'+(msgShowArchived?'Archives':'Messages')+'</b><button type="button" id="msgMore">⋮</button></div>';
+var html='<div class="msg-head"><div class="ct-logo" style="width:36px;flex-shrink:0"><img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" style="height:26px;width:auto;max-width:90px;object-fit:contain;display:block"/></div><b>'+(msgShowArchived?'Archives':'Messages')+'</b><button type="button" id="msgMore">⋮</button></div>';
 html+='<div id="msgList">';
 if(cached.length){
   var visible=cached.filter(function(c){
@@ -2577,15 +2588,33 @@ try{
     document.getElementById('ctTitle').textContent=conv.boutiqueName;
     renderChatBar(conv);
     if(conv.boutiqueId){
-      getDoc(doc(db,'boutiques',conv.boutiqueId)).then(function(bd){
-        if(bd.exists()){
-          var b=bd.data();
-          var ava=document.getElementById('ctAva');
-          if(ava)ava.innerHTML=b.logo?'<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>':escapeHtml((b.name||'B')[0].toUpperCase());
-        }
-      }).catch(function(){})
+      // ✅ ÉTAPE 1 : lecture SYNCHRONE du cache → affichage INSTANTANÉ
+      var logoUrl=getCachedBoutiqueLogo(conv.boutiqueId);
+      var ava=document.getElementById('ctAva');
+      if(ava&&logoUrl!==undefined&&logoUrl){
+        ava.innerHTML='<img src="'+escapeHtml(logoUrl)+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'"/>';
+      }
+      // ✅ ÉTAPE 2 : si pas encore en cache → fetch en arrière-plan puis MAJ
+      if(logoUrl===undefined||!logoUrl){
+        (async function(){
+          var url=await getBoutiqueLogo(conv.boutiqueId);
+          var a=document.getElementById('ctAva');
+          if(a&&url){
+            a.innerHTML='<img src="'+escapeHtml(url)+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'"/>';
+          }else if(a&&!a.innerHTML.trim()){
+            try{
+              var bd=await getDoc(doc(db,'boutiques',conv.boutiqueId));
+              if(bd.exists()){
+                var b=bd.data();
+                a.innerHTML=escapeHtml((b.name||'B')[0].toUpperCase());
+              }
+            }catch(e){}
+          }
+        })();
+      }
     }
   }
+  // ...
   document.getElementById('ctMore').addEventListener('click',function(){openChatSettings(conv)});
 
   var firstSnap=true;
