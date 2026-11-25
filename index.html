@@ -1225,6 +1225,8 @@ body.page-orders-active .cart-reco-bar:after{
 body.page-orders-active #ordRecoGrid{
   padding-bottom:calc(var(--nav-h) + var(--safe-b) + 20px) !important;
 }
+  .ord-head b{flex:1}
+.ord-head img{margin-left:auto;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -1603,15 +1605,18 @@ function openVariantSheet(mode){
 
   // === Bandeau livraison (collé en haut) ===
   // === Bandeau livraison (collé en haut, cliquable pour changer l'adresse) — Lot 1 : compact ===
-  var delivBanner='<div id="vsDelivBanner" style="padding:8px 12px;font-size:11px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;border:none;'
-    +(freeDeliv?'background:#00A854':'background:#333')
+  // === Bandeau livraison (plein écran, sans bords, vert si gratuite / rouge sinon) ===
+   // === Bandeau livraison (compact, sans gras, sans marge) ===
+  var bannerBg=freeDeliv?'#00A854':'#E02E24';
+  var delivBanner='<div id="vsDelivBanner" style="width:100%;padding:6px 10px;font-size:11px;font-weight:400;color:#fff;display:flex;align-items:center;gap:6px;border:none;border-radius:0;margin:0;box-sizing:border-box;line-height:1.2;'
+    +'background:'+bannerBg
     +'">'
-    +'<i class="fa-solid fa-truck-fast"></i>'
-    +'<span>'+(freeDeliv?'Livraison gratuite':'Livraison '+escapeHtml(deliv))+'</span>'
+    +'<i class="fa-solid fa-truck-fast" style="flex-shrink:0;font-size:11px"></i>'
+    +'<span style="flex-shrink:0;font-weight:400">'+(freeDeliv?'Livraison gratuite':'Livraison '+escapeHtml(deliv))+'</span>'
     +(addr
-      ? '<span id="vsDelivAddr" style="margin-left:auto;font-weight:400;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%;cursor:pointer">→ '+escapeHtml(addr)+' <i class="fa-solid fa-pencil" style="font-size:9px;opacity:.8"></i></span>'
-      : '<span id="vsDelivAddr" style="margin-left:auto;font-weight:400;opacity:.95;cursor:pointer">+ Ajouter adresse <i class="fa-solid fa-pencil" style="font-size:9px"></i></span>')
-    +'<button type="button" id="vsClose" style="margin-left:6px;width:24px;height:24px;background:none;border:none;color:#fff;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0">×</button>'
+      ? '<span id="vsDelivAddr" style="flex:1;min-width:0;font-weight:400;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;cursor:pointer">→ '+escapeHtml(addr)+' <i class="fa-solid fa-pencil" style="font-size:9px;opacity:.8"></i></span>'
+      : '<span id="vsDelivAddr" style="flex:1;min-width:0;font-weight:400;opacity:.95;text-align:right;cursor:pointer">+ Ajouter adresse <i class="fa-solid fa-pencil" style="font-size:9px"></i></span>')
+    +'<button type="button" id="vsClose" style="width:22px;height:22px;background:none;border:none;color:#fff;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;margin-left:2px">×</button>'
     +'</div>';
 
   // === Badges livraison (à droite de "Livraison X") ===
@@ -1656,7 +1661,7 @@ function openVariantSheet(mode){
 
   // === Structure : HEADER fixe + BODY scrollable + FOOTER fixe ===
   var html='<div id="variantSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:flex;align-items:flex-end">'
-    +'<div style="background:#fff;width:100%;max-height:85vh;border-radius:16px 16px 0 0;position:relative;display:flex;flex-direction:column;overflow:hidden">'
+    +'<div style="background:#fff;width:100%;max-height:85vh;border-radius:16px 16px 0 0;position:relative;display:flex;flex-direction:column;overflow:hidden;padding:0">'
 
     // === HEADER FIXE (bandeau + bouton ×) ===
       // === HEADER FIXE (bandeau + bouton × en dessous, séparés) ===
@@ -2614,7 +2619,8 @@ async function placeOrder(){
   /* === Commandes passées (Lot 2B) === */
 async function renderOrders(){
   if(!currentUser){showPage('auth');return}
-  $('page-orders').innerHTML='<div class="ord-head"><button type="button" id="ordBack"><i class="fa-solid fa-arrow-left"></i></button><b>Mes commandes</b></div><div id="ordList"><div class="chk-empty">Chargement…</div></div>';
+  var _ordLogo=getCachedImg("vl_site_logo","logo.png");
+  $('page-orders').innerHTML='<div class="ord-head"><button type="button" id="ordBack"><i class="fa-solid fa-arrow-left"></i></button><b>Mes commandes</b><img src="'+escapeHtml(_ordLogo)+'" alt="IDA" style="height:28px;width:auto;max-width:90px;object-fit:contain;margin-left:auto;flex-shrink:0" onerror="this.style.display=\'none\'"/></div><div id="ordList"><div class="chk-empty">Chargement…</div></div>';
   document.getElementById('ordBack').addEventListener('click',goBack);
 
   // ========== 1. AFFICHAGE INSTANTANÉ DEPUIS LE CACHE ==========
