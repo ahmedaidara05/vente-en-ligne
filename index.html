@@ -1108,6 +1108,15 @@ body.page-checkout-active #app > .header > .hi{
   overflow:hidden !important;
   padding:0 !important;
 }
+  /* === Checkout : espace suffisant en bas pour ne patexte === */
+body.page-checkout-active .chk-page{
+  padding-bottom:110px !important;
+}
+  /* === Catalogue : espace en bas pour ne pas cacher les derniers produits sous la nav === */
+body:not(.hide-chrome) #page-home .pg,
+body:not(.hide-chrome) #page-catalog .pg{
+  padding-bottom: calc(var(--nav-h) + var(--safe-b) + 16px) !important;
+}
 </style>
 </head>
 <body>
@@ -1123,7 +1132,7 @@ body.page-checkout-active #app > .header > .hi{
 <div id="adBanner" class="ad-banner" style="display:none"></div>
 <div id="page-home" class="page on"></div>
 <div id="page-catalog" class="page"></div>
-<div id="page-product" class="page"></div>
+<div id="page-product" class="page"></div> 
 <div id="page-cart" class="page"></div>
 <div id="page-checkout" class="page"></div>
 <div id="page-account" class="page"></div>
@@ -2774,10 +2783,6 @@ function openPrivacyModal(){
   if(old)old.remove();
 
   var logoUrl='logo.png';
-  try{
-    var cached=localStorage.getItem('vl_site_logo');
-    if(cached)logoUrl=cached;
-  }catch(e){}
 
   var modal=document.createElement('div');
   modal.className='pv-modal';
@@ -3551,4 +3556,4 @@ init();
 </script>
 <script src="img-fix.js"></script>
 </body>                      
-</html>                              
+</html>                            
