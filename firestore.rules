@@ -160,16 +160,18 @@ service cloud.firestore {
     // Création / suppression : admin uniquement
     // Update : admin OU propriétaire de CETTE boutique
     // ============================================================
-    match /boutiques/{boutiqueId} {
-      allow read: if true;
+match /boutiques/{boutiqueId} {
+  allow read: if true;
+  allow create: if isAdmin();
+  allow update: if isAdmin() || isBoutiqueOwner(boutiqueId);
+  allow delete: if isAdmin();
 
-      allow create: if isAdmin();
-
-      allow update: if isAdmin()
-        || isBoutiqueOwner(boutiqueId);
-
-      allow delete: if isAdmin();
-    }
+  // ✅ Ajoutez cette section : autoriser le propriétaire de la boutique à gérer les points relais
+  match /pickupPoints/{pointId} {
+    allow read: if true;  // Permettre aux clients de consulter les points relais
+    allow write: if isBoutiqueOwner(boutiqueId);  // Seul le propriétaire de la boutique peut ajouter/modifier/supprimer
+  }
+}
 
     // ============================================================
     // ORDERS
@@ -194,12 +196,31 @@ service cloud.firestore {
           && resource.data.userId == request.auth.uid
           && resource.data.status == 'pending'
           && request.resource.data.status == 'cancelled'
-          // Le client ne change que le statut (annulation)
           && request.resource.data.diff(resource.data)
             .affectedKeys()
             .hasOnly(['status', 'updatedAt', 'cancelledAt'])
+        )
+        || (
+          // ✅ NOUVEAU : le client déclare avoir payé
+          isSignedIn()
+          && resource.data.userId == request.auth.uid
+          && resource.data.status in ['pending', 'pending_payment']
+          && request.resource.data.status == 'payment_declared'
+          && request.resource.data.diff(resource.data)
+            .affectedKeys()
+            .hasOnly(['status', 'paymentDeclaredAt', 'updatedAt'])
         );
-
+      // ✅ Suivi livraison — sous-collection trackingEvents
+      match /trackingEvents/{eventId} {
+        allow read: if isStaff()
+          || (isSignedIn() && get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid)
+          || (get(/databases/$(database)/documents/orders/$(orderId)).data.boutiqueId is string
+              && isBoutiqueOwner(get(/databases/$(database)/documents/orders/$(orderId)).data.boutiqueId));
+        allow create: if isStaff()
+          || (get(/databases/$(database)/documents/orders/$(orderId)).data.boutiqueId is string
+              && isBoutiqueOwner(get(/databases/$(database)/documents/orders/$(orderId)).data.boutiqueId));
+        allow update, delete: if isStaff();
+      }
       allow delete: if isAdmin();
     }
 
