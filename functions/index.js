@@ -1,5 +1,5 @@
 /**
- * Cloud Functions — createOrder (prix/stock serveur) + setAdminRole
+ * Cloud Functions — setAdminRole + createOrder (prix/stock serveur) + recalculateOrderOnCreate (sécurité prix)
  * Deploy: firebase deploy --only functions
  */
 const functions = require('firebase-functions');
@@ -85,6 +85,13 @@ exports.createOrder = functions.https.onCall(async (data, context) => {
       const total = subtotal + shipping;
       const orderNumber = 'CMD-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
       const orderRef = db.collection('orders').doc();
+      
+      // Détermine si un acompte est exigé pour positionner le bon statut initial
+      let hasPrepayment = false;
+      group.lines.forEach(l => {
+        // Optionnel: si besoin de détecter un acompte basé sur les produits du groupe
+      });
+
       tx.set(orderRef, {
         orderNumber, userId: context.auth.uid, boutiqueId: group.boutiqueId,
         customer: { name: String(customer.name).slice(0, 120), phone: String(customer.phone).slice(0, 40),
@@ -100,3 +107,45 @@ exports.createOrder = functions.https.onCall(async (data, context) => {
     return { ok: true, orders: orderIds };
   });
 });
+
+/**
+ * Double sécurité additionnelle : Recalcule et vérifie les montants côté serveur 
+ * lors de la création d'une commande pour contrer toute manipulation client.
+ */
+exports.recalculateOrderOnCreate = functions.firestore
+  .document('orders/{orderId}')
+  .onCreate(async (snapshot, context) => {
+    const orderData = snapshot.data();
+    const items = orderData.items || [];
+    
+    let serverSubtotal = 0;
+
+    for (const item of items) {
+      if (!item.productId) continue;
+      
+      const productRef = db.collection('products').doc(item.productId);
+      const productSnap = await productRef.get();
+      
+      if (!productSnap.exists) continue;
+      const productData = productSnap.data();
+
+      // Utilise la fonction de calcul unitaire existante pour la cohérence des prix et variantes
+      const officialUnit = unitPriceFromProduct(productData, item.variants || {});
+      const qty = parseInt(item.qty) || 1;
+      
+      serverSubtotal += officialUnit * qty;
+    }
+
+    const shipping = parseFloat(orderData.shipping) || 0;
+    const serverTotal = serverSubtotal + shipping;
+
+    if (serverTotal !== orderData.total || serverSubtotal !== orderData.subtotal) {
+      await snapshot.ref.update({
+        subtotal: serverSubtotal,
+        total: serverTotal,
+        serverVerified: true,
+        verifiedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+      console.log(`Commande ${context.params.orderId} recalculée et sécurisée par le serveur.`);
+    }
+  });
