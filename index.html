@@ -645,16 +645,31 @@ body.page-cart-active .cart-pro-summary{background:#fff}
   box-sizing: border-box;
 }
 
+/* === Panier vide : hero + barre reco === */
+.cart-empty-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  grid-column: 1 / -1;
+  flex: 1 1 100%;
+  min-height: 45vh;
+  padding: 24px 20px;
+  text-align: center;
+  background: #fff;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
 .cart-empty-ico {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  background: #F0F7F3;
+  /* Suppression du fond et de la forme circulaire */
+  background: transparent;
   color: #00A854;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 38px;
+  font-size: 56px; /* Agrandit un peu l'icône puisqu'il n'y a plus le cercle */
   margin: 0 auto 16px auto; /* Centré explicitement */
 }
 
@@ -662,7 +677,7 @@ body.page-cart-active .cart-pro-summary{background:#fff}
   font-size: 17px;
   font-weight: 800;
   color: #1a1a1a;
-  margin: 0 auto 6px auto; /* margin-left / right auto pour forcer le centrage */
+  margin: 0 auto 6px auto;
   text-align: center;
   width: 100%;
 }
@@ -670,7 +685,7 @@ body.page-cart-active .cart-pro-summary{background:#fff}
 .cart-empty-sub {
   font-size: 13px;
   color: #8a958e;
-  margin: 0 auto; /* margin-left / right auto pour centrer le bloc de texte */
+  margin: 0 auto;
   max-width: 260px;
   line-height: 1.4;
   text-align: center;
