@@ -2617,7 +2617,7 @@ function renderAccount(){
   }
 } 
    
-function loadLocalProfile(){
+  function loadLocalProfile(){
   try{return JSON.parse(localStorage.getItem('vl_profile')||'{}')}catch(e){return{}}
 }
 function saveLocalProfile(data){
@@ -2626,8 +2626,6 @@ function saveLocalProfile(data){
     if(data.name)p.name=data.name;
     if(data.phone)p.phone=data.phone;
     if(data.address)p.address=data.address;
-    if(data.citation)p.citation=data.citation;
-    if(data.photo!==undefined)p.photo=data.photo;
     localStorage.setItem('vl_profile',JSON.stringify(p));
   }catch(e){}
 }
@@ -3337,4 +3335,4 @@ init();
 </script>
 <script src="img-fix.js"></script>
 </body>                      
-</html>                           
+</html>                            
