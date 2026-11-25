@@ -779,6 +779,75 @@ function saveViewedProduct(id){
   viewedProducts=viewedProducts.slice(0,20);
   try{localStorage.setItem('vl_viewed_products',JSON.stringify(viewedProducts))}catch(e){}
 }
+  /* === CACHE LOCAL DES LOGOS BOUTIQUES === */
+var _logoMemCache = {}; // cache mémoire (session)
+
+function loadLogoCache(){
+  try{return JSON.parse(localStorage.getItem('vl_boutique_logos')||'{}')}catch(e){return{}}
+}
+function saveLogoCache(obj){
+  try{localStorage.setItem('vl_boutique_logos',JSON.stringify(obj))}catch(e){}
+}
+function getCachedBoutiqueLogo(bid){
+  if(!bid)return '';
+  if(_logoMemCache[bid]!==undefined)return _logoMemCache[bid];
+  var c=loadLogoCache();
+  if(c[bid]!==undefined){_logoMemCache[bid]=c[bid]||'';return c[bid]||''}
+  return undefined; // pas encore en cache
+}
+function setCachedBoutiqueLogo(bid,url){
+  if(!bid)return;
+  _logoMemCache[bid]=url||'';
+  var c=loadLogoCache();
+  c[bid]=url||'';
+  saveLogoCache(c);
+}
+async function getBoutiqueLogo(bid){
+  if(!bid)return '';
+  var cached=getCachedBoutiqueLogo(bid);
+  if(cached!==undefined)return cached; // déjà en cache local
+  try{
+    var bd=await getDoc(doc(db,'boutiques',bid));
+    var url='';
+    if(bd.exists()){
+      var d=bd.data();
+      url=d.logo||d.logoUrl||d.image||'';
+    }
+    setCachedBoutiqueLogo(bid,url);
+    return url;
+  }catch(e){
+    setCachedBoutiqueLogo(bid,'');
+    return '';
+  }
+}
+
+/* === CACHE LOCAL DU LOGO DU SITE === */
+function getSiteLogo(){
+  try{
+    var cached=localStorage.getItem('vl_site_logo');
+    if(cached)return cached;
+  }catch(e){}
+  return 'logo.png'; // fallback
+}
+async function prefetchSiteLogo(){
+  try{
+    if(localStorage.getItem('vl_site_logo'))return;
+    var res=await fetch('logo.png');
+    if(!res.ok)return;
+    var blob=await res.blob();
+    var reader=new FileReader();
+    reader.onload=function(){
+      try{
+        var dataUrl=reader.result;
+        // limite taille (base64 ~ 1.33x) pour ne pas saturer localStorage
+        if(dataUrl.length<200000){
+          localStorage.setItem('vl_site_logo',dataUrl);
+        }
+      }catch(e){}
+    };
+    reader.readAsDataURL(blob);
+  }catch(e){}
+}
 function $(id){return document.getElementById(id)}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},2200)}
 function formatPrice(n){return new Intl.NumberFormat('fr-FR').format(n||0)}
@@ -2400,35 +2469,38 @@ var cf=document.getElementById('msgConfirmSel');if(cf)cf.addEventListener('click
 try{
   var s=await getDocs(query(collection(db,'conversations'),where('userId','==',currentUser.uid)));
   var rawList=s.docs.map(function(d){var c=d.data();return{id:d.id,boutiqueId:c.boutiqueId||'',boutiqueName:c.boutiqueName||'Boutique',lastMessage:c.lastMessage||'',updatedAt:c.updatedAt&&c.updatedAt.toMillis?c.updatedAt.toMillis():0}});
-  // === Lookup des logos de boutiques ===
-  var logoCache={};
-  var uniqueBids=rawList.map(function(c){return c.boutiqueId}).filter(function(b,i,a){return b&&a.indexOf(b)===i});
-  for(var i=0;i<uniqueBids.length;i++){
-    try{
-      var bd=await getDoc(doc(db,'boutiques',uniqueBids[i]));
-      if(bd.exists()){
-        var bdata=bd.data();
-        logoCache[uniqueBids[i]]=bdata.logo||bdata.logoUrl||bdata.image||'';
-      }
-    }catch(e){}
-  }
-  var list=rawList.map(function(c){
-    c.boutiqueLogo=logoCache[c.boutiqueId]||'';
-    return c;
+
+  // === Logos depuis le cache local UNIQUEMENT (aucun appel Firestore si déjà en cache) ===
+  var missing=[];
+  rawList.forEach(function(c){
+    var cached=getCachedBoutiqueLogo(c.boutiqueId);
+    if(cached!==undefined){c.boutiqueLogo=cached}
+    else if(c.boutiqueId&&missing.indexOf(c.boutiqueId)<0){missing.push(c.boutiqueId)}
   });
+
+  // === Lookup uniquement pour les boutiques non encore en cache ===
+  for(var i=0;i<missing.length;i++){
+    try{
+      var bd=await getDoc(doc(db,'boutiques',missing[i]));
+      var url='';
+      if(bd.exists()){var bdata=bd.data();url=bdata.logo||bdata.logoUrl||bdata.image||''}
+      setCachedBoutiqueLogo(missing[i],url);
+    }catch(e){setCachedBoutiqueLogo(missing[i],'')}
+  }
+  // Réinjecte les logos (y compris ceux qui viennent d'être récupérés)
+  rawList.forEach(function(c){if(!c.boutiqueLogo)c.boutiqueLogo=getCachedBoutiqueLogo(c.boutiqueId)||''});
+
+  var list=rawList;
   saveConvCache(list);
   var box=document.getElementById('msgList');
   if(box){
-    var vis=list.filter(function(c){
-      if(deleted.indexOf(c.id)>=0)return false;
-      var arch=archived.indexOf(c.id)>=0;
-      return msgShowArchived?arch:!arch;
-    });
+    var vis=list.filter(function(c){if(deleted.indexOf(c.id)>=0)return false;var arch=archived.indexOf(c.id)>=0;return msgShowArchived?arch:!arch});
     vis.sort(function(a,b){var pa=isPinned(a.id)?1:0;var pb=isPinned(b.id)?1:0;if(pa!==pb)return pb-pa;return (b.updatedAt||0)-(a.updatedAt||0)});
     box.innerHTML=vis.length?vis.map(function(c){return convRowHtml(c,msgMode,isPinned(c.id),msgSelected[c.id])}).join(''):'<div class="em"><p>'+(msgShowArchived?'Aucune archive':'Aucune conversation')+'</p></div>';
     bindConvRows(target);
   }
 }catch(e){}
+
 }
 function openMsgMenu(){
   var old=document.getElementById('msgMenu');if(old)old.remove();
