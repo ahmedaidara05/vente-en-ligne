@@ -179,8 +179,13 @@ body.page-checkout-active .bn {
 }
 
 /* === Idem sur Mes commandes / Détail / Paniers sauvegardés === */
-body.page-orders-active .hi,
-body.page-orders-active .bn {
+/* === Sur Mes commandes : garder la nav basse, cacher seulement le header === */
+body.page-orders-active .hi {
+  display: none !important;
+}
+/* Sur Détail commande et Paniers sauvegardés : cacher header + nav */
+body.page-orders-active.page-orders-detail-active .bn,
+body.page-orders-active.page-saved-active .bn {
   display: none !important;
 }
 
@@ -1206,6 +1211,19 @@ body.page-checkout-active #chkRecoBar{
 body.page-checkout-active #chkRecoBar:before,
 body.page-checkout-active #chkRecoBar:after{
   display:none !important;
+}
+  /* === Mes commandes : espace réduit avant "Vous pourriez aussi aimer" === */
+body.page-orders-active .cart-reco-bar{
+  margin:6px 0 0 0 !important;
+  padding:4px 16px 4px !important;
+  border-top:none !important;
+}
+body.page-orders-active .cart-reco-bar:before,
+body.page-orders-active .cart-reco-bar:after{
+  display:none !important;
+}
+body.page-orders-active #ordRecoGrid{
+  padding-bottom:calc(var(--nav-h) + var(--safe-b) + 20px) !important;
 }
 </style>
 </head>
@@ -2549,8 +2567,9 @@ async function placeOrder(){
       });
       var needsPrepayment=payNowB>0;
       var initialStatus=needsPrepayment?'pending_payment':'pending';
-      await addDoc(collection(db,'orders'),{
-        orderNumber:'CMD-'+Date.now().toString(36).toUpperCase()+'-'+k,
+      var orderNumber='CMD-'+Date.now().toString(36).toUpperCase()+'-'+k;
+      var orderData={
+        orderNumber:orderNumber,
         userId:currentUser?currentUser.uid:null,
         boutiqueId:bid,
         customer:{name:name,phone:phone,address:address,email:email},
@@ -2558,16 +2577,27 @@ async function placeOrder(){
         subtotal:subB,
         shipping:k===0?(settings.shippingFee||0):0,
         total:subB+(k===0?(settings.shippingFee||0):0),
-               fromChina:originChine,
+        fromChina:originChine,
         pickupAvailable:hasPickup,
         paymentMode:Object.keys(payModes).join(','),
         payNow:payNowB,
         payLater:payLaterB,
         mobileMoney:mobileMoneyB,
         pickupPoint:(window._selectedPickup&&window._selectedPickup[bid||'_none'])?window._selectedPickup[bid||'_none']:null,
-        status:initialStatus,
-        createdAt:serverTimestamp()
-      });
+        status:initialStatus
+      };
+      var newRef=await addDoc(collection(db,'orders'),Object.assign({},orderData,{createdAt:serverTimestamp()}));
+
+      // === Ajout au cache local pour affichage instaané ===
+      try{
+        var cachedOrder=Object.assign({},orderData,{
+          id:newRef.id,
+          createdAt:{toMillis:function(){return Date.now()}}
+        });
+        var cachedList=loadOrdersCache();
+        cachedList.unshift(cachedOrder);
+        saveOrdersCache(cachedList);
+      }catch(e){}
     } 
 
     cart=[];saveCart();
@@ -2587,6 +2617,13 @@ async function renderOrders(){
   $('page-orders').innerHTML='<div class="ord-head"><button type="button" id="ordBack"><i class="fa-solid fa-arrow-left"></i></button><b>Mes commandes</b></div><div id="ordList"><div class="chk-empty">Chargement…</div></div>';
   document.getElementById('ordBack').addEventListener('click',goBack);
 
+  // ========== 1. AFFICHAGE INSTANTANÉ DEPUIS LE CACHE ==========
+  var cachedOrders=loadOrdersCache();
+  if(cachedOrders.length){
+    paintOrdersList(cachedOrders);
+  }
+
+  // ========== 2. REFRESH FIRESTORE EN ARRIÈRE-PLAN ==========
   try{
     var s=await getDocs(query(collection(db,'orders'),where('userId','==',currentUser.uid)));
     var orders=s.docs.map(function(d){return{id:d.id,...d.data()}});
@@ -2595,66 +2632,102 @@ async function renderOrders(){
       var tb=b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0;
       return tb-ta;
     });
-    var box=document.getElementById('ordList');
-    if(!box)return;
-    if(!orders.length){box.innerHTML='<div class="chk-empty"><i class="fa-solid fa-box-open" style="font-size:36px;color:#ddd;margin-bottom:10px"></i><p>Aucune commande pour l\'instant</p></div>';return}
+    saveOrdersCache(orders);
+    paintOrdersList(orders);
+  }catch(e){
+    // Si Firestore échoue mais qu'on a un cache → on garde le cache
+    if(!cachedOrders.length){
+      var box2=document.getElementById('ordList');
+      if(box2)box2.innerHTML='<div class="chk-empty">'+escapeHtml(e.message)+'</div>';
+    }
+  }
+}
 
-    // === Regroupement par "batch" (même timestamp à la minute) ===
-    var groups=[];
-    orders.forEach(function(o){
-      var ts=o.createdAt&&o.createdAt.toMillis?Math.floor(o.createdAt.toMillis()/60000):0;
-      var g=groups.find(function(x){return x.ts===ts});
-      if(!g){g={ts:ts,orders:[]};groups.push(g)}
-      g.orders.push(o);
-    });
+/* === Peint la liste des commandes (utilisée par cache ET Firestore) === */
+function paintOrdersList(orders){
+  var box=document.getElementById('ordList');
+  if(!box)return;
 
-    var groupColors=['#00A854','#F59E0B','#EF4444','#3B82F6','#8B5CF6','#EC4899'];
-    var html='';
-    groups.forEach(function(g,gi){
-      var isGroup=g.orders.length>1;
-      var color=isGroup?groupColors[gi%groupColors.length]:'transparent';
-      g.orders.forEach(function(o){
-        var date=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
-        var statusClass='';
-        if(o.status==='paid')statusClass='paid';
-        else if(o.status==='shipped')statusClass='shipped';
-        else if(o.status==='cancelled')statusClass='cancelled';
-        var statusLabel=({pending:'En attente',pending_payment:'⏳ En attente de paiement',payment_declared:'✓ Payé (validation)',paid:'Payée',shipped:'Expédiée',cancelled:'Annulée'})[o.status]||o.status||'—';
-        var items=o.items||[];
-        var first=items[0]||{};
-        var img=first.image||'';
-        var nbItems=items.reduce(function(s,i){return s+(i.qty||1)},0);
-        var optStr=Object.keys(first.variants||{}).map(function(k){return k+': '+first.variants[k]}).join(', ');
+  if(!orders.length){
+    box.innerHTML='<div class="chk-empty"><i class="fa-solid fa-box-open" style="font-size:36px;color:#ddd;margin-bottom:10px"></i><p>Aucune commande pour l\'instant</p></div>';
+    paintOrdRecos();
+    return;
+  }
 
-        html+='<div class="ord-card" data-oid="'+o.id+'" style="position:relative;padding-left:'+(isGroup?'18px':'12px')+'">'
-          +(isGroup?'<div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:'+color+';border-radius:12px 0 0 12px"></div>':'')
-          +'<div style="display:flex;gap:10px">'
-            +(img?'<img src="'+escapeHtml(img)+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;background:#eee;flex-shrink:0" onerror="this.style.background=\'#eee\'"/>':'')
-            +'<div style="flex:1;min-width:0">'
-              +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">'
-                +'<div class="ord-num">'+(o.orderNumber||'—')+'</div>'
-                +((o.status==='pending_payment')?' <span class="pay-status-badge pending">⏳ À payer</span>':(o.status==='payment_declared')?' <span class="pay-status-badge declared">✓ Payé (en attente validation)</span>':(o.status==='paid')?' <span class="pay-status-badge paid">✓ Payé</span>':'')
-              +'</div>'
-              +'<div style="font-size:13px;font-weight:600">'+escapeHtml(first.name||'—')+'</div>'
-              +(optStr?'<div style="font-size:11px;color:#888">'+escapeHtml(optStr)+'</div>':'')
-              +(nbItems>1?'<div style="font-size:11px;color:#666;margin-top:2px">+ '+(nbItems-1)+' autre(s) article(s)</div>':'')
-              +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">'
-                +'<div class="ord-date">'+date+'</div>'
-                +'<div class="ord-total">'+formatPrice(o.total||0)+' F</div>'
-              +'</div>'
+  // === Regroupement par "batch" (même timestamp à la minute) ===
+  var groups=[];
+  orders.forEach(function(o){
+    var ts=o.createdAt&&o.createdAt.toMillis?Math.floor(o.createdAt.toMillis()/60000):0;
+    var g=groups.find(function(x){return x.ts===ts});
+    if(!g){g={ts:ts,orders:[]};groups.push(g)}
+    g.orders.push(o);
+  });
+
+  var groupColors=['#00A854','#F59E0B','#EF4444','#3B82F6','#8B5CF6','#EC4899'];
+  var html='';
+  groups.forEach(function(g,gi){
+    var isGroup=g.orders.length>1;
+    var color=isGroup?groupColors[gi%groupColors.length]:'transparent';
+    g.orders.forEach(function(o){
+      var date=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
+      var statusClass='';
+      if(o.status==='paid')statusClass='paid';
+      else if(o.status==='shipped')statusClass='shipped';
+      else if(o.status==='cancelled')statusClass='cancelled';
+      var statusLabel=({pending:'En attente',pending_payment:'⏳ En attente de paiement',payment_declared:'✓ Payé (validation)',paid:'Payée',shipped:'Expédiée',cancelled:'Annulée'})[o.status]||o.status||'—';
+      var items=o.items||[];
+      var first=items[0]||{};
+      var img=first.image||'';
+      var nbItems=items.reduce(function(s,i){return s+(i.qty||1)},0);
+      var optStr=Object.keys(first.variants||{}).map(function(k){return k+': '+first.variants[k]}).join(', ');
+
+      html+='<div class="ord-card" data-oid="'+o.id+'" style="position:relative;padding-left:'+(isGroup?'18px':'12px')+'">'
+        +(isGroup?'<div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:'+color+';border-radius:12px 0 0 12px"></div>':'')
+        +'<div style="display:flex;gap:10px">'
+          +(img?'<img src="'+escapeHtml(img)+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;background:#eee;flex-shrink:0" onerror="this.style.background=\'#eee\'"/>':'')
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">'
+              +'<div class="ord-num">'+(o.orderNumber||'—')+'</div>'
+              +((o.status==='pending_payment')?' <span class="pay-status-badge pending">⏳ À payer</span>':(o.status==='payment_declared')?' <span class="pay-status-badge declared">✓ Payé (en attente validation)</span>':(o.status==='paid')?' <span class="pay-status-badge paid">✓ Payé</span>':'')
+            +'</div>'
+            +'<div style="font-size:13px;font-weight:600">'+escapeHtml(first.name||'—')+'</div>'
+            +(optStr?'<div style="font-size:11px;color:#888">'+escapeHtml(optStr)+'</div>':'')
+            +(nbItems>1?'<div style="font-size:11px;color:#666;margin-top:2px">+ '+(nbItems-1)+' autre(s) article(s)</div>':'')
+            +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">'
+              +'<div class="ord-date">'+date+'</div>'
+              +'<div class="ord-total">'+formatPrice(o.total||0)+' F</div>'
             +'</div>'
           +'</div>'
-        +'</div>';
-      });
+        +'</div>'
+      +'</div>';
     });
-    box.innerHTML=html;
-    box.querySelectorAll('[data-oid]').forEach(function(el){
-      el.addEventListener('click',function(){showPage('order-detail',el.getAttribute('data-oid'))});
-    });
-  }catch(e){
-    var box2=document.getElementById('ordList');
-    if(box2)box2.innerHTML='<div class="chk-empty">'+escapeHtml(e.message)+'</div>';
-  }
+  });
+  box.innerHTML=html;
+  box.querySelectorAll('[data-oid]').forEach(function(el){
+    el.addEventListener('click',function(){showPage('order-detail',el.getAttribute('data-oid'))});
+  });
+
+  paintOrdRecos();
+}
+
+/* === Grille reco en bas de Mes commandes === */
+function paintOrdRecos(){
+  var old=document.getElementById('ordRecoWrap');
+  if(old)old.remove();
+  var recoWrap=document.createElement('div');
+  recoWrap.id='ordRecoWrap';
+  recoWrap.innerHTML='<div class="cart-reco-bar" style="margin:8px 0 0 0;padding:4px 16px 4px"><span>Vous pourriez aussi aimer</span></div>'
+    +'<div class="pg" id="ordRecoGrid" style="padding-bottom:calc(var(--nav-h) + var(--safe-b) + 20px)"></div>';
+  $('page-orders').appendChild(recoWrap);
+  var g=document.getElementById('ordRecoGrid');
+  if(!g)return;
+  var recos=getRecommendedProducts(6,[]);
+  if(!recos.length)recos=products.slice(0,6);
+  if(!recos.length){g.innerHTML='';return}
+  g.innerHTML=recos.map(productCard).join('');
+  g.querySelectorAll('[data-pid]').forEach(function(el){
+    el.addEventListener('click',function(){showPage('product',el.getAttribute('data-pid'))});
+  });
 }
 
 async function renderOrderDetail(oid){
@@ -3489,6 +3562,19 @@ function paintBoutique(b,prods,following){
 }
 async function renderFollows(){if(!currentUser){showPage('auth');return}$('page-follows').innerHTML='<div style="padding:12px;background:#fff;display:flex;gap:8px;align-items:center"><button type="button" id="flBack">←</button><b>Liste de suivi</b></div><div id="flList"><div class="em"><p>Chargement…</p></div></div>';document.getElementById('flBack').addEventListener('click',goBack);try{var s=await getDocs(query(collection(db,'follows'),where('userId','==',currentUser.uid)));var ids=s.docs.map(function(d){return d.data().boutiqueId});if(!ids.length){document.getElementById('flList').innerHTML='<div class="em"><p>Aucune boutique suivie</p></div>';return}var boutiques=[];for(var i=0;i<ids.length;i++){try{var bd=await getDoc(doc(db,'boutiques',ids[i]));if(bd.exists())boutiques.push({id:bd.id,...bd.data()})}catch(e){}}document.getElementById('flList').innerHTML=boutiques.map(function(b){var ava=b.logo?'<img src="'+escapeHtml(b.logo)+'"/>':escapeHtml((b.name||'?')[0].toUpperCase());return'<div class="follow-row"><div class="fr-ava" data-bid="'+b.id+'">'+ava+'</div><div class="fr-name">'+escapeHtml(b.name||'')+'</div><button type="button" data-unfollow="'+b.id+'">Ne plus suivre</button></div>'}).join('');document.querySelectorAll('#flList .fr-ava').forEach(function(el){el.addEventListener('click',function(){showPage('boutique',el.getAttribute('data-bid'))})});document.querySelectorAll('[data-unfollow]').forEach(function(btn){btn.addEventListener('click',async function(){await setFollow(btn.getAttribute('data-unfollow'),false);renderFollows()})})}catch(e){document.getElementById('flList').innerHTML='<div class="em"><p>'+escapeHtml(e.message)+'</p></div>'}}
 function convCacheKey(){return 'vl_convs_'+(currentUser?currentUser.uid:'anon')}
+  /* === Cache local des commandes === */
+function loadOrdersCache(){
+  try{
+    var uid=currentUser?currentUser.uid:'anon';
+    return JSON.parse(localStorage.getItem('vl_orders_cache_'+uid)||'[]');
+  }catch(e){return[]}
+}
+function saveOrdersCache(list){
+  try{
+    var uid=currentUser?currentUser.uid:'anon';
+    localStorage.setItem('vl_orders_cache_'+uid,JSON.stringify(list.slice(0,50)));
+  }catch(e){}
+}
 function loadConvCache(){try{return JSON.parse(localStorage.getItem(convCacheKey())||'[]')}catch(e){return[]}}
 function saveConvCache(list){try{localStorage.setItem(convCacheKey(),JSON.stringify(list))}catch(e){}}
 let msgMode=null; /* null | 'delete' | 'pin' |  pin' | 'archive' */
