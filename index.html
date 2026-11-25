@@ -542,7 +542,7 @@ body.page-cart-active .cart-pro-summary{background:#fff}
 }
   .cart-pro-topbar .cp-logo img{height:30px;width:auto;max-width:110px;object-fit:contain;display:inline-block;vertical-align:middle}
   .cp-logo img{height:30px;width:auto;max-width:110px;object-fit:contain;display:inline-block;vertical-align:middle}
-.cart-pro-list{padding:10px 12px 110px}
+.cart-pro-list{padding:10px 12px 130px}
 .cart-pro-item{
   display:flex;gap:8px;background:transparent;border:none;
   border-radius:0;padding:8px 4px;margin-bottom:0;position:relative;
@@ -1178,6 +1178,34 @@ body.page-checkout-active #chkTermsLine + #chkRecoBar{
   /* === Checkout : espace en bas de la grille reco pour ne pas cacher les produits === */
 body.page-checkout-active #chkRecoGrid{
   padding-bottom:130px !important;
+}
+  /* === Panier : réduire l'espace avant "Articles que vous pourriez aimer" === */
+body.page-cart-active .cart-pro-list{
+  padding-bottom:6px !important;
+}
+body.page-cart-active .cart-reco-bar{
+  margin-top:0 !important;
+  padding-top:6px !important;
+  border-top:none !important;
+}
+body.page-cart-active .cart-reco-bar:before,
+body.page-cart-active .cart-reco-bar:after{
+  display:none !important;
+}
+  /* === Checkout : réduire l'espace entre "conditions IDA" et "Vous pourriez aussi aimer" === */
+body.page-checkout-active #chkTermsLine{
+  margin:0 !important;
+  padding:0 !important;
+  line-height:1.3 !important;
+}
+body.page-checkout-active #chkRecoBar{
+  margin:4px 0 0 0 !important;
+  padding:4px 16px 4px !important;
+  border-top:none !important;
+}
+body.page-checkout-active #chkRecoBar:before,
+body.page-checkout-active #chkRecoBar:after{
+  display:none !important;
 }
 </style>
 </head>
@@ -1862,25 +1890,25 @@ function renderCart(){
   html+='</div>';
 
   // === Récap ===
-  html+='<div class="cart-pro-summary">'
-    +'<div class="cps-row"><span class="lbl">Sous-total</span><span class="val">'+formatPrice(subNormal)+' F</span></div>';
-  if(promoDiff>0){
-    html+='<div class="cps-row promo"><span class="lbl">Économie promo</span><span class="val">−'+formatPrice(promoDiff)+' F</span></div>';
-  }
-  html+='<div class="cps-total"><span>Total</span><span class="val">'+formatPrice(sub)+' F</span></div>'
-    +'</div>';
+  // === Récap (supprimé, déplacé dans la barre fixe) ===
 
   // === RECOS EN BAS DU PANIER REMPLI ===
   var inCartIds=cart.map(function(i){return i.productId});
   var recos=getRecommendedProducts(8,inCartIds);
   if(recos.length){
-    html+='<div class="cart-reco-bar"><span>Articles que vous pourriez aimer</span></div>'
+    html+='<div class="cart-reco-bar" style="margin-top:0;padding:8px 16px 4px"><span>Articles que vous pourriez aimer</span></div>'
       +'<div class="pg" id="cartRecoGrid" style="margin-bottom:80px">'+recos.map(productCard).join('')+'</div>';
   }
 
   // === Bouton fixe ===
-  html+='<div class="cart-pro-btn-fixed">'
-    +'<button type="button" id="btnCheckout">Commander</button>'
+  // === Barre fixe : Total à gauche + Commander à droite ===
+  html+='<div class="chk-fixed-actions" style="display:flex;align-items:center;gap:10px">'
+    +'<div style="flex:1;min-width:0;padding:0 4px">'
+      +'<div style="font-family:\'Georgia\',\'Times New Roman\',serif;font-size:11px;font-weight:700;color:#555;letter-spacing:.3px;line-height:1">TOTAL</div>'
+      +'<div style="font-family:\'Georgia\',\'Times New Roman\',serif;font-size:18px;font-weight:800;color:#E02E24;margin-top:4px;line-height:1">'+formatPrice(sub)+' F</div>'
+      +(promoDiff>0?'<div style="font-size:10px;color:#00A854;font-weight:700;margin-top:2px">Économie : −'+formatPrice(promoDiff)+' F</div>':'')
+    +'</div>'
+    +'<button type="button" id="btnCheckout" style="flex:0 0 auto;min-width:150px;height:50px;border:none;border-radius:0;background:linear-gradient(135deg,#00A854,#008C46);color:#fff;font-weight:800;font-size:14px;letter-spacing:.3px;padding:0 18px 0 26px;margin:0;-webkit-clip-path:polygon(18px 0, 100% 0, 100% 100%, 0 100%);clip-path:polygon(18px 0, 100% 0, 100% 100%, 0 100%);box-shadow:0 3px 10px rgba(0,168,84,.25)">Commander</button>'
     +'</div>';
 
   page.innerHTML=html;
@@ -2303,10 +2331,11 @@ var chkHeader='<div class="chk-topbar">'
      +livraisonHtml
 +'</div>'
 +'<div id="chkPickupBox"></div>'
-          +'<p id="chkTermsLine" style="text-align:center;font-size:11px;color:#888;margin:0;padding:0">En confirmant, vous acceptez les <a href="#" id="chkPrivacyLink" style="color:#00A854;text-decoration:underline;font-weight:700;cursor:pointer">conditions IDA</a>.</p>'
+               +'<p id="chkTermsLine" style="text-align:center;font-size:11px;color:#888;margin:0;padding:0">En confirmant, vous acceptez les <a href="#" id="chkPrivacyLink" style="color:#00A854;text-decoration:underline;font-weight:700;cursor:pointer">conditions IDA</a>.</p>'
+          +'<div class="cart-reco-bar" id="chkRecoBar" style="margin:4px 0 0 0;padding:4px 0"><span>Vous pourriez aussi aimer</span></div>'
+          +'<div class="pg" id="chkRecoGrid" style="padding-left:0;padding-right:0"></div>'
   +'</div>'
-  +'<div class="cart-reco-bar" id="chkRecoBar" style="margin:0;padding:2px 16px 4px"><span>Vous pourriez aussi aimer</span></div>'
-    +'<div class="pg" id="chkRecoGrid"></div>'
+  +'<div style="height:130px"></div>'
    // === BOUTONS FIXES EN BAS ===
   // === BARRE FIXE : Total à gauche + Valider à droite ===
   +'<div class="chk-fixed-actions" style="display:flex;align-items:center;gap:10px">'
@@ -2848,6 +2877,10 @@ function renderAccount(){
     </section>
 
     <button type="button" class="account-logout" id="btnOut"><i class="fa-solid fa-arrow-right-from-bracket"></i> Déconnexion</button>
+
+    <div class="cart-reco-bar" style="margin:22px 0 0 0;padding:10px 16px 4px"><span>Vous pourriez aussi aimer</span></div>
+    <div class="pg" id="accRecoGrid" style="padding-bottom:calc(var(--nav-h) + var(--safe-b) + 20px)"></div>
+
     <div class="account-footer">IDA · Votre boutique, simplement.</div>
   </div>`;
 
@@ -3053,6 +3086,20 @@ function renderAccount(){
       modal.addEventListener('click',function(e){if(e.target===modal)modal.remove()});
     });
   }
+    // === Reco produits en bas de la page Compte ===
+  (function(){
+    var g=document.getElementById('accRecoGrid');
+    if(!g)return;
+    var recos=getRecommendedProducts(6,[]);
+    if(!recos.length)recos=products.slice(0,6);
+    if(!recos.length)return;
+    g.innerHTML=recos.map(productCard).join('');
+    g.querySelectorAll('[data-pid]').forEach(function(el){
+      el.addEventListener('click',function(){
+        showPage('product',el.getAttribute('data-pid'));
+      });
+    });
+  })();
 } 
   /* === Fenêtre Politique de confidentialité === */
 function openPrivacyModal(){
@@ -3481,7 +3528,9 @@ if(cached.length){
 }else html+='<div class="em"><p>Chargement…</p></div>';
 html+='</div>';
 if(msgMode)html+='<div class="msg-select-bar"><div class="count">'+Object.keys(msgSelected).filter(function(k){return msgSelected[k]}).length+' sélectionné(s)</div><button type="button" class="cancel" id="msgCancelSel">Annuler</button><button type="button" class="ok" id="msgConfirmSel">Confirmer</button></div>';
-target.innerHTML=html;
+/* === Reco produits en bas de la page Messages === */
+html+='<div class="cart-reco-bar" style="margin:18px 0 0 0;padding:10px 16px 4px"><span>Vous pourriez aussi aimer</span></div>';
+html+='<div class="pg" id="msgRecoGrid" style="padding-bottom:calc(var(--nav-h) + var(--safe-b) + 20px)"></div>';target.innerHTML=html;
 bindConvRows(target);
 document.getElementById('msgMore').addEventListener('click',openMsgMenu);
 var cs=document.getElementById('msgCancelSel');if(cs)cs.addEventListener('click',function(){msgMode=null;msgSelected={};renderMessagesList()});
@@ -3521,7 +3570,23 @@ try{
     bindConvRows(target);
   }
 }catch(e){}
-
+  // === Remplir la grille reco (dans le même target) ===
+  try{
+    var g=target.querySelector('#msgRecoGrid');
+    if(g){
+      var inView=[];
+      var recos=getRecommendedProducts(6,inView);
+      if(!recos.length)recos=products.slice(0,6);
+      if(recos.length){
+        g.innerHTML=recos.map(productCard).join('');
+        g.querySelectorAll('[data-pid]').forEach(function(el){
+          el.addEventListener('click',function(){
+            showPage('product',el.getAttribute('data-pid'));
+          });
+        });
+      }
+    }
+  }catch(e){}
 }
 function openMsgMenu(){
   var old=document.getElementById('msgMenu');if(old)old.remove();
