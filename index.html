@@ -917,6 +917,35 @@ body.page-cart-active .cart-pro-summary{background:#fff}
   width:100%;height:100%;object-fit:contain;background:#fff;border-radius:8px;
   padding:4px;border:1px solid #C9A24B;
 }
+/* === Carte floutée (mode confidentialité) === */
+.ida-pvc-card.is-blurred .pvc-gloss,
+.ida-pvc-card.is-blurred .pvc-gold-band,
+.ida-pvc-card.is-blurred .pvc-head,
+.ida-pvc-card.is-blurred .pvc-logo,
+.ida-pvc-card.is-blurred .pvc-medallion,
+.ida-pvc-card.is-blurred .pvc-sep,
+.ida-pvc-card.is-blurred .pvc-infos,
+.ida-pvc-card.is-blurred .pvc-wave,
+.ida-pvc-card.is-blurred .pvc-qr{
+  filter:blur(14px);
+  transition:filter .25s ease;
+}
+.ida-pvc-card .pvc-blur-overlay{
+  position:absolute;inset:0;z-index:20;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(15,76,41,.08);
+  pointer-events:none;
+}
+.ida-pvc-card.is-blurred .pvc-blur-overlay{display:flex}
+.ida-pvc-card .pvc-blur-logo{
+  width:26%;aspect-ratio:1;border-radius:50%;
+  background:#fff;border:4px solid #C9A24B;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.ida-pvc-card .pvc-blur-logo img{
+  width:100%;height:100%;object-fit:contain;padding:6px;background:#fff;
+}
 /* Bouton crayon (caché à l'export) */
 /* === Icônes crayon + télécharger : juste l'icône, sans fond === */
 .ida-card-tools{
@@ -2349,7 +2378,12 @@ async function renderOrderDetail(oid){
     }
   }catch(e){document.getElementById('oddBody').innerHTML='<div class="chk-empty">'+escapeHtml(e.message)+'</div>'}
 }
-    
+    /* Tronque un texte à 27 caractères max, avec … si dépassement */
+function trunc27(s){
+  s = String(s == null ? '' : s);
+  if (s.length <= 27) return s;
+  return s.slice(0, 27) + '…';
+}
 function renderAccount(){
   if(!currentUser){showPage('auth');return}
   var email=currentUser.email||'Compte IDA';
@@ -2362,9 +2396,10 @@ function renderAccount(){
   <div class="account-page">
 <div class="account-intro">
   <div><div class="account-eyebrow">Confidentialité</div><h1>Mon compte</h1><p>Vos informations sont protégées et sécurisées.</p></div>
-  <div class="ida-card-tools" data-html2canvas-ignore="true">
+   <div class="ida-card-tools" data-html2canvas-ignore="true">
     <button type="button" class="tool-edit" id="idaCardEditBtn" title="Modifier"><i class="fa-solid fa-pen"></i></button>
     <button type="button" class="tool-dl" id="idaCardDlBtn" title="Télécharger"><i class="fa-solid fa-download"></i></button>
+    <button type="button" class="tool-eye" id="idaCardEyeBtn" title="Masquer / Afficher"><i class="fa-solid fa-eye"></i></button>
   </div>
 </div>
 
@@ -2402,11 +2437,12 @@ function renderAccount(){
     <!-- 5. Séparateur -->
     <div class="pvc-sep"></div>
     <!-- 6. Infos -->
+      <!-- 6. Infos -->
     <div class="pvc-infos">
-      <div class="pvc-info-line"><span class="k">Nom : </span><span class="v">${escapeHtml(prof.name||'Client IDA')}</span></div>
-      <div class="pvc-info-line"><span class="k">Adresse : </span><span class="v">${escapeHtml(prof.address||'—')}</span></div>
-      <div class="pvc-info-line"><span class="k">Téléphone : </span><span class="v">${escapeHtml(prof.phone||'—')}</span></div>
-      <div class="pvc-info-line"><span class="k">Adresse mail : </span><span class="v">${escapeHtml(email)}</span></div>
+      <div class="pvc-info-line"><span class="k">Nom : </span><span class="v">${escapeHtml(trunc27(prof.name || 'Client IDA'))}</span></div>
+      <div class="pvc-info-line"><span class="k">Adresse : </span><span class="v">${escapeHtml(trunc27(prof.address || '—'))}</span></div>
+      <div class="pvc-info-line"><span class="k">Téléphone : </span><span class="v">${escapeHtml(prof.phone || '—')}</span></div>
+      <div class="pvc-info-line"><span class="k">Adresse mail : </span><span class="v">${escapeHtml(trunc27(email))}</span></div>
     </div>
     <!-- 7. Vague -->
     <svg class="pvc-wave" viewBox="0 0 856 170" preserveAspectRatio="none">
@@ -2414,11 +2450,18 @@ function renderAccount(){
       <path d="M 0,136 C 145,146 270,132 425,92 C 580,52 720,16 856,6 L 856,170 L 0,170 Z" fill="#0F4C29"/>
     </svg>
     <!-- 8. QR fixe -->
+     <!-- 8. QR fixe -->
     <div class="pvc-qr">
       <img src="qrcode.png" alt="QR Code" onerror="this.style.display='none'"/>
     </div>
     <!-- 9. Reflet PVC -->
     <div class="pvc-gloss"></div>
+    <!-- 10. Overlay logo (mode flou) -->
+    <div class="pvc-blur-overlay">
+      <div class="pvc-blur-logo">
+        <img src="logo1.png" alt="IDA" onerror="this.style.display='none'"/>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2596,9 +2639,28 @@ function renderAccount(){
       }
     });
   })();
+    // --- Bouton œil (mode flou persistant) ---
+    var eyeBtn = document.getElementById('idaCardEyeBtn');
+    function applyCardBlur(blurred){
+      var card = document.getElementById('idaPvcCard');
+      if(card) card.classList.toggle('is-blurred', !!blurred);
+      var ic = eyeBtn ? eyeBtn.querySelector('i') : null;
+      if(ic) ic.className = blurred ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    }
+    // Restaure l'état sauvegardé
+    try{
+      applyCardBlur(localStorage.getItem('vl_card_blurred') === '1');
+    }catch(e){}
+    if(eyeBtn){
+      eyeBtn.addEventListener('click', function(){
+        var card = document.getElementById('idaPvcCard');
+        var nowBlur = !(card && card.classList.contains('is-blurred'));
+        applyCardBlur(nowBlur);
+        try{ localStorage.setItem('vl_card_blurred', nowBlur ? '1' : '0'); }catch(e){}
+      });
+    }
 
-
-  // === Bouton confidentialité ===
+  // === Bouton confidentialité ===  
   var privBtn=document.getElementById('accountPrivacyBtn');
   if(privBtn){
     privBtn.addEventListener('click',function(){
