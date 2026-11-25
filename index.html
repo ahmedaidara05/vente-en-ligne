@@ -1268,6 +1268,35 @@ async function prefetchSiteLogo(){
     reader.readAsDataURL(blob);
   }catch(e){}
 }
+  /* === Cache local des images (logo carte, QR, logo site) === */
+function getCachedImg(key, fallback){
+  try{ var v=localStorage.getItem(key); if(v)return v; }catch(e){}
+  return fallback;
+}
+async function prefetchImg(url, key){
+  try{
+    if(localStorage.getItem(key))return;
+    var res=await fetch(url);
+    if(!res.ok)return;
+    var blob=await res.blob();
+    var reader=new FileReader();
+    reader.onload=function(){
+      try{
+        var dataUrl=reader.result;
+        if(dataUrl.length<300000){
+          localStorage.setItem(key,dataUrl);
+        }
+      }catch(e){}
+    };
+    reader.readAsDataURL(blob);
+  }catch(e){}
+}
+/* Précharge les 2 images de la carte + le logo site */
+setTimeout(function(){
+  prefetchImg('logo1.png','vl_img_logo1');
+  prefetchImg('qrcode.png','vl_img_qr');
+  prefetchImg('logo.png','vl_site_logo');
+},200);
 function $(id){return document.getElementById(id)}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},2200)}
 function formatPrice(n){return new Intl.NumberFormat('fr-FR').format(n||0)}
@@ -1991,25 +2020,77 @@ async function renderSavedCheckouts(){
     });
   });
 }
+  function buildSimpleIdaCard(prof, email){
+  prof = prof || {};
+  function t27(s){ s=String(s==null?'':s); return s.length<=27?s:s.slice(0,27)+'…'; }
+  var photo = prof.photo
+    ? '<img src="'+escapeHtml(prof.photo)+'"/>'
+    : '<div class="pvc-photo-empty"><i class="fa-solid fa-camera"></i><span>Photo</span></div>';
+  var citation = escapeHtml((prof.citation||'VOTRE FIDÉLITÉ, NOTRE PRIORITÉ').toUpperCase());
+  return ''
+    +'<div class="ida-card-wrap">'
+      +'<div class="ida-pvc-card">'
+        +'<div class="pvc-gold-band"></div>'
+        +'<div class="pvc-head"><h1 class="card-serif pvc-title">IDA SHOPP</h1><p class="card-serif pvc-subtitle">SIMPLIFIER VOS ACHATS</p></div>'
+        +'<div class="pvc-logo"><img src="'+escapeHtml(getCachedImg('vl_img_logo1','logo1.png'))+'" alt="IDA" onerror="this.style.display=&quot;none&quot;"/></div>'
+        +'<div class="pvc-medallion">'
+          +'<svg viewBox="0 0 200 200">'
+            +'<circle cx="100" cy="100" r="98" fill="#0F4C29" stroke="#C9A24B" stroke-width="2.5"/>'
+            +'<circle cx="100" cy="100" r="76" fill="#f8fafc" stroke="#C9A24B" stroke-width="2"/>'
+            +'<defs><path id="idaArcChk" d="M 15,100 A 85,85 0 1,1 185,100"/></defs>'
+            +'<text class="curved-badge-text" font-size="10.4"><textPath href="#idaArcChk" startOffset="50%" text-anchor="middle">★ '+citation+' ★</textPath></text>'
+          +'</svg>'
+          +'<div class="pvc-photo-inner">'+photo+'</div>'
+        +'</div>'
+        +'<div class="pvc-sep"></div>'
+        +'<div class="pvc-infos">'
+          +'<div class="pvc-info-line"><span class="k">Nom : </span><span class="v">'+escapeHtml(t27(prof.name||'Client IDA'))+'</span></div>'
+          +'<div class="pvc-info-line"><span class="k">Adresse : </span><span class="v">'+escapeHtml(t27(prof.address||'—'))+'</span></div>'
+          +'<div class="pvc-info-line"><span class="k">Téléphone : </span><span class="v">'+escapeHtml(prof.phone||'—')+'</span></div>'
+          +'<div class="pvc-info-line"><span class="k">Adresse mail : </span><span class="v">'+escapeHtml(t27(email||'—'))+'</span></div>'
+        +'</div>'
+        +'<svg class="pvc-wave" viewBox="0 0 856 170" preserveAspectRatio="none">'
+          +'<path d="M 0,48 C 130,108 265,126 395,112 C 260,138 125,126 0,74 Z" fill="#C9A24B"/>'
+          +'<path d="M 0,136 C 145,146 270,132 425,92 C 580,52 720,16 856,6 L 856,170 L 0,170 Z" fill="#0F4C29"/>'
+        +'</svg>'
+        +'<div class="pvc-qr"><img src="'+escapeHtml(getCachedImg('vl_img_qr','qrcode.png'))+'" alt="QR" onerror="this.style.display=&quot;none&quot;"/></div>'
+        +'<div class="pvc-gloss"></div>'
+      +'</div>'
+    +'</div>';
+}
+  
 function renderCheckout(){
   var prof=loadLocalProfile();
   var hasAddr=prof.address&&prof.address.trim();
   var userEmail=currentUser&&currentUser.email?currentUser.email:'';
 
   // === Bandeau adresse en haut ===
+  // Adresse limitée à 40 caractères au total (mot "Livraison à :" inclus)
+  var addrRaw=String(prof.address||'');
+  var addrMax=40;
+  var addrDisplay=addrRaw.length>addrMax ? addrRaw.slice(0,addrMax)+'…' : addrRaw;
   var addrBanner=hasAddr
-    ? '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#E8FFF0;border:1px solid #A7F3D0;border-radius:8px;margin-bottom:10px;font-size:12px;color:#0a7a3e"><i class="fa-solid fa-location-dot"></i><div style="flex:1"><b>Livraison à :</b> '+escapeHtml(prof.address)+'</div><button type="button" id="chkEditAddr" style="background:none;border:none;color:#0a7a3e;font-size:12px;text-decoration:underline">Modifier</button></div>'
-    : '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#FFF7E6;border:1px solid #FCD34D;border-radius:8px;margin-bottom:10px;font-size:12px;color:#92400E"><i class="fa-solid fa-pencil"></i><div style="flex:1">Renseignez votre adresse de livraison</div><button type="button" id="chkAddAddr" style="background:none;border:none;color:#92400E;font-size:12px;text-decoration:underline">Ajouter</button></div>';
+    ? '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#E8FFF0;border:1px solid #A7F3D0;border-radius:8px;margin-bottom:10px;font-size:12px;color:#0a7a3e"><i class="fa-solid fa-location-dot" style="flex-shrink:0"></i><div style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><b>Livraison à :</b> '+escapeHtml(addrDisplay)+'</div><button type="button" id="chkEditAddr" style="background:none;border:none;color:#0a7a3e;font-size:12px;text-decoration:underline;flex-shrink:0;margin-left:auto;padding:0">Modifier</button></div>'
+    : '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#FFF7E6;border:1px solid #FCD34D;border-radius:8px;margin-bottom:10px;font-size:12px;color:#92400E"><i class="fa-solid fa-pencil" style="flex-shrink:0"></i><div style="flex:1;min-width:0">Renseignez votre adresse de livraison</div><button type="button" id="chkAddAddr" style="background:none;border:none;color:#92400E;font-size:12px;text-decoration:underline;flex-shrink:0;margin-left:auto;padding:0">Ajouter</button></div>';
 
   // === Récap panier ===
-  var itemsHtml=cart.map(function(it){
-    var v=Object.keys(it.variants||{}).map(function(k){return k+': '+it.variants[k]}).join(', ');
+  var itemsHtml=cart.map(function(it,idx){
+    var v=Object.keys(it.variants||{}).map(function(k){return k+': '+it.variants[k]}).join(' · ');
+    var rawName=String(it.name||'');
+    var shortName=rawName.length>58?rawName.slice(0,58)+'…':rawName;
     return '<div class="ord-item">'
       +(it.image?'<img src="'+escapeHtml(it.image)+'" onerror="this.style.background=\'#eee\'"/>':'')
       +'<div class="oi-body">'
-        +'<div class="oi-name">'+escapeHtml(it.name||'')+'</div>'
+        +'<div class="oi-name">'+escapeHtml(shortName)+'</div>'
         +(v?'<div class="oi-var">'+escapeHtml(v)+'</div>':'')
-        +'<div class="oi-price">'+formatPrice(it.price)+' F × '+it.qty+'</div>'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:8px">'
+          +'<div class="oi-price" style="margin:0">'+formatPrice(it.price)+' F</div>'
+          +'<div style="display:flex;align-items:center;gap:10px">'
+            +'<button type="button" data-chk-minus="'+idx+'" style="width:28px;height:28px;border-radius:8px;background:#f0f0f0;color:#333;font-weight:800;font-size:15px;line-height:1">−</button>'
+            +'<span data-chk-qty="'+idx+'" style="min-width:18px;text-align:center;font-weight:700;font-size:13px">'+it.qty+'</span>'
+            +'<button type="button" data-chk-plus="'+idx+'" style="width:28px;height:28px;border-radius:8px;background:#f0f0f0;color:#333;font-weight:800;font-size:15px;line-height:1">+</button>'
+          +'</div>'
+        +'</div>'
       +'</div></div>';
   }).join('');
 
@@ -2065,12 +2146,7 @@ var chkHeader='<div class="chk-topbar">'
       return html+'</div>';
     })()
     +addrBanner
-    +'<div class="chk-section">'
-      +'<div class="chk-section-title"><i class="fa-solid fa-user"></i>Informations client</div>'
-      +'<div class="chk-field"><label>Nom complet</label><input id="chkName" value="'+escapeHtml(prof.name||'')+'" placeholder="Ex: Amadou Diop"/></div>'
-      +'<div class="chk-field"><label>Téléphone</label><input id="chkPhone" type="tel" value="'+escapeHtml(prof.phone||'')+'" placeholder="Ex: +221 77 000 00 00"/></div>'
-      +'<div class="chk-field"><label>Email</label><input id="chkEmail" type="email" value="'+escapeHtml(userEmail)+'" placeholder="votre@email.com"/></div>'
-    +'</div>'
+       +'<div class="chk-section" id="chkIdaCardBox" style="padding:0;background:transparent;border:none"></div>'
     +'<div class="chk-section">'
       +'<div class="chk-section-title"><i class="fa-solid fa-box"></i>Articles ('+cart.length+')</div>'
       +itemsHtml
@@ -2178,6 +2254,24 @@ var chkHeader='<div class="chk-topbar">'
   });
 
   document.getElementById('btnPlace').addEventListener('click',placeOrder);
+    // === +/- quantité sur le checkout ===
+  document.querySelectorAll('[data-chk-plus]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var i=+b.getAttribute('data-chk-plus');
+      cart[i].qty=(cart[i].qty||1)+1;
+      saveCart();
+      renderCheckout();
+    });
+  });
+  document.querySelectorAll('[data-chk-minus]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var i=+b.getAttribute('data-chk-minus');
+      if((cart[i].qty||1)<=1)return;
+      cart[i].qty=cart[i].qty-1;
+      saveCart();
+      renderCheckout();
+    });
+  });
 
   // === Lien "conditions IDA" → ouvre la même fenêtre de confidentialité ===
   var chkPv=document.getElementById('chkPrivacyLink');
@@ -2187,6 +2281,13 @@ var chkHeader='<div class="chk-topbar">'
       openPrivacyModal();
     });
   }
+    // === Carte PVC IDA sur le checkout ===
+  (function(){
+    var box=document.getElementById('chkIdaCardBox');
+    if(!box)return;
+    var prof2=loadLocalProfile();
+    box.innerHTML=buildSimpleIdaCard(prof2, userEmail);
+  })();
 }
 async function placeOrder(){
   var name=$('chkName').value.trim();
@@ -2505,7 +2606,7 @@ function renderAccount(){
     </div>
     <!-- 3. Logo fixe -->
     <div class="pvc-logo">
-      <img src="logo1.png" alt="IDA SHOPP" onerror="this.style.display='none'"/>
+      <img src="${escapeHtml(getCachedImg('vl_img_logo1','logo1.png'))}" alt="IDA SHOPP" onerror="this.style.display='none'"/>
     </div>
     <!-- 4. Médaillon (photo + citation incurvée) -->
     <div class="pvc-medallion">
@@ -2542,8 +2643,9 @@ function renderAccount(){
     </svg>
     <!-- 8. QR fixe -->
      <!-- 8. QR fixe -->
+     <!-- 8. QR fixe -->
     <div class="pvc-qr">
-      <img src="qrcode.png" alt="QR Code" onerror="this.style.display='none'"/>
+      <img src="${escapeHtml(getCachedImg('vl_img_qr','qrcode.png'))}" alt="QR Code" onerror="this.style.display='none'"/>
     </div>
     <!-- 9. Reflet PVC -->
     <div class="pvc-gloss"></div>
