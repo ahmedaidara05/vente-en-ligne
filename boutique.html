@@ -1193,9 +1193,7 @@ async function saveTrackingStatusAndNotify(orderId, newStatus, extraData, eventI
         throw new Error('Cette commande ne possède pas de compte client associé');
       }
 
-      const message = 'Votre commande ' +
-        (order.orderNumber || orderId) +
-        ' est maintenant : ' + newStatus;
+    const message = 'Votre commande est maintenant : ' + newStatus;
 
       // Historique de suivi
       tx.set(eventRef, {
@@ -1215,7 +1213,7 @@ async function saveTrackingStatusAndNotify(orderId, newStatus, extraData, eventI
         boutiqueId: boutiqueId,
         boutiqueName: boutique.name || order.boutiqueName || 'Boutique',
         type: 'tracking_status',
-        title: 'Mise à jour de votre commande',
+        title: order.orderNumber || orderId,
         message: message,
         previousStatus: previousStatus,
         status: newStatus,
@@ -1509,4 +1507,4 @@ window.addEventListener('beforeunload',()=>{
 });
 </script>
 </body>
-</html>
+</html>  
