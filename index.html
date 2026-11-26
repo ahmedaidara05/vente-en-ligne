@@ -1342,7 +1342,17 @@ body.page-orders-active #ordRecoGrid{
 <div id="app">
 <header class="header"><div class="hi"><div class="sr">
 <div class="logo" id="logoBtn">
-  <img id="siteLogoImg" src="logo.png" alt="IDA" class="logo-img"/>
+  <img id="siteLogoImg" src="" alt="IDA" class="logo-img"/>
+<script>
+(function(){
+  var img = document.getElementById('siteLogoImg');
+  try{
+    img.src = localStorage.getItem('vl_site_logo') || 'logo.png';
+  }catch(e){
+    img.src = 'logo.png';
+  }
+})();
+</script>
 </div>
 <div class="sp"><i class="fa-solid fa-magnifying-glass" style="color:#999;font-size:14px"></i>
 <input type="search" id="searchInput" placeholder="Rechercher…"/></div>
@@ -1389,11 +1399,11 @@ const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFire
 setPersistence(auth,browserLocalPersistence).catch(function(){});
 // Précharge le logo du site une seule fois (cache localStorage)   
 setTimeout(function(){ prefetchSiteLogo(); }, 0);
-  // Applique le logo du site mis en cache dès que possible
-document.addEventListener('DOMContentLoaded',function(){
+  // Applique le logo du site mis en cache dès que possibl 
+setTimeout(function(){
   var el=document.getElementById('siteLogoImg');
   if(el){var u=getSiteLogo(); if(u) el.src=u;}
-});
+},300);
 setTimeout(function(){
   var el=document.getElementById('siteLogoImg');
   if(el){var u=getSiteLogo(); if(u) el.src=u;}
@@ -4604,8 +4614,50 @@ function saveDeleted(list){try{localStorage.setItem(loadDeletedKey(),JSON.string
    NOTIFICATIONS DE SUIVI DES COMMANDES
 ========================================= */
 
+
 var trackingNotifications = [];
 var trackingNotifUnsubscribe = null;
+
+// Clé du cache propre à chaque utilisateur
+function trackingNotifCacheKey(){
+  return 'vl_tracking_notifications_' +
+    (currentUser ? currentUser.uid : 'anon');
+}
+
+// Charger les notifications enregistrées sur le téléphone
+function loadTrackingNotifCache(){
+  try{
+    return JSON.parse(
+      localStorage.getItem(trackingNotifCacheKey()) || '[]'
+    );
+  }catch(e){
+    return [];
+  }
+}
+
+// Enregistrer les notifications sur le téléphone
+function saveTrackingNotifCache(list){
+  try{
+    var safeList = list.map(function(n){
+      var item = Object.assign({},n);
+
+      item.createdAtMs = n.createdAt && n.createdAt.toMillis
+        ? n.createdAt.toMillis()
+        : (n.createdAtMs || 0);
+
+      delete item.createdAt;
+      return item;
+    });
+
+    localStorage.setItem(
+      trackingNotifCacheKey(),
+      JSON.stringify(safeList)
+    );
+  }catch(e){
+    console.warn('Erreur cache notifications :',e);
+  }
+}
+
 
 function updateTrackingNotifBadge(){
   var badge = document.getElementById('trackingNotifBadge');
@@ -4624,17 +4676,33 @@ function updateTrackingNotifBadge(){
   }
 }
 
+
 function startTrackingNotifications(){
+
   if(trackingNotifUnsubscribe){
     trackingNotifUnsubscribe();
     trackingNotifUnsubscribe = null;
   }
 
-  trackingNotifications = [];
+  if(!currentUser || !currentUser.uid){
+    trackingNotifications = [];
+    updateTrackingNotifBadge();
+    return;
+  }
+
+  // 1. Afficher immédiatement les données locales
+  trackingNotifications = loadTrackingNotifCache();
+
+  trackingNotifications.sort(function(a,b){
+    return (b.createdAtMs || 0) - (a.createdAtMs || 0);
+  });
+
   updateTrackingNotifBadge();
 
-  if(!currentUser || !currentUser.uid)return;
+  // Actualiser immédiatement si la liste est déjà présente
+  renderTrackingNotifications();
 
+  // 2. Écouter les nouvelles notifications Firebase
   var notifQuery = query(
     collection(db,'notifications'),
     where('userId','==',currentUser.uid)
@@ -4643,23 +4711,36 @@ function startTrackingNotifications(){
   trackingNotifUnsubscribe = onSnapshot(
     notifQuery,
     function(snapshot){
+
+      // 3. Remplacer le cache par les données Firebase à jour
       trackingNotifications = snapshot.docs.map(function(d){
-        return Object.assign({id:d.id},d.data());
+        var data = d.data();
+
+        return Object.assign(
+          {id:d.id},
+          data,
+          {
+            createdAtMs:
+              data.createdAt && data.createdAt.toMillis
+                ? data.createdAt.toMillis()
+                : 0
+          }
+        );
       });
 
       // Tri du plus récent au plus ancien
       trackingNotifications.sort(function(a,b){
-        var ta = a.createdAt && a.createdAt.toMillis
-          ? a.createdAt.toMillis() : 0;
-        var tb = b.createdAt && b.createdAt.toMillis
-          ? b.createdAt.toMillis() : 0;
-        return tb - ta;
+        return (b.createdAtMs || 0) - (a.createdAtMs || 0);
       });
 
+      // 4. Sauvegarder localement
+      saveTrackingNotifCache(trackingNotifications);
+
+      // 5. Actualiser le compteur et l'affichage
       updateTrackingNotifBadge();
 
-      // Actualise la liste si le client est sur Chat
       var active = document.querySelector('.page.on');
+
       if(active && (
         active.id === 'page-chat' ||
         active.id === 'page-messages'
@@ -4675,6 +4756,7 @@ function startTrackingNotifications(){
     }
   );
 }
+
 
 function stopTrackingNotifications(){
   if(trackingNotifUnsubscribe){
@@ -4698,29 +4780,29 @@ function renderTrackingNotifications(){
 
   var html = '';
 
-  html += '<div style="width:100%;padding:12px 0 0">';
+  
 
-  html += '<div style="display:flex;align-items:center;';
-  html += 'justify-content:space-between;padding:0 14px 10px">';
-  html += '<b style="font-size:15px">Notifications de suivi</b>';
-  html += '<span style="font-size:11px;color:#888">';
-  html += trackingNotifications.length + ' notification(s)';
   html += '</span></div>';
 
   trackingNotifications.forEach(function(n){
 
     var unread = n.read !== true;
-    var dateText = '';
+  var dateText = '';
+var notificationDate = n.createdAtMs
+  ? new Date(n.createdAtMs)
+  : (n.createdAt && n.createdAt.toDate
+      ? n.createdAt.toDate()
+      : null);
 
-    if(n.createdAt && n.createdAt.toDate){
-      dateText = n.createdAt.toDate().toLocaleString('fr-FR',{
+if(notificationDate && !isNaN(notificationDate.getTime())){
+  dateText = notificationDate.toLocaleString('fr-FR',{
         day:'2-digit',
         month:'2-digit',
         year:'numeric',
         hour:'2-digit',
         minute:'2-digit'
       });
-    }
+    } 
 
     var orderNumber = n.orderNumber || n.orderId || 'Commande';
     var boutiqueName = n.boutiqueName || 'Boutique';
@@ -4737,7 +4819,7 @@ function renderTrackingNotifications(){
     // Logo
     html += '<div style="width:42px;height:42px;flex:0 0 42px;';
     html += 'border-radius:50%;overflow:hidden">';
-    html += '<img src="logo.png" alt="IDA" ';
+    html += '<img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" ';
     html += 'style="width:100%;height:100%;object-fit:cover">';
     html += '</div>';
 
@@ -4752,12 +4834,16 @@ function renderTrackingNotifications(){
     html += escapeHtml(orderNumber);
     html += '</b>';
 
-    html += '<span style="flex-shrink:0;padding:3px 7px;';
-    html += 'border:1px solid #C49A35;border-radius:5px;';
-    html += 'background:transparent;color:#C49A35;';
-    html += 'font-size:10px;font-weight:700;white-space:nowrap">';
-    html += escapeHtml(boutiqueName);
-    html += '</span>';
+  
+html += '<span data-boutique-link="'+escapeHtml(n.boutiqueId || '')+'"';
+html += ' style="flex-shrink:0;padding:3px 7px;';
+html += 'border:1px solid #C49A35;border-radius:5px;';
+html += 'background:transparent;color:#C49A35;';
+html += 'font-size:10px;font-weight:700;white-space:nowrap;';
+html += 'cursor:pointer">';
+html += escapeHtml(boutiqueName);
+html += '</span>';
+
 
     html += '</div>';
 
@@ -4821,6 +4907,21 @@ function renderTrackingNotifications(){
       }catch(e){
         toast('Erreur : '+e.message);
       }
+    });
+  });
+    // Clic sur le nom de la boutique
+  box.querySelectorAll('[data-boutique-link]').forEach(function(link){
+    link.addEventListener('click',function(e){
+      e.stopPropagation();
+
+      var boutiqueId = link.getAttribute('data-boutique-link');
+
+      if(!boutiqueId){
+        toast('Page de cette boutique introuvable');
+        return;
+      }
+
+      showPage('boutique',boutiqueId);
     });
   });
 }
