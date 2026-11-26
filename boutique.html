@@ -179,8 +179,7 @@ button.d{color:var(--danger);border-color:var(--danger)}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification, updatePassword } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { getFirestore, collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-
+import { getFirestore, collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, onSnapshot, runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 const MEDIA_WORKER='https://soft-surf-b4e9.ahmedsaidaidara5.workers.dev';
 
 function fixBrokenImg(el){
@@ -1159,6 +1158,88 @@ async function renderPoints(){
   /* ================== SUIVI LIVRAISON ================== */
 const CARRIERS_LIST=['DHL','FedEx','UPS','STO Express','La Poste','China Post','Cainiao','Colis Privé','SF Express','YunExpress','4PX','Autre'];
 
+async function saveTrackingStatusAndNotify(orderId, newStatus, extraData, eventInfo){
+  const orderRef = doc(db, 'orders', orderId);
+  const notificationRef = doc(collection(db, 'notifications'));
+  const eventRef = doc(collection(db, 'orders', orderId, 'trackingEvents'));
+
+  let notificationCreated = false;
+
+  await runTransaction(db, async function(tx){
+    const snap = await tx.get(orderRef);
+
+    if(!snap.exists()){
+      throw new Error('Commande introuvable');
+    }
+
+    const order = snap.data();
+
+    // Vérification de propriété de la commande
+    if(order.boutiqueId !== boutiqueId){
+      throw new Error('Cette commande ne dépend pas de votre boutique');
+    }
+
+    const previousStatus = order.trackingStatus || '';
+    const changed = !!newStatus && newStatus !== previousStatus;
+
+    // Mise à jour des informations de suivi
+    tx.update(orderRef, Object.assign({}, extraData || {}, {
+      trackingStatus: newStatus || previousStatus,
+      updatedAt: serverTimestamp()
+    }));
+
+    if(changed){
+      if(!order.userId){
+        throw new Error('Cette commande ne possède pas de compte client associé');
+      }
+
+      const message = 'Votre commande ' +
+        (order.orderNumber || orderId) +
+        ' est maintenant : ' + newStatus;
+
+      // Historique de suivi
+      tx.set(eventRef, {
+        status: newStatus,
+        previousStatus: previousStatus,
+        location: (eventInfo && eventInfo.location) || '',
+        description: (eventInfo && eventInfo.description) ||
+          'Mise à jour du statut par la boutique',
+        timestamp: serverTimestamp()
+      });
+
+      // Notification individuelle du client
+      tx.set(notificationRef, {
+        userId: order.userId,
+        orderId: orderId,
+        orderNumber: order.orderNumber || orderId,
+        boutiqueId: boutiqueId,
+        boutiqueName: boutique.name || order.boutiqueName || 'Boutique',
+        type: 'tracking_status',
+        title: 'Mise à jour de votre commande',
+        message: message,
+        previousStatus: previousStatus,
+        status: newStatus,
+        read: false,
+        createdAt: serverTimestamp()
+      });
+
+      notificationCreated = true;
+
+    }else if(eventInfo && (eventInfo.location || eventInfo.description)){
+      // Un complément d'information sans changement de statut
+      // peut être conservé dans l'historique, sans notification.
+      tx.set(eventRef, {
+        status: newStatus || previousStatus,
+        location: eventInfo.location || '',
+        description: eventInfo.description || '',
+        timestamp: serverTimestamp()
+      });
+    }
+  });
+
+  return notificationCreated;
+}
+
 const TRACKING_STATUSES=[
   'Commande confirmée',
   'En préparation',
@@ -1176,6 +1257,12 @@ const TRACKING_STATUSES=[
   'Annulée'
 ];
 
+  
+/* =========================================
+   ENREGISTREMENT DU SUIVI ET NOTIFICATIONS
+========================================= */
+ 
+  
 async function generateTrackingOrderNumber(){
   // 8 chiffres aléatoires, sans suite logique, jamais 2 fois le même
   for(let i=0;i<10;i++){
@@ -1306,46 +1393,105 @@ async function openSuiviForm(orderId){
     paintEvents();
 
     // Enregistrer les infos principales
-    $('btnSaveSuivi').addEventListener('click',async()=>{
-      let num=$('sfNum').value.trim();
-      if(!num){num=await generateTrackingOrderNumber();}
-      const data={
-        trackingOrderNumber:num,
-        carrier:$('sfCarrier').value||'',
-        trackingNumber:$('sfTracking').value.trim(),
-        trackingStatus:$('sfStatus').value||'',
-        trackingAddress:$('sfAddr').value.trim(),
-        trackingRecipient:$('sfRecipient').value.trim(),
-        updatedAt:serverTimestamp()
-      };
-      try{
-        await updateDoc(doc(db,'orders',orderId),data);
-        $('sfNum').value=num;
-        alert('Suivi enregistré ✅\nNuméro : '+num);
-      }catch(e){alert(e.message);}
-    });
+ 
+$('btnSaveSuivi').addEventListener('click',async()=>{
+
+  let num=$('sfNum').value.trim();
+
+  if(!num){
+    num=await generateTrackingOrderNumber();
+  }
+
+  const data={
+    trackingOrderNumber:num,
+    carrier:$('sfCarrier').value||'',
+    trackingNumber:$('sfTracking').value.trim(),
+    trackingAddress:$('sfAddr').value.trim(),
+    trackingRecipient:$('sfRecipient').value.trim()
+  };
+
+  const newStatus=$('sfStatus').value||'';
+
+  try{
+
+    await saveTrackingStatusAndNotify(
+      orderId,
+      newStatus,
+      data,
+      {
+        description:'Statut mis à jour par la boutique'
+      }
+    );
+
+    $('sfNum').value=num;
+
+    alert('Suivi enregistré et notification traitée ✅');
+
+  }catch(e){
+    alert(e.message);
+  }
+
+});
+
 
     // Ajouter un événement
-    $('btnAddEvt').addEventListener('click',async()=>{
-      const st=$('sfEvtStatus').value;
-      if(!st){alert('Choisis un statut');return;}
-      try{
-        const ref=await addDoc(collection(db,'orders',orderId,'trackingEvents'),{
-          status:st,
-          location:$('sfEvtLoc').value.trim(),
-          description:$('sfEvtDesc').value.trim(),
-          timestamp:serverTimestamp()
-        });
-        events.unshift({id:ref.id,status:st,location:$('sfEvtLoc').value.trim(),description:$('sfEvtDesc').value.trim(),timestamp:{seconds:Date.now()/1000}});
-        $('sfEvtLoc').value='';
-        $('sfEvtDesc').value='';
-        paintEvents();
-      }catch(e){alert(e.message);}
-    });
+  
+$('btnAddEvt').addEventListener('click',async()=>{
 
-  }catch(e){el.innerHTML='<span class="err">'+esc(e.message)+'</span>';}
+  const st=$('sfEvtStatus').value;
+  const location=$('sfEvtLoc').value.trim();
+  const description=$('sfEvtDesc').value.trim();
+
+  if(!st){
+    alert('Choisis un statut');
+    return;
+  }
+
+  try{
+
+    await saveTrackingStatusAndNotify(
+      orderId,
+      st,
+      {},
+      {
+        location:location,
+        description:description || 'Mise à jour du suivi',
+        forceEvent:true
+      }
+    );
+
+    // Recharge les événements depuis Firestore
+    const evs=await getDocs(
+      query(
+        collection(db,'orders',orderId,'trackingEvents'),
+        orderBy('timestamp','desc')
+      )
+    );
+
+    events=evs.docs.map(d=>({
+      id:d.id,
+      ...d.data()
+    }));
+
+    $('sfEvtLoc').value='';
+    $('sfEvtDesc').value='';
+
+    paintEvents();
+
+    alert('Événement enregistré ✅');
+
+  }catch(e){
+    alert(e.message);
+  }
+
+});
+
+  }catch(e){
+    alert('Erreur ouverture du suivi : '+e.message);
+  }
 }
-/* ================== AUTH STATE ================== */ 
+
+/* ================== AUTH STATE ================== */  
 onAuthStateChanged(auth,async(u)=>{
   if(!u){showLogin();return;}
   try{
