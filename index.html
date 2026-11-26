@@ -3281,18 +3281,26 @@ function paintOrdersList(orders){
 
       // Ligne 4 : boutique (gauche) + promo + prix (droite)
         // Ligne 4 : boutique (logo + nom réel) + promo + prix
-      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px">'
-        +'<div style="display:flex;align-items:center;gap:6px;min-width:0">'
-          +(blogo
-            ?'<img src="'+escapeHtml(blogo)+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;background:#eee;flex-shrink:0" onerror="this.style.display=\'none\'"/>'
-            :'<div style="width:22px;height:22px;border-radius:50%;background:#E8FFF0;color:#00A854;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0">'+escapeHtml(initial)+'</div>')
-          +'<span style="font-size:11px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(bname)+'</span>'
-        +'</div>'
-        +'<div style="display:flex;align-items:center;gap:6px">'
-          +(isPromo?'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;background:#E02E24;color:#fff">PROMO</span>':'')
-          +'<span style="font-size:15px;font-weight:800;color:#E02E24">'+formatPrice(o.total||0)+' F</span>'
-        +'</div>'
-      +'</div>'
+   +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px">'
+  // Conteneur gauche : empile la ligne boutique et la date
+  +'<div style="display:flex;flex-direction:column;min-width:0">'
+    // Ligne 1 : Logo + Nom de la boutique
+    +'<div style="display:flex;align-items:center;gap:6px;min-width:0">'
+      +(blogo
+        ?'<img src="'+escapeHtml(blogo)+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;background:#eee;flex-shrink:0" onerror="this.style.display=\'none\'"/>'
+        :'<div style="width:22px;height:22px;border-radius:50%;background:#E8FFF0;color:#00A854;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0">'+escapeHtml(initial)+'</div>')
+      +'<span style="font-size:11px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(bname)+'</span>'
+    +'</div>'
+    // Ligne 2 : Date en dessous
+    +'<div style="font-size:10px;color:#999;margin-top:3px">'+escapeHtml(dateTimeStr)+'</div>'
+  +'</div>'
+  
+  // Conteneur droit : Badge PROMO + Prix (inchangé)
+  +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
+    +(isPromo?'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;background:#E02E24;color:#fff">PROMO</span>':'')
+    +'<span style="font-size:15px;font-weight:800;color:#E02E24">'+formatPrice(o.total||0)+' F</span>'
+  +'</div>'
++'</div>'
 
       // Ligne 5 : 3 boutons
           // Ligne 5 : 3 boutons (petits, rectangles, à droite)
