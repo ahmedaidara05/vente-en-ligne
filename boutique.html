@@ -464,16 +464,122 @@ function openProdForm(id){
   editVideoKey=(p&&p.videoKey)||'';
   const el=$('tab-produits');
   const delivs=['Moins de 24h','2 jours','3 jours','5 jours','2 semaines','3 semaines','1 mois','2 mois','3 mois'];
+
+  // === Valeurs par défaut transport ===
+  var tMode = (p&&p.transportMode)||'avion';
+  var avionPaid = (p&&p.avionPaid===true);
+  var bateauPaid = (p&&p.bateauPaid===true);
+  var avionFee = (p&&p.avionFee)||0;
+  var bateauFee = (p&&p.bateauFee)||0;
+
   el.innerHTML='<h3>'+(p?'Modifier':'Nouveau')+' produit</h3>'
     +'<label>Nom *</label><input id="pName" value="'+esc(p?p.name:'')+'"/>'
-   +'<div class="row"><div style="flex:1"><label>Prix initial * '+(p?'<span style="color:#ef4444;font-size:10px">(Verrouillé)</span>':'')+'</label><input id="pPrice" type="number" value="'+(p?p.price:0)+'" '+(p?'disabled style="opacity:0.6;cursor:not-allowed"':'')+ '/></div>'
+    +'<div class="row"><div style="flex:1"><label>Prix initial * '+(p?'<span style="color:#ef4444;font-size:10px">(Verrouillé)</span>':'')+'</label><input id="pPrice" type="number" value="'+(p?p.price:0)+'" '+(p?'disabled style="opacity:0.6;cursor:not-allowed"':'')+ '/></div>'
     +'<div style="flex:1"><label>Prix promo</label><input id="pPromo" type="number" value="'+(p&&p.promoPrice!=null?p.promoPrice:'')+'"/></div></div>'
     +'<label>Stock</label><input id="pStock" type="number" value="'+(p?p.stock??10:10)+'"/>'
     +'<label><input type="checkbox" id="pShowStock" '+(p&&p.showStock===false?'':'checked')+'/> Afficher le stock</label>'
     +'<label>Livraison</label><select id="pDelivery">'+delivs.map(d=>'<option value="'+d+'" '+(p&&p.deliveryTime===d?'selected':'')+'>'+d+'</option>').join('')+'</select>'
-    +'<label style="margin-top:6px"><input type="checkbox" id="pFromChina" '+(p&&p.fromChina===true?'checked':'')+'/> <b style="color:#00A854">Produit venant de Chine</b></label>'
+
+    // === Provenance ===
+    +'<label style="margin-top:10px"><b style="color:#00A854">📍 Lieu de provenance</b></label>'
+    +'<select id="pOrigin">'
+      +'<option value="Chine" '+((p&&p.origin==='Chine')||(!p?'selected':'')) +'>Chine</option>'
+      +'<option value="Sénégal" '+((p&&p.origin==='Sénégal')?'selected':'')+'>Sénégal</option>'
+      +'<option value="France" '+((p&&p.origin==='France')?'selected':'')+'>France</option>'
+      +'<option value="Niger" '+((p&&p.origin==='Niger')?'selected':'')+'>Niger</option>'
+    +'</select>'
+
+    // === Anciennes options conservées ===
+    +'<label style="margin-top:10px"><input type="checkbox" id="pFromChina" '+(p&&p.fromChina===true?'checked':'')+'/> <b style="color:#00A854">Produit venant de Chine</b></label>'
     +'<label style="margin-top:6px"><input type="checkbox" id="pPickupFree" '+(p&&p.pickupFree===true?'checked':'')+'/> <b style="color:#00A854">Retrait gratuit en point relais</b></label>'
-      +'<div style="margin-top:12px;padding:10px;background:#111;border:1px solid #333;border-radius:8px">'
+
+    // === Pays de livraison possibles ===
+    +'<label style="margin-top:10px"><b style="color:#00A854">🌍 Pays où la livraison est possible</b></label>'
+    +'<div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;padding:10px;background:#111;border:1px solid #333;border-radius:8px">'
+      +['Sénégal','France','Niger'].map(function(c){
+        var checked=(p&&p.deliveryCountries&&p.deliveryCountries.indexOf(c)>=0)?'checked':(!p&&c==='Sénégal'?'checked':'');
+        return '<label style="display:flex;align-items:center;gap:8px;margin:0;font-size:13px;color:#eee">'
+          +'<input type="checkbox" class="pDevCountry" value="'+c+'" '+checked+' style="width:auto"/> '+c
+          +'</label>';
+      }).join('')
+    +'</div>'
+
+    // === Livraison vers le client ===
+    +'<label style="margin-top:10px"><b style="color:#00A854">🚚 Livraison vers le client</b></label>'
+    +'<div style="padding:10px;background:#111;border:1px solid #333;border-radius:8px">'
+      +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:#eee">'
+        +'<input type="radio" name="payDelivery" value="free" '+((!p||p.deliveryPaid!==true)?'checked':'')+' style="width:auto"/> Gratuite'
+      +'</label>'
+      +'<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#eee">'
+        +'<input type="radio" name="payDelivery" value="paid" '+((p&&p.deliveryPaid===true)?'checked':'')+' style="width:auto"/> Payante'
+      +'</label>'
+      +'<div id="pDeliveryFeeWrap" style="margin-top:6px;'+((p&&p.deliveryPaid===true)?'':'display:none')+'">'
+        +'<label style="font-size:11px;color:#aaa">Frais de livraison (F)</label>'
+        +'<input id="pDeliveryFee" type="number" value="'+((p&&p.deliveryFee)||0)+'"/>'
+      +'</div>'
+    +'</div>'
+
+    // === Point relais → domicile ===
+    +'<label style="margin-top:10px"><b style="color:#00A854">📦 Point relais → domicile</b></label>'
+    +'<div style="padding:10px;background:#111;border:1px solid #333;border-radius:8px">'
+      +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:#eee">'
+        +'<input type="radio" name="pickupToHome" value="free" '+((!p||p.pickupToHomePaid!==true)?'checked':'')+' style="width:auto"/> Gratuit'
+      +'</label>'
+      +'<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#eee">'
+        +'<input type="radio" name="pickupToHome" value="paid" '+((p&&p.pickupToHomePaid===true)?'checked':'')+' style="width:auto"/> Payant'
+      +'</label>'
+      +'<div id="pPickupFeeWrap" style="margin-top:6px;'+((p&&p.pickupToHomePaid===true)?'':'display:none')+'">'
+        +'<label style="font-size:11px;color:#aaa">Frais point relais → domicile (F)</label>'
+        +'<input id="pPickupFee" type="number" value="'+((p&&p.pickupToHomeFee)||0)+'"/>'
+      +'</div>'
+    +'</div>'
+
+    // === TRANSPORT : avion / bateau / les deux ===
+    +'<label style="margin-top:12px"><b style="color:#00A854">🚚 Transport du colis</b></label>'
+    +'<div style="padding:10px;background:#111;border:1px solid #333;border-radius:8px">'
+      +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:#eee">'
+        +'<input type="radio" name="transportMode" value="avion" '+((tMode==='avion')?'checked':'')+' style="width:auto"/> ✈️ Par avion'
+      +'</label>'
+      +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:#eee">'
+        +'<input type="radio" name="transportMode" value="bateau" '+((tMode==='bateau')?'checked':'')+' style="width:auto"/> 🚢 Par bateau'
+      +'</label>'
+      +'<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#eee">'
+        +'<input type="radio" name="transportMode" value="both" '+((tMode==='both')?'checked':'')+' style="width:auto"/> ✈️/🚢 Les deux (client choisit)'
+      +'</label>'
+
+      // === Config AVION ===
+      +'<div id="pAvionBox" style="margin-top:10px;padding-top:10px;border-top:1px dashed #333;display:'+((tMode==='avion'||tMode==='both')?'block':'none')+'">'
+        +'<div style="font-size:11px;font-weight:800;color:#00A854;margin-bottom:6px">✈️ Configuration avion</div>'
+        +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:#eee">'
+          +'<input type="radio" name="avionPaid" value="free" '+((!avionPaid)?'checked':'')+' style="width:auto"/> Gratuit'
+        +'</label>'
+        +'<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#eee">'
+          +'<input type="radio" name="avionPaid" value="paid" '+(avionPaid?'checked':'')+' style="width:auto"/> Payant'
+        +'</label>'
+        +'<div id="pAvionFeeWrap" style="margin-top:6px;'+(avionPaid?'':'display:none')+'">'
+          +'<label style="font-size:11px;color:#aaa">Frais avion (F)</label>'
+          +'<input id="pAvionFee" type="number" value="'+avionFee+'"/>'
+        +'</div>'
+      +'</div>'
+
+      // === Config BATEAU ===
+      +'<div id="pBateauBox" style="margin-top:10px;padding-top:10px;border-top:1px dashed #333;display:'+((tMode==='bateau'||tMode==='both')?'block':'none')+'">'
+        +'<div style="font-size:11px;font-weight:800;color:#00A854;margin-bottom:6px">🚢 Configuration bateau</div>'
+        +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:#eee">'
+          +'<input type="radio" name="bateauPaid" value="free" '+((!bateauPaid)?'checked':'')+' style="width:auto"/> Gratuit'
+        +'</label>'
+        +'<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#eee">'
+          +'<input type="radio" name="bateauPaid" value="paid" '+(bateauPaid?'checked':'')+' style="width:auto"/> Payant'
+        +'</label>'
+        +'<div id="pBateauFeeWrap" style="margin-top:6px;'+(bateauPaid?'':'display:none')+'">'
+          +'<label style="font-size:11px;color:#aaa">Frais bateau (F)</label>'
+          +'<input id="pBateauFee" type="number" value="'+bateauFee+'"/>'
+        +'</div>'
+      +'</div>'
+    +'</div>'
+
+    // === Mode de paiement ===
+    +'<div style="margin-top:12px;padding:10px;background:#111;border:1px solid #333;border-radius:8px">'
       +'<div style="font-size:12px;font-weight:800;color:#00A854;margin-bottom:8px">💳 Mode de paiement accepté</div>'
       +'<label style="display:block;margin-bottom:6px;font-size:12px"><input type="radio" name="payMode" value="cod" '+((!p||!p.paymentMode||p.paymentMode==='cod')?'checked':'')+'/> Paiement à la livraison (0% avant)</label>'
       +'<label style="display:block;margin-bottom:6px;font-size:12px"><input type="radio" name="payMode" value="deposit30" '+((p&&p.paymentMode==='deposit30')?'checked':'')+'/> Acompte 30% minimum avant</label>'
@@ -482,6 +588,7 @@ function openProdForm(id){
       +'<label style="display:block;font-size:11px;color:#aaa;margin-bottom:4px">Numéro Mobile Money / Wave / OM</label>'
       +'<input id="pMobileMoney" placeholder="Ex: +221 77 000 00 00" value="'+esc((p&&p.mobileMoney)||'')+'"/>'
     +'</div>'
+
     +'<label>Catégorie</label><select id="pCat"><option value="">—</option>'+categories.map(c=>'<option value="'+c.id+'" '+(p&&p.categoryId===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select>'
     +'<label>Description</label><textarea id="pDesc" rows="2">'+esc(p?p.description:'')+'</textarea>'
     +'<label>Images (max 20)</label><div id="imgList" class="img-grid"></div>'
@@ -496,6 +603,39 @@ function openProdForm(id){
     +'<label style="margin-top:10px"><input type="checkbox" id="pPub" '+(p&&p.published===false?'':'checked')+'/> Publié</label>'
     +'<button type="button" class="p" id="btnSaveP">Enregistrer</button> '
     +'<button type="button" class="s" id="btnCancelP">Annuler</button>';
+
+  // === Handlers affichage conditionnel ===
+  document.querySelectorAll('input[name="payDelivery"]').forEach(function(r){
+    r.addEventListener('change',function(){
+      var w=$('pDeliveryFeeWrap');
+      if(w)w.style.display=(this.value==='paid')?'':'none';
+    });
+  });
+  document.querySelectorAll('input[name="pickupToHome"]').forEach(function(r){
+    r.addEventListener('change',function(){
+      var w=$('pPickupFeeWrap');
+      if(w)w.style.display=(this.value==='paid')?'':'none';
+    });
+  });
+  document.querySelectorAll('input[name="transportMode"]').forEach(function(r){
+    r.addEventListener('change',function(){
+      var av=$('pAvionBox'), bt=$('pBateauBox');
+      if(av)av.style.display=(this.value==='avion'||this.value==='both')?'block':'none';
+      if(bt)bt.style.display=(this.value==='bateau'||this.value==='both')?'block':'none';
+    });
+  });
+  document.querySelectorAll('input[name="avionPaid"]').forEach(function(r){
+    r.addEventListener('change',function(){
+      var w=$('pAvionFeeWrap');
+      if(w)w.style.display=(this.value==='paid')?'':'none';
+    });
+  });
+  document.querySelectorAll('input[name="bateauPaid"]').forEach(function(r){
+    r.addEventListener('change',function(){
+      var w=$('pBateauFeeWrap');
+      if(w)w.style.display=(this.value==='paid')?'':'none';
+    });
+  });
 
   function renderImgs(){
     $('imgList').innerHTML=editImages.map((u,i)=>'<div class="box"><img src="'+esc(u)+'" onerror="fixBrokenImg(this)"/><button type="button" class="rm" data-rm="'+i+'">×</button></div>').join('');
@@ -582,26 +722,59 @@ function openProdForm(id){
 
   $('btnCancelP').addEventListener('click',()=>renderProduits());
 
-$('btnSaveP').addEventListener('click',async()=>{
+  $('btnSaveP').addEventListener('click',async()=>{
     const name=$('pName').value.trim();
     const price=p ? p.price : (parseFloat($('pPrice').value)||0);
     const promoVal = $('pPromo').value ? parseFloat($('pPromo').value) : null;
-    
+
     if(!name||!price){alert('Nom et prix requis');return;}
     if(promoVal !== null){
       if(promoVal < 0){alert('Le prix promotionnel ne peut pas être négatif.');return;}
       if(promoVal >= price){alert('Le prix promotionnel doit être inférieur au prix initial.');return;}
     }
+
+    // === Récupération valeurs ===
+    var deliveryCountries=[];
+    document.querySelectorAll('.pDevCountry:checked').forEach(function(cb){ deliveryCountries.push(cb.value); });
+
+    var deliveryPaid=((document.querySelector('input[name="payDelivery"]:checked')||{}).value==='paid');
+    var pickupToHomePaid=((document.querySelector('input[name="pickupToHome"]:checked')||{}).value==='paid');
+    var transportMode=(document.querySelector('input[name="transportMode"]:checked')||{}).value||'avion';
+    var avionPaid=((document.querySelector('input[name="avionPaid"]:checked')||{}).value==='paid');
+    var bateauPaid=((document.querySelector('input[name="bateauPaid"]:checked')||{}).value==='paid');
+
     const data={
       name,price,
       promoPrice:$('pPromo').value?parseFloat($('pPromo').value):null,
       stock:parseInt($('pStock').value)||0,
       showStock:$('pShowStock').checked,
       deliveryTime:$('pDelivery').value,
+
+      // === Provenance + pays ===
+      origin:$('pOrigin').value||'Chine',
+      deliveryCountries:deliveryCountries,
+
+      // === Livraison gratuite/payante ===
+      deliveryPaid:deliveryPaid,
+      deliveryFee:deliveryPaid?(parseFloat($('pDeliveryFee').value)||0):0,
+      pickupToHomePaid:pickupToHomePaid,
+      pickupToHomeFee:pickupToHomePaid?(parseFloat($('pPickupFee').value)||0):0,
+
+      // === Transport ===
+      transportMode:transportMode,
+      avionPaid:avionPaid,
+      avionFee:avionPaid?(parseFloat($('pAvionFee').value)||0):0,
+      bateauPaid:bateauPaid,
+      bateauFee:bateauPaid?(parseFloat($('pBateauFee').value)||0):0,
+
+      // === Anciens champs (compatibilité) ===
       fromChina:$('pFromChina').checked,
       pickupFree:$('pPickupFree').checked,
-            paymentMode:(document.querySelector('input[name="payMode"]:checked')||{}).value||'cod',
+
+      // === Paiement ===
+      paymentMode:(document.querySelector('input[name="payMode"]:checked')||{}).value||'cod',
       mobileMoney:$('pMobileMoney').value.trim(),
+
       categoryId:$('pCat').value||null,
       description:$('pDesc').value.trim(),
       images:editImages,
@@ -620,6 +793,9 @@ $('btnSaveP').addEventListener('click',async()=>{
     }catch(e){alert(e.message);}
   });
 }
+
+  
+ 
 
 /* ================== COMMANDES ================== */
 async function renderCommandes(){
