@@ -119,6 +119,50 @@ button{cursor:pointer}
 .ord-head{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid #eee}
 .ord-head button{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#333}
 .ord-head b{font-size:16px}
+  
+
+/* === Filtres horizontaux compacts === */
+.ord-status-filters{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  white-space:nowrap;
+  padding:6px 10px;
+  background:#fff;
+  border-bottom:1px solid #eee;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.ord-status-filters::-webkit-scrollbar{
+  display:none;
+}
+.ord-filter-btn{
+  flex-shrink:0;
+  padding:6px 10px;
+  border-radius:4px;
+  background:#f1f1f1;
+  color:#555;
+  border:none;
+  outline:none;
+  font-size:11px;
+  font-weight:400;
+  cursor:pointer;
+}
+.ord-filter-btn.active{
+  background:#00A854;
+  color:#fff;
+  border:none;
+}
+.ord-filter-empty{
+  text-align:center;
+  padding:25px 12px;
+  color:#888;
+  font-size:12px;
+}
+
+
 .ord-card{background:#fff;border:1px solid #eee;border-radius:10px;padding:8px;margin:6px;cursor:pointer}
 .ord-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
 .ord-num{font-size:13px;font-weight:800;color:#1a1a1a}
@@ -3292,6 +3336,11 @@ async function refreshOrdersBoutiqueInfo(orders){
   }
 }
 
+  
+/* === Mémoire du filtre sélectionné === */
+var _ordersStatusFilter = 'Tous';
+var _ordersFilterSource = [];
+
 /* === Peint la liste des commandes (utilisée par cache ET Firestore) === */
 function paintOrdersList(orders){
   var box=document.getElementById('ordList');
@@ -3314,10 +3363,86 @@ function paintOrdersList(orders){
       delivered:{label:'Livrée',color:'#00A854'},
       cancelled:{label:'Annulée',color:'#E02E24'}
     };
+
     return map[status]||{label:status||'—',color:'#888'};
   }
 
+  // === Liste des filtres ===
+  var filterStatuses = [
+    'Tous',
+    'Commande confirmée',
+    'En préparation',
+    'Emballée',
+    'Expédiée',
+    'En transit',
+    'Arrivée au pays de destination',
+    'En cours de dédouanement',
+    'Dédouanée',
+    'Arrivée au centre de tri local',
+    'En cours de livraison',
+    'Arrivée au point relais',
+    'Livrée',
+    'Retournée',
+    'Annulée',
+    'En attente',
+    'Paiement en attente',
+    'Paiement déclaré',
+    'Payée'
+  ];
+
+  // Conserver la liste complète pour pouvoir changer de filtre
+  _ordersFilterSource = orders.slice();
+
+  // === Construire la barre horizontale ===
+  var filterHtml = '<div class="ord-status-filters">';
+
+  filterStatuses.forEach(function(status){
+    var active = (_ordersStatusFilter === status) ? ' active' : '';
+
+    filterHtml +=
+      '<button type="button" class="ord-filter-btn'+active+
+      '" data-order-filter="'+escapeHtml(status)+'">'+
+      escapeHtml(status)+
+      '</button>';
+  });
+
+  filterHtml += '</div>';
+
+  // === Fonction de branchement des filtres ===
+  function bindOrderStatusFilters(){
+    box.querySelectorAll('[data-order-filter]').forEach(function(btn){
+      btn.addEventListener('click',function(e){
+        e.stopPropagation();
+
+        _ordersStatusFilter = btn.getAttribute('data-order-filter');
+
+        // Réafficher la liste complète avec le filtre choisi
+        paintOrdersList(_ordersFilterSource);
+      });
+    });
+  }
+
+  // === Appliquer le filtre ===
+  if(_ordersStatusFilter !== 'Tous'){
+    orders = orders.filter(function(o){
+      var currentStatus = o.trackingStatus || statusMeta(o.status).label;
+      return currentStatus === _ordersStatusFilter;
+    });
+  }
+
+  // Aucun résultat pour le filtre sélectionné
+  if(!orders.length){
+    box.innerHTML =
+      filterHtml+
+      '<div class="ord-filter-empty">Aucune commande avec ce statut</div>';
+
+    bindOrderStatusFilters();
+    paintOrdRecos();
+    return;
+  }
+
   var html='';
+
   orders.forEach(function(o){
     var d=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()):null;
     var dateStr=d?d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
@@ -3417,8 +3542,12 @@ var st = o.trackingStatus
 
     +'</div>';
   });
-  box.innerHTML=html;
-  // Clic sur le logo ou le nom : ouvrir la page de la boutique
+  box.innerHTML=filterHtml+html;
+
+  // === Activer les filtres horizontaux ===
+  bindOrderStatusFilters();
+
+  // === Listeners ===  // Clic sur le logo ou le nom : ouvrir la page de la boutique
 box.querySelectorAll('[data-boutique-link]').forEach(function(el){
   el.addEventListener('click',function(e){
     e.stopPropagation();
