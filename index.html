@@ -1387,7 +1387,7 @@ import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateD
 const firebaseConfig={apiKey:"AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",authDomain:"idus-a87a6.firebaseapp.com",projectId:"idus-a87a6",storageBucket:"idus-a87a6.firebasestorage.app",messagingSenderId:"284785552985",appId:"1:284785552985:web:4cb12a71465a0e167bcb48",measurementId:"G-M0EKXCDV3R"};
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
 setPersistence(auth,browserLocalPersistence).catch(function(){});
-// Précharge le logo du site une seule fois (cache localStorage)
+// Précharge le logo du site une seule fois (cache localStorage)   
 setTimeout(function(){ prefetchSiteLogo(); }, 0);
   // Applique le logo du site mis en cache dès que possible
 document.addEventListener('DOMContentLoaded',function(){
@@ -4685,7 +4685,9 @@ function stopTrackingNotifications(){
   trackingNotifications = [];
   updateTrackingNotifBadge();
 }
-  function renderTrackingNotifications(){
+
+
+function renderTrackingNotifications(){
   var box = document.getElementById('trackingNotifSection');
   if(!box)return;
 
@@ -4696,8 +4698,10 @@ function stopTrackingNotifications(){
 
   var html = '';
 
-  html += '<div style="padding:14px 12px 6px">';
-  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
+  html += '<div style="width:100%;padding:12px 0 0">';
+
+  html += '<div style="display:flex;align-items:center;';
+  html += 'justify-content:space-between;padding:0 14px 10px">';
   html += '<b style="font-size:15px">Notifications de suivi</b>';
   html += '<span style="font-size:11px;color:#888">';
   html += trackingNotifications.length + ' notification(s)';
@@ -4706,8 +4710,8 @@ function stopTrackingNotifications(){
   trackingNotifications.forEach(function(n){
 
     var unread = n.read !== true;
-
     var dateText = '';
+
     if(n.createdAt && n.createdAt.toDate){
       dateText = n.createdAt.toDate().toLocaleString('fr-FR',{
         day:'2-digit',
@@ -4718,74 +4722,110 @@ function stopTrackingNotifications(){
       });
     }
 
+    var orderNumber = n.orderNumber || n.orderId || 'Commande';
+    var boutiqueName = n.boutiqueName || 'Boutique';
+    var status = n.status || '';
+
     html += '<div data-tracking-notif="'+escapeHtml(n.id)+'"';
-html += ' style="background:'+(unread?'#F0FFF5':'#fff')+';';
-html += 'border:1px solid '+(unread?'#B7E4C7':'#eee')+';';
-html += 'border-radius:10px;padding:12px;margin-bottom:8px;';
-html += 'cursor:pointer">';
-    html += 'border:1px solid '+(unread?'#B7E4C7':'#eee')+';';
-    html += 'border-radius:10px;padding:12px;margin-bottom:8px">';
+    html += ' style="display:flex;width:100%;box-sizing:border-box;';
+    html += 'align-items:flex-start;gap:11px;';
+    html += 'padding:13px 14px;';
+    html += 'background:transparent;border:0;border-radius:0;';
+    html += 'border-bottom:1px solid #EEEEEE;';
+    html += 'margin:0;cursor:pointer">';
 
-    html += '<div style="display:flex;align-items:center;gap:8px">';
-
-    if(unread){
-      html += '<span style="width:8px;height:8px;border-radius:50%;background:#E02E24;flex-shrink:0"></span>';
-    }
-
-    html += '<b style="font-size:13px;flex:1">';
-    html += escapeHtml(n.title || 'Mise à jour de commande');
-    html += '</b></div>';
-
-    html += '<div style="font-size:12px;color:#444;margin-top:7px">';
-    html += escapeHtml(n.message || '');
+    // Logo
+    html += '<div style="width:42px;height:42px;flex:0 0 42px;';
+    html += 'border-radius:50%;overflow:hidden">';
+    html += '<img src="logo.png" alt="IDA" ';
+    html += 'style="width:100%;height:100%;object-fit:cover">';
     html += '</div>';
 
-    html += '<div style="display:flex;justify-content:space-between;gap:8px;margin-top:9px">';
-    html += '<span style="font-size:10px;color:#888">';
-    html += escapeHtml(dateText);
+    html += '<div style="flex:1;min-width:0">';
+
+    // Numéro de commande + boutique
+    html += '<div style="display:flex;align-items:center;';
+    html += 'justify-content:space-between;gap:7px;margin-bottom:6px">';
+
+    html += '<b style="font-size:12px;color:#222;min-width:0;';
+    html += 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">';
+    html += escapeHtml(orderNumber);
+    html += '</b>';
+
+    html += '<span style="flex-shrink:0;padding:3px 7px;';
+    html += 'border:1px solid #C49A35;border-radius:5px;';
+    html += 'background:transparent;color:#C49A35;';
+    html += 'font-size:10px;font-weight:700;white-space:nowrap">';
+    html += escapeHtml(boutiqueName);
     html += '</span>';
 
-    html += '<span style="font-size:10px;font-weight:700;color:#00A854">';
-    html += escapeHtml(n.status || '');
-    html += '</span></div>';
+    html += '</div>';
+
+    // Statut en vert
+    if(status){
+      html += '<div style="font-size:11px;color:#555;margin-bottom:3px">';
+      html += 'Votre commande est maintenant :</div>';
+
+      html += '<div style="font-size:12px;font-weight:800;';
+      html += 'color:#00A854;line-height:1.4">';
+      html += escapeHtml(status);
+      html += '</div>';
+    }else{
+      html += '<div style="font-size:12px;color:#00A854">';
+      html += escapeHtml(n.message || '');
+      html += '</div>';
+    }
+
+    // Date
+    html += '<div style="font-size:10px;color:#999;margin-top:7px">';
+    html += escapeHtml(dateText);
+    html += '</div>';
+
+    html += '</div>';
+
+    if(unread){
+      html += '<span style="width:7px;height:7px;flex:0 0 7px;';
+      html += 'border-radius:50%;background:#00A854;margin-top:5px"></span>';
+    }
 
     html += '</div>';
   });
 
   html += '</div>';
-
   box.innerHTML = html;
 
-box.querySelectorAll('[data-tracking-notif]').forEach(function(card){
-  card.addEventListener('click', async function(){
-    var notifId = card.getAttribute('data-tracking-notif');
-    var notif = trackingNotifications.find(function(n){
-      return n.id === notifId;
+  box.querySelectorAll('[data-tracking-notif]').forEach(function(card){
+    card.addEventListener('click', async function(){
+      var notifId = card.getAttribute('data-tracking-notif');
+      var notif = trackingNotifications.find(function(n){
+        return n.id === notifId;
+      });
+
+      if(!notif)return;
+
+      try{
+        if(notif.read !== true){
+          await updateDoc(doc(db,'notifications',notifId),{
+            read:true,
+            readAt:serverTimestamp()
+          });
+        }
+
+        if(!notif.orderId){
+          toast('Commande introuvable dans cette notification');
+          return;
+        }
+
+        showPage('order-detail',notif.orderId);
+
+      }catch(e){
+        toast('Erreur : '+e.message);
+      }
     });
-
-    if(!notif)return;
-
-    try{
-      if(notif.read !== true){
-        await updateDoc(doc(db,'notifications',notifId),{
-          read:true,
-          readAt:serverTimestamp()
-        });
-      }
-
-      if(!notif.orderId){
-        toast('Commande introuvable dans cette notification');
-        return;
-      }
-
-      showPage('order-detail',notif.orderId);
-
-    }catch(e){
-      toast('Erreur : '+e.message);
-    }
   });
-});
 }
+ 
+
 async function renderMessagesList(){
 if(!currentUser){$('page-messages').innerHTML='<div class="em"><p>Connectez-vous</p></div>';$('page-chat').innerHTML='<div class="em"><p>Connectez-vous</p></div>';return}
 var target=document.querySelector('.page.on')||$('page-messages');
