@@ -1486,9 +1486,12 @@ $('btnAddEvt').addEventListener('click',async()=>{
 
 });
 
+  }catch(e){
+    alert('Erreur ouverture du suivi : '+e.message);
+  }
+}
 
- 
-/* ================== AUTH STATE ================== */ 
+/* ================== AUTH STATE ================== */  
 onAuthStateChanged(auth,async(u)=>{
   if(!u){showLogin();return;}
   try{
