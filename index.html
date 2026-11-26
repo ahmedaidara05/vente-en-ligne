@@ -3174,6 +3174,7 @@ if(bid){
 }
   
   /* === Commandes passées (Lot 2B) === */
+  var ordersLiveUnsubscribe = null;
 async function renderOrders(){
   if(!currentUser){showPage('auth');return}
   var _ordLogo=getCachedImg("vl_site_logo","logo.png");
@@ -3188,24 +3189,60 @@ if(cachedOrders.length){
 }
 
   // ========== 2. REFRESH FIRESTORE EN ARRIÈRE-PLAN ==========
-  try{
-    var s=await getDocs(query(collection(db,'orders'),where('userId','==',currentUser.uid)));
-    var orders=s.docs.map(function(d){return{id:d.id,...d.data()}});
-    orders.sort(function(a,b){
-      var ta=a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0;
-      var tb=b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0;
-      return tb-ta;
+
+// ========== 2. ÉCOUTE EN TEMPS RÉEL DES COMMANDES ==========
+
+// Évite plusieurs écoutes simultanées
+if (ordersLiveUnsubscribe) {
+  ordersLiveUnsubscribe();
+  ordersLiveUnsubscribe = null;
+}
+
+ordersLiveUnsubscribe = onSnapshot(
+  query(
+    collection(db, 'orders'),
+    where('userId', '==', currentUser.uid)
+  ),
+  function(snap) {
+
+    var orders = snap.docs.map(function(d) {
+      return {
+        id: d.id,
+        ...d.data()
+      };
     });
-   saveOrdersCache(orders);
-paintOrdersList(orders);
-refreshOrdersBoutiqueInfo(orders);
-  }catch(e){
-    // Si Firestore échoue mais qu'on a un cache → on garde le cache
-    if(!cachedOrders.length){
-      var box2=document.getElementById('ordList');
-      if(box2)box2.innerHTML='<div class="chk-empty">'+escapeHtml(e.message)+'</div>';
+
+    orders.sort(function(a, b) {
+      var ta = a.createdAt && a.createdAt.toMillis
+        ? a.createdAt.toMillis() : 0;
+
+      var tb = b.createdAt && b.createdAt.toMillis
+        ? b.createdAt.toMillis() : 0;
+
+      return tb - ta;
+    });
+
+    saveOrdersCache(orders);
+    paintOrdersList(orders);
+    refreshOrdersBoutiqueInfo(orders);
+
+  },
+  function(e) {
+    console.error('Erreur écoute commandes :', e);
+
+    if (!cachedOrders.length) {
+      var box2 = document.getElementById('ordList');
+
+      if (box2) {
+        box2.innerHTML =
+          '<div class="chk-empty">' +
+          escapeHtml(e.message) +
+          '</div>';
+      }
     }
   }
+);
+
 }
 
   
@@ -3287,7 +3324,30 @@ function paintOrdersList(orders){
     var timeStr=d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
     var dateTimeStr=dateStr+(timeStr?' · '+timeStr:'');
 
-    var st=statusMeta(o.status);
+    // Priorité au statut de livraison défini par le boutiquier
+var trackingColors = {
+  'Commande confirmée':'#0D9488',
+  'En préparation':'#0D9488',
+  'Emballée':'#0D9488',
+  'Expédiée':'#2563EB',
+  'En transit':'#2563EB',
+  'Arrivée au pays de destination':'#2563EB',
+  'En cours de dédouanement':'#D97706',
+  'Dédouanée':'#0D9488',
+  'Arrivée au centre de tri local':'#2563EB',
+  'En cours de livraison':'#2563EB',
+  'Arrivée au point relais':'#0D9488',
+  'Livrée':'#00A854',
+  'Retournée':'#D97706',
+  'Annulée':'#E02E24'
+};
+
+var st = o.trackingStatus
+  ? {
+      label: o.trackingStatus,
+      color: trackingColors[o.trackingStatus] || '#2563EB'
+    }
+  : statusMeta(o.status);
     var canCancel=(['shipped','delivered','cancelled'].indexOf(o.status)<0);
 
     var items=o.items||[];
