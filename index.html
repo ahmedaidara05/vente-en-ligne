@@ -3137,9 +3137,10 @@ async function renderOrders(){
 
   // ========== 1. AFFICHAGE INSTANTANÉ DEPUIS LE CACHE ==========
   var cachedOrders=loadOrdersCache();
-  if(cachedOrders.length){
-    paintOrdersList(cachedOrders);
-  }
+if(cachedOrders.length){
+  paintOrdersList(cachedOrders);
+  refreshOrdersBoutiqueInfo(cachedOrders);
+}
 
   // ========== 2. REFRESH FIRESTORE EN ARRIÈRE-PLAN ==========
   try{
@@ -3150,14 +3151,62 @@ async function renderOrders(){
       var tb=b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0;
       return tb-ta;
     });
-    saveOrdersCache(orders);
-    paintOrdersList(orders);
+   saveOrdersCache(orders);
+paintOrdersList(orders);
+refreshOrdersBoutiqueInfo(orders);
   }catch(e){
     // Si Firestore échoue mais qu'on a un cache → on garde le cache
     if(!cachedOrders.length){
       var box2=document.getElementById('ordList');
       if(box2)box2.innerHTML='<div class="chk-empty">'+escapeHtml(e.message)+'</div>';
     }
+  }
+}
+
+  
+/* === Récupération des vrais noms et logos des boutiques === */
+var _ordersBoutiqueInfoCache = {};
+
+async function refreshOrdersBoutiqueInfo(orders){
+  var ids=[];
+
+  orders.forEach(function(o){
+    var id=o.boutiqueId;
+    if(id && ids.indexOf(id)<0)ids.push(id);
+  });
+
+  if(!ids.length)return;
+
+  var changed=false;
+
+  await Promise.all(ids.map(async function(id){
+    try{
+      if(!_ordersBoutiqueInfoCache[id]){
+        _ordersBoutiqueInfoCache[id]=getDoc(doc(db,'boutiques',id))
+          .then(function(s){
+            return s.exists()?s.data():null;
+          })
+          .catch(function(){
+            return null;
+          });
+      }
+
+      var b=await _ordersBoutiqueInfoCache[id];
+      if(!b)return;
+
+      orders.forEach(function(o){
+        if(o.boutiqueId===id){
+          o.boutiqueName=b.name||'Boutique';
+          o.boutiqueLogo=b.logo||'';
+          changed=true;
+        }
+      });
+    }catch(e){}
+  }));
+
+  if(changed){
+    saveOrdersCache(orders);
+    paintOrdersList(orders);
   }
 }
 
@@ -3218,7 +3267,7 @@ function paintOrdersList(orders){
       +'</div>'
 
       // Ligne 2 : date + heure
-      +'<div style="font-size:11px;color:#999;margin-top:4px">'+escapeHtml(dateTimeStr)+'</div>'
+      
 
       // Ligne 3 : produit (image + nom + variantes)
       +'<div style="display:flex;gap:10px;margin-top:10px">'
