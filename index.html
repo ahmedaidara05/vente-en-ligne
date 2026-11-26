@@ -2079,18 +2079,47 @@ function getPaymentRatio(mode){
   if(mode==='full')return 1.0;
   return 0; // cod
 }
-function computePaymentForItem(item){
-  var p=products.find(function(x){return x.id===item.productId});
-  var mode=(p&&p.paymentMode)||'cod';
-  var mobileMoney=(p&&p.mobileMoney)||'';
-  var lineTotal=(item.price||0)*(item.qty||1);
-  var ratio=getPaymentRatio(mode);
-  var payNow=Math.round(lineTotal*ratio);
-  var payLater=lineTotal-payNow;
-  return {mode:mode,label:getPaymentModeLabel(mode),mobileMoney:mobileMoney,payNow:payNow,payLater:payLater,lineTotal:lineTotal};
+function computePaymentForItem(it){
+  var p = products.find(function(x){return x.id===it.productId});
+  if(!p){
+    return {mode:'cod', label:'Paiement à la livraison', payNow:0, payLater:it.price*it.qty, mobileMoney:''};
+  }
+
+  // === Détermine le mode transport effectif ===
+  var mode = p.transportMode || 'avion';
+  var transportFee = 0;
+  var transportLabel = '';
+  if(mode === 'both'){
+    var choice = {};
+    try{ choice = JSON.parse(localStorage.getItem('vl_transport_choice')||'{}'); }catch(e){}
+    var chosen = choice[it.productId] || 'avion';
+    if(chosen === 'bateau'){
+      transportFee = p.bateauPaid ? (p.bateauFee||0) : 0;
+      transportLabel = p.bateauPaid ? 'Bateau payant' : 'Bateau gratuit';
+    }else{
+      transportFee = p.avionPaid ? (p.avionFee||0) : 0;
+      transportLabel = p.avionPaid ? 'Avion payant' : 'Avion gratuit';
+    }
+  }else if(mode === 'bateau'){
+    transportFee = p.bateauPaid ? (p.bateauFee||0) : 0;
+    transportLabel = p.bateauPaid ? 'Bateau payant' : 'Bateau gratuit';
+  }else{
+    transportFee = p.avionPaid ? (p.avionFee||0) : 0;
+    transportLabel = p.avionPaid ? 'Avion payant' : 'Avion gratuit';
+  }
+
+  var base = it.price * it.qty + transportFee * it.qty;
+  var pm = p.paymentMode || 'cod';
+  var mobile = p.mobileMoney || '';
+  var label = '';
+
+  if(pm === 'deposit30'){ return {mode:'deposit30', label:'Acompte 30% — '+transportLabel, payNow:Math.round(base*0.3), payLater:base-Math.round(base*0.3), mobileMoney:mobile, transportFee:transportFee*it.qty, transportLabel:transportLabel}; }
+  if(pm === 'deposit50'){ return {mode:'deposit50', label:'Acompte 50% — '+transportLabel, payNow:Math.round(base*0.5), payLater:base-Math.round(base*0.5), mobileMoney:mobile, transportFee:transportFee*it.qty, transportLabel:transportLabel}; }
+  if(pm === 'full'){ return {mode:'full', label:'Paiement total — '+transportLabel, payNow:base, payLater:0, mobileMoney:mobile, transportFee:transportFee*it.qty, transportLabel:transportLabel}; }
+  return {mode:'cod', label:'Paiement à la livraison — '+transportLabel, payNow:0, payLater:base, mobileMoney:mobile, transportFee:transportFee*it.qty, transportLabel:transportLabel};
 }
   
-  /* === Checkouts sauvegardés === */
+  /* === Checkouts sauvegardés === */  
 function loadSavedCheckouts(){
   try{
     var uid=currentUser?currentUser.uid:'anon';
@@ -2315,6 +2344,70 @@ function openPickupModal(bid, bname, pts){
       homeNodeGroup.style.display = isHome ? 'block' : 'none';
     }
   };
+  function openTransportChoiceModal(){
+  var old = document.getElementById('transportModal');
+  if(old) old.remove();
+
+  // Récupère les produits "both" du panier
+  var bothProducts = [];
+  cart.forEach(function(it){
+    var p = products.find(function(x){return x.id===it.productId});
+    if(p && p.transportMode === 'both'){
+      bothProducts.push({item:it, product:p});
+    }
+  });
+  if(!bothProducts.length){
+    toast('Aucun choix de transport disponible');
+    return;
+  }
+
+  var currentChoice = {};
+  try{ currentChoice = JSON.parse(localStorage.getItem('vl_transport_choice')||'{}'); }catch(e){}
+
+  var modal = document.createElement('div');
+  modal.className = 'pr-modal';
+  modal.id = 'transportModal';
+  modal.innerHTML = '<div class="pr-modal-box" style="max-width:400px">'
+    +'<div class="pr-modal-head">'
+      +'<h3>Choisir le transport</h3>'
+      +'<button type="button" id="trModalClose"><i class="fa-solid fa-xmark"></i></button>'
+    +'</div>'
+    +'<div class="pr-modal-body">'
+      + bothProducts.map(function(bp){
+          var cur = currentChoice[bp.item.productId] || 'avion';
+          var name = String(bp.product.name||'').slice(0,40);
+          return '<div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #eee">'
+            +'<div style="font-size:12px;font-weight:700;margin-bottom:8px">'+escapeHtml(name)+'</div>'
+            +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;cursor:pointer">'
+              +'<input type="radio" name="tr_'+bp.item.productId+'" value="avion" '+(cur==='avion'?'checked':'')+'/> ✈️ Par avion'
+            +'</label>'
+            +'<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">'
+              +'<input type="radio" name="tr_'+bp.item.productId+'" value="bateau" '+(cur==='bateau'?'checked':'')+'/> 🚢 Par bateau'
+            +'</label>'
+          +'</div>';
+        }).join('')
+    +'</div>'
+    +'<div class="pr-modal-foot">'
+      +'<button type="button" class="pr-close" id="trModalOk" style="flex:1">Valider</button>'
+    +'</div>'
+  +'</div>';
+  document.body.appendChild(modal);
+
+  function close(){ modal.remove(); }
+  document.getElementById('trModalClose').addEventListener('click', close);
+  modal.addEventListener('click', function(e){ if(e.target===modal) close(); });
+  document.getElementById('trModalOk').addEventListener('click', function(){
+    var newChoice = {};
+    bothProducts.forEach(function(bp){
+      var sel = document.querySelector('input[name="tr_'+bp.item.productId+'"]:checked');
+      if(sel) newChoice[bp.item.productId] = sel.value;
+    });
+    try{ localStorage.setItem('vl_transport_choice', JSON.stringify(newChoice)); }catch(e){}
+    close();
+    toast('Transport mis à jour');
+    renderCheckout();
+  });
+}
 function renderCheckout(){
   var prof=loadLocalProfile();
   var hasAddr=prof.address&&prof.address.trim();
@@ -2395,6 +2488,7 @@ if(!originCountry){
     return p && p.fromChina===true;
   });
   originCountry = _fromChina ? 'Chine' : 'Sénégal';
+  
 }
 
 // === Mapping pays → geoId / flagId ===
@@ -2521,9 +2615,29 @@ var chkHeader='<div class="chk-topbar">'
       +itemsHtml
       
     +'</div>'
-    +'<div class="chk-section">'
-      +'<div class="chk-section-title"><i class="fa-solid fa-truck-fast"></i>Livraison</div>'
-     +livraisonHtml
++'<div class="chk-section">'
+  +'<div class="chk-section-title" style="display:flex;align-items:center;justify-content:space-between">'
+    +'<span><i class="fa-solid fa-truck-fast"></i>Livraison</span>'
+    +'<span id="chkTransportLabel" style="font-size:11px;font-weight:700;color:#00A854;display:flex;align-items:center;gap:6px">'
+      +(()=>{
+        var modes=[];
+        cart.forEach(function(it){
+          var p=products.find(function(x){return x.id===it.productId});
+          if(p){
+            var m=p.transportMode||'avion';
+            if(m!=='both' && modes.indexOf(m)<0) modes.push(m);
+          }
+        });
+        var hasBoth=cart.some(function(it){
+          var p=products.find(function(x){return x.id===it.productId});
+          return p && p.transportMode==='both';
+        });
+        var txt = hasBoth ? '✈️/🚢 Avion ou bateau' : (modes[0]==='bateau' ? '🚢 Livré par bateau' : '✈️ Livré par avion');
+        return txt + (hasBoth ? ' <button type="button" id="chkTransportEdit" style="background:none;border:none;color:#00A854;font-size:13px;padding:0;cursor:pointer"><i class="fa-solid fa-pen"></i></button>' : '');
+      })()
+    +'</span>'
+  +'</div>'
+  +livraisonHtml
 +'</div>'
 +'<div id="chkPickupBox"></div>'
                +'<p id="chkTermsLine" style="text-align:center;font-size:11px;color:#888;margin:0;padding:0">En confirmant, vous acceptez les <a href="#" id="chkPrivacyLink" style="color:#00A854;text-decoration:underline;font-weight:700;cursor:pointer">conditions IDA</a>.</p>'
@@ -2687,6 +2801,13 @@ var chkHeader='<div class="chk-topbar">'
       });
     });
   })();
+    // === Crayon : ouvre la fenêtre de choix avion/bateau ===
+  var chkTransEdit = document.getElementById('chkTransportEdit');
+  if(chkTransEdit){
+    chkTransEdit.addEventListener('click',function(){
+      openTransportChoiceModal();
+    });
+  }
 }
 async function placeOrder(){
   var name=$('chkName').value.trim();
