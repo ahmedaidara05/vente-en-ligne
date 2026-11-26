@@ -2915,7 +2915,17 @@ var chkHeader='<div class="chk-topbar">'
   // Bouton annuler (rouge, sans fond)
  
 
-  document.getElementById('btnPlace').addEventListener('click',placeOrder);
+  var placeBtn = document.getElementById('btnPlace');
+
+if(placeBtn){
+  placeBtn.addEventListener('click',function(e){
+    e.preventDefault();
+    toast('Clic détecté : traitement de la commande lancé');
+    placeOrder();
+  });
+}else{
+  toast('ERREUR : bouton de commande introuvable');
+}
     // === +/- quantité sur le checkout ===
   document.querySelectorAll('[data-chk-plus]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -3004,8 +3014,16 @@ async function placeOrder(){
       byBout[key].push(it);
     });
 
-    var keys=Object.keys(byBout);
-    for(var k=0;k<keys.length;k++){
+   var keys=Object.keys(byBout);
+
+// Vérifier que chaque produit est bien rattaché à une boutique
+if(byBout['_none'] && byBout['_none'].length){
+  throw new Error(
+    'Commande impossible : un ou plusieurs produits ne sont rattachés à aucune boutique. Vérifie leur boutiqueId.'
+  );
+}
+
+for(var k=0;k<keys.length;k++){
       var key=keys[k];var items=byBout[key];
       var subB=items.reduce(function(s,i){return s+i.price*i.qty},0);
       var bid=key==='_none'?null:key;
@@ -3285,7 +3303,7 @@ function paintOrdersList(orders){
   // Conteneur gauche : empile la ligne boutique et la date
   +'<div style="display:flex;flex-direction:column;min-width:0">'
     // Ligne 1 : Logo + Nom de la boutique
-    +'<div style="display:flex;align-items:center;gap:6px;min-width:0">'
+    +'<div data-boutique-link="'+escapeHtml(o.boutiqueId||'')+'" style="display:flex;align-items:center;gap:6px;min-width:0;cursor:pointer">'
       +(blogo
         ?'<img src="'+escapeHtml(blogo)+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;background:#eee;flex-shrink:0" onerror="this.style.display=\'none\'"/>'
         :'<div style="width:22px;height:22px;border-radius:50%;background:#E8FFF0;color:#00A854;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0">'+escapeHtml(initial)+'</div>')
@@ -3313,6 +3331,17 @@ function paintOrdersList(orders){
     +'</div>';
   });
   box.innerHTML=html;
+  // Clic sur le logo ou le nom : ouvrir la page de la boutique
+box.querySelectorAll('[data-boutique-link]').forEach(function(el){
+  el.addEventListener('click',function(e){
+    e.stopPropagation();
+
+    var bid=el.getAttribute('data-boutique-link');
+    if(!bid)return;
+
+    showPage('boutique',bid);
+  });
+});
 
   // === Listeners ===
   box.querySelectorAll('[data-oid]').forEach(function(el){
