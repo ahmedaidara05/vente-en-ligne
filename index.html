@@ -320,7 +320,27 @@ body.page-cart-active .bn {
 .em{text-align:center;padding:48px 20px;color:#888}
 .bn{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav-h)+var(--safe-b));padding-bottom:var(--safe-b);background:#fff;border-top:1px solid var(--border);display:flex;z-index:100}
 .bn button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;color:#666;height:var(--nav-h)}
-.bn button i{font-size:20px}.bn button.on{color:var(--red)}
+.bn button{position:relative}
+.bn button i{font-size:20px}
+.bn button.on{color:var(--red)}
+.tracking-notif-badge{
+  position:absolute;
+  top:3px;
+  left:calc(50% + 7px);
+  min-width:17px;
+  height:17px;
+  padding:0 4px;
+  border-radius:10px;
+  background:#E02E24;
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  line-height:17px;
+  border:2px solid #fff;
+}
 .to2{position:fixed;left:50%;bottom:calc(var(--nav-h)+20px+var(--safe-b));transform:translateX(-50%);background:#333;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s}.to2.on{opacity:1}
 .br{background:var(--danger);color:#fff;height:44px;border-radius:22px;width:100%;font-weight:700;display:flex;align-items:center;justify-content:center}
 .ba{background:#E8FFF0;color:var(--red);border:1px solid #A7F3D0;height:40px;border-radius:20px;flex:1;font-weight:700}
@@ -1350,7 +1370,11 @@ body.page-orders-active #ordRecoGrid{
 <button type="button" data-page="home" class="on"><i class="fa-solid fa-house"></i>Accueil</button>
 <button type="button" data-page="video"><i class="fa-solid fa-play"></i>Video</button>
 <button type="button" data-page="catalog"><i class="fa-solid fa-tags"></i>Promotion</button>
-<button type="button" data-page="chat"><i class="fa-regular fa-comment-dots"></i>Chat</button>
+<button type="button" data-page="chat">
+  <i class="fa-regular fa-comment-dots"></i>
+  Chat
+  <span id="trackingNotifBadge" class="tracking-notif-badge">0</span>
+</button>
 <button type="button" data-page="account"><i class="fa-regular fa-user"></i>Compte</button>
 </nav>
 <div class="to2" id="toast"></div>
@@ -4576,12 +4600,199 @@ function isPinned(cid){return loadPinned().indexOf(cid)>=0}
 function loadDeletedKey(){return 'vl_deleted_'+(currentUser?currentUser.uid:'anon')}
 function loadDeleted(){try{return JSON.parse(localStorage.getItem(loadDeletedKey())||'[]')}catch(e){return[]}}
 function saveDeleted(list){try{localStorage.setItem(loadDeletedKey(),JSON.stringify(list))}catch(e){}}
+  /* =========================================
+   NOTIFICATIONS DE SUIVI DES COMMANDES
+========================================= */
+
+var trackingNotifications = [];
+var trackingNotifUnsubscribe = null;
+
+function updateTrackingNotifBadge(){
+  var badge = document.getElementById('trackingNotifBadge');
+  if(!badge)return;
+
+  var unread = trackingNotifications.filter(function(n){
+    return n.read !== true;
+  }).length;
+
+  if(unread > 0){
+    badge.style.display = 'flex';
+    badge.textContent = unread > 99 ? '99+' : String(unread);
+  }else{
+    badge.style.display = 'none';
+    badge.textContent = '0';
+  }
+}
+
+function startTrackingNotifications(){
+  if(trackingNotifUnsubscribe){
+    trackingNotifUnsubscribe();
+    trackingNotifUnsubscribe = null;
+  }
+
+  trackingNotifications = [];
+  updateTrackingNotifBadge();
+
+  if(!currentUser || !currentUser.uid)return;
+
+  var notifQuery = query(
+    collection(db,'notifications'),
+    where('userId','==',currentUser.uid)
+  );
+
+  trackingNotifUnsubscribe = onSnapshot(
+    notifQuery,
+    function(snapshot){
+      trackingNotifications = snapshot.docs.map(function(d){
+        return Object.assign({id:d.id},d.data());
+      });
+
+      // Tri du plus récent au plus ancien
+      trackingNotifications.sort(function(a,b){
+        var ta = a.createdAt && a.createdAt.toMillis
+          ? a.createdAt.toMillis() : 0;
+        var tb = b.createdAt && b.createdAt.toMillis
+          ? b.createdAt.toMillis() : 0;
+        return tb - ta;
+      });
+
+      updateTrackingNotifBadge();
+
+      // Actualise la liste si le client est sur Chat
+      var active = document.querySelector('.page.on');
+      if(active && (
+        active.id === 'page-chat' ||
+        active.id === 'page-messages'
+      )){
+        renderTrackingNotifications();
+      }
+    },
+    function(error){
+      console.error(
+        'Erreur notifications de suivi :',
+        error
+      );
+    }
+  );
+}
+
+function stopTrackingNotifications(){
+  if(trackingNotifUnsubscribe){
+    trackingNotifUnsubscribe();
+    trackingNotifUnsubscribe = null;
+  }
+
+  trackingNotifications = [];
+  updateTrackingNotifBadge();
+}
+  function renderTrackingNotifications(){
+  var box = document.getElementById('trackingNotifSection');
+  if(!box)return;
+
+  if(!trackingNotifications.length){
+    box.innerHTML = '';
+    return;
+  }
+
+  var html = '';
+
+  html += '<div style="padding:14px 12px 6px">';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
+  html += '<b style="font-size:15px">Notifications de suivi</b>';
+  html += '<span style="font-size:11px;color:#888">';
+  html += trackingNotifications.length + ' notification(s)';
+  html += '</span></div>';
+
+  trackingNotifications.forEach(function(n){
+
+    var unread = n.read !== true;
+
+    var dateText = '';
+    if(n.createdAt && n.createdAt.toDate){
+      dateText = n.createdAt.toDate().toLocaleString('fr-FR',{
+        day:'2-digit',
+        month:'2-digit',
+        year:'numeric',
+        hour:'2-digit',
+        minute:'2-digit'
+      });
+    }
+
+    html += '<div data-tracking-notif="'+escapeHtml(n.id)+'"';
+html += ' style="background:'+(unread?'#F0FFF5':'#fff')+';';
+html += 'border:1px solid '+(unread?'#B7E4C7':'#eee')+';';
+html += 'border-radius:10px;padding:12px;margin-bottom:8px;';
+html += 'cursor:pointer">';
+    html += 'border:1px solid '+(unread?'#B7E4C7':'#eee')+';';
+    html += 'border-radius:10px;padding:12px;margin-bottom:8px">';
+
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+
+    if(unread){
+      html += '<span style="width:8px;height:8px;border-radius:50%;background:#E02E24;flex-shrink:0"></span>';
+    }
+
+    html += '<b style="font-size:13px;flex:1">';
+    html += escapeHtml(n.title || 'Mise à jour de commande');
+    html += '</b></div>';
+
+    html += '<div style="font-size:12px;color:#444;margin-top:7px">';
+    html += escapeHtml(n.message || '');
+    html += '</div>';
+
+    html += '<div style="display:flex;justify-content:space-between;gap:8px;margin-top:9px">';
+    html += '<span style="font-size:10px;color:#888">';
+    html += escapeHtml(dateText);
+    html += '</span>';
+
+    html += '<span style="font-size:10px;font-weight:700;color:#00A854">';
+    html += escapeHtml(n.status || '');
+    html += '</span></div>';
+
+    html += '</div>';
+  });
+
+  html += '</div>';
+
+  box.innerHTML = html;
+
+box.querySelectorAll('[data-tracking-notif]').forEach(function(card){
+  card.addEventListener('click', async function(){
+    var notifId = card.getAttribute('data-tracking-notif');
+    var notif = trackingNotifications.find(function(n){
+      return n.id === notifId;
+    });
+
+    if(!notif)return;
+
+    try{
+      if(notif.read !== true){
+        await updateDoc(doc(db,'notifications',notifId),{
+          read:true,
+          readAt:serverTimestamp()
+        });
+      }
+
+      if(!notif.orderId){
+        toast('Commande introuvable dans cette notification');
+        return;
+      }
+
+      showPage('order-detail',notif.orderId);
+
+    }catch(e){
+      toast('Erreur : '+e.message);
+    }
+  });
+});
+}
 async function renderMessagesList(){
 if(!currentUser){$('page-messages').innerHTML='<div class="em"><p>Connectez-vous</p></div>';$('page-chat').innerHTML='<div class="em"><p>Connectez-vous</p></div>';return}
 var target=document.querySelector('.page.on')||$('page-messages');
 var archived=loadArchived();var pinned=loadPinned();var deleted=loadDeleted();
 var cached=loadConvCache();
 var html='<div class="msg-head"><div class="ct-logo" style="width:36px;flex-shrink:0"><img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" style="height:26px;width:auto;max-width:90px;object-fit:contain;display:block"/></div><b>'+(msgShowArchived?'Archives':'Messages')+'</b><button type="button" id="msgMore">⋮</button></div>';
+html+='<div id="trackingNotifSection"></div>';
 html+='<div id="msgList">';
 if(cached.length){
   var visible=cached.filter(function(c){
@@ -4589,7 +4800,7 @@ if(cached.length){
     var arch=archived.indexOf(c.id)>=0;
     return msgShowArchived?arch:!arch;
   });
-  /* épinglés en haut */
+  /* épinglés en haut */ 
   visible.sort(function(a,b){
     var pa=isPinned(a.id)?1:0;var pb=isPinned(b.id)?1:0;
     if(pa!==pb)return pb-pa;
@@ -4602,6 +4813,7 @@ if(msgMode)html+='<div class="msg-select-bar"><div class="count">'+Object.keys(m
 /* === Reco produits en bas de la page Messages === */
 html+='<div class="cart-reco-bar" style="margin:18px 0 0 0;padding:10px 16px 4px"><span>Vous pourriez aussi aimer</span></div>';
 html+='<div class="pg" id="msgRecoGrid" style="padding-bottom:calc(var(--nav-h) + var(--safe-b) + 20px)"></div>';target.innerHTML=html;
+renderTrackingNotifications();
 bindConvRows(target);
 document.getElementById('msgMore').addEventListener('click',openMsgMenu);
 var cs=document.getElementById('msgCancelSel');if(cs)cs.addEventListener('click',function(){msgMode=null;msgSelected={};renderMessagesList()});
@@ -4926,6 +5138,12 @@ $('searchInput').addEventListener('input',function(e){clearTimeout(window._st);w
 onAuthStateChanged(auth,function(u){
   currentUser=u;
   updateCartBadge();
+
+  if(u){
+    startTrackingNotifications();
+  }else{
+    stopTrackingNotifications();
+  }
 
   // === Sauvegarde locale de la session à la connexion ===
   if(u){
