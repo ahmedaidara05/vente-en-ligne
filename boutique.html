@@ -333,54 +333,146 @@ function compressImage(file,maxW,q){
     r.readAsDataURL(file);
   });
 }
+
 async function uploadToR2(fileOrBlob,filename,mime){
-  try{
-    const fd=new FormData();
-    const f=(fileOrBlob instanceof File)?fileOrBlob:new File([fileOrBlob],filename||'img.jpg',{type:mime||'image/jpeg'});
-    fd.append('file',f,f.name);
-    const res=await fetch(MEDIA_WORKER+'/upload',{method:'POST',body:fd});
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    if(!data||!data.url)throw new Error('no url');
-    return data.url;
-  }catch(e){return null;}
-}
-async function uploadImg(dataUrl){
-  const res0=await fetch(dataUrl);
-  const blob=await res0.blob();
-  const file=new File([blob],'img_'+Date.now()+'.jpg',{type:'image/jpeg'});
-  const remote=await uploadToR2(file, file.name, 'image/jpeg');
-  if(!remote) throw new Error('Upload R2 échoué — réessaie');
-  return remote;
-}
-async function uploadBlobFile(file,nameHint){
-  if(file.type&&file.type.startsWith('image/')){
-    const dataUrl=await compressImage(file,480,0.45);
-    return {url:await uploadImg(dataUrl),key:''};
-  }
-  const remote=await uploadToR2(file,nameHint||file.name||'file.bin',file.type||'video/mp4');
-  if(remote)return{url:remote,key:''};
-  throw new Error('Upload échoué');
-}
-async function uploadVideoFile(file){
-  if(!file||!file.type.startsWith('video/'))throw new Error('Fichier video requis');
-  const dur=await new Promise((resolve,reject)=>{
-    const v=document.createElement('video');
-    v.preload='metadata';
-    v.onloadedmetadata=()=>{URL.revokeObjectURL(v.src);resolve(v.duration||0);};
-    v.onerror=()=>reject(new Error('Lecture video impossible'));
-    v.src=URL.createObjectURL(file);
+  const user = auth.currentUser;
+  if(!user) throw new Error('Connexion requise pour envoyer un fichier');
+
+  const token = await user.getIdToken();
+
+  const fd = new FormData();
+  const f = (fileOrBlob instanceof File)
+    ? fileOrBlob
+    : new File([fileOrBlob],filename||'img.jpg',{
+        type:mime||'image/jpeg'
+      });
+
+  fd.append('file',f,f.name);
+
+  const res = await fetch(MEDIA_WORKER+'/upload',{
+    method:'POST',
+    headers:{
+      Authorization:'Bearer '+token
+    },
+    body:fd
   });
-  if(dur>90)throw new Error('Max 1 min 30');
-  if(file.size>20*1024*1024)throw new Error('Max 20 Mo');
-  const up=await uploadBlobFile(file,file.name||'video.mp4');
-  return {url:up.url,key:up.key||'',size:file.size};
+
+  const data = await res.json().catch(()=>({}));
+
+  if(!res.ok){
+    throw new Error(data.error||'Erreur upload HTTP '+res.status);
+  }
+
+  if(!data.url){
+    throw new Error('URL du fichier introuvable');
+  }
+
+  return data;
 }
+
+async function uploadImg(dataUrl){
+  const res0 = await fetch(dataUrl);
+  const blob = await res0.blob();
+
+  const file = new File(
+    [blob],
+    'img_'+Date.now()+'.jpg',
+    {type:'image/jpeg'}
+  );
+
+  const remote = await uploadToR2(
+    file,
+    file.name,
+    'image/jpeg'
+  );
+
+  return remote.url;
+}
+
+async function uploadBlobFile(file,nameHint){
+  if(file.type && file.type.startsWith('image/')){
+    const dataUrl = await compressImage(file,480,0.45);
+    return {
+      url:await uploadImg(dataUrl),
+      key:''
+    };
+  }
+
+  const remote = await uploadToR2(
+    file,
+    nameHint||file.name||'file.bin',
+    file.type||'video/mp4'
+  );
+
+  return {
+    url:remote.url,
+    key:remote.key||''
+  };
+}
+
+async function uploadVideoFile(file){
+  if(!file||!file.type.startsWith('video/')){
+    throw new Error('Fichier video requis');
+  }
+
+  const dur = await new Promise((resolve,reject)=>{
+    const v = document.createElement('video');
+    v.preload = 'metadata';
+
+    v.onloadedmetadata = ()=>{
+      URL.revokeObjectURL(v.src);
+      resolve(v.duration||0);
+    };
+
+    v.onerror = ()=>{
+      reject(new Error('Lecture video impossible'));
+    };
+
+    v.src = URL.createObjectURL(file);
+  });
+
+  if(dur>90) throw new Error('Max 1 min 30');
+  if(file.size>20*1024*1024) throw new Error('Max 20 Mo');
+
+  const up = await uploadBlobFile(
+    file,
+    file.name||'video.mp4'
+  );
+
+  return {
+    url:up.url,
+    key:up.key||'',
+    size:file.size
+  };
+}
+
 async function deleteRemoteVideo(key){
-  if(!key)return;
-  try{await fetch(MEDIA_WORKER+'/file/'+encodeURIComponent(key),{method:'DELETE'});}catch(e){}
-  try{await fetch(MEDIA_WORKER+'/video/'+encodeURIComponent(key),{method:'DELETE'});}catch(e){}
+  if(!key) return;
+
+  const user = auth.currentUser;
+  if(!user) throw new Error('Connexion requise');
+
+  const token = await user.getIdToken();
+
+  const res = await fetch(
+    MEDIA_WORKER+'/video/'+encodeURIComponent(key),
+    {
+      method:'DELETE',
+      headers:{
+        Authorization:'Bearer '+token
+      }
+    }
+  );
+
+  const data = await res.json().catch(()=>({}));
+
+  if(!res.ok){
+    throw new Error(data.error||'Suppression vidéo impossible');
+  }
+
+  return true;
 }
+
 
 /* ================== PROFIL ================== */
 function renderProfil(){
@@ -449,8 +541,17 @@ async function renderProduits(){
     el.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openProdForm(b.getAttribute('data-edit'))));
     el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
       if(!confirm('Supprimer?'))return;
-      await deleteDoc(doc(db,'products',b.getAttribute('data-del')));
-      renderProduits();
+     
+const productId = b.getAttribute('data-del');
+const product = products.find(x=>x.id===productId);
+
+if(product && product.videoKey){
+  await deleteRemoteVideo(product.videoKey);
+}
+
+await deleteDoc(doc(db,'products',productId));
+renderProduits();
+
     }));
   }catch(e){$('prodList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}
 }
@@ -668,11 +769,27 @@ function openProdForm(id){
     $('vidStatus').textContent='';
     e.target.value='';
   });
-  $('btnRmVid').addEventListener('click',async()=>{
-    if(!editVideoUrl)return;
-    await deleteRemoteVideo(editVideoKey);
-    editVideoUrl='';editVideoKey='';paintVid();
-  });
+
+$('btnRmVid').addEventListener('click',async()=>{
+  if(!editVideoUrl) return;
+
+  if(!confirm('Supprimer cette vidéo ?')) return;
+
+  try{
+    if(editVideoKey){
+      await deleteRemoteVideo(editVideoKey);
+    }
+
+    editVideoUrl='';
+    editVideoKey='';
+    paintVid();
+
+    $('vidStatus').textContent='Vidéo supprimée';
+  }catch(err){
+    alert(err.message);
+  }
+});
+
 
   function renderVars(){
     const vl=$('varList');
