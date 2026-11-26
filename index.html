@@ -3032,7 +3032,57 @@ async function placeOrder(){
       });
       var needsPrepayment=payNowB>0;
       var initialStatus=needsPrepayment?'pending_payment':'pending';
-      var orderNumber='CMD-'+Date.now().toString(36).toUpperCase()+'-'+k;
+      // === Génère un numéro de commande unique : IDA-<PAYS><7 chiffres> ===
+function getCountryCode(c){
+  var k = String(c||'').toLowerCase();
+  if(k.indexOf('sénégal')>=0 || k.indexOf('senegal')>=0) return 'SEN';
+  if(k.indexOf('france')>=0) return 'FR';
+  if(k.indexOf('niger')>=0) return 'NG';
+  if(k.indexOf('mali')>=0) return 'ML';
+  if(k.indexOf('côte')>=0 || k.indexOf('cote')>=0) return 'CI';
+  return 'SEN';
+}
+async function generateOrderNumber(country){
+  var code = getCountryCode(country);
+  for(var i=0;i<20;i++){
+    var num = '';
+    for(var j=0;j<7;j++) num += Math.floor(Math.random()*10);
+    if(num[0]==='0') num = '1'+num.slice(1);
+    var full = 'IDA-'+code+num;
+    try{
+      var s = await getDocs(query(collection(db,'orders'),where('orderNumber','==',full)));
+      if(s.empty) return full;
+    }catch(e){ return full; }
+  }
+  return 'IDA-'+code+Date.now().toString().slice(-7);
+}
+var orderNumber = await generateOrderNumber(address);
+      // === Récupère nom + logo de la boutique (1 seule fois) ===
+var _boutiqueName = 'Boutique';
+var _boutiqueLogo = '';
+if(bid){
+  // 1) Priorité : info déjà présente dans les produits du panier
+  var _sample = items.find(function(it){
+    var p = products.find(function(x){return x.id===it.productId});
+    return p && p.boutiqueName;
+  });
+  if(_sample){
+    var _p = products.find(function(x){return x.id===_sample.productId});
+    _boutiqueName = _p.boutiqueName || 'Boutique';
+    _boutiqueLogo = _p.boutiqueLogo || '';
+  }
+  // 2) Sinon : lit directement depuis Firestore
+  if(!_boutiqueLogo || _boutiqueName === 'Boutique'){
+    try{
+      var _bd = await getDoc(doc(db,'boutiques',bid));
+      if(_bd.exists()){
+        var _b = _bd.data();
+        _boutiqueName = _b.name || _boutiqueName;
+        _boutiqueLogo = _b.logo || _b.logoUrl || _b.image || _boutiqueLogo || '';
+      }
+    }catch(e){}
+  }
+}
       var orderData={
         orderNumber:orderNumber,
         userId:currentUser?currentUser.uid:null,
@@ -3040,6 +3090,8 @@ async function placeOrder(){
         customer:{name:name,phone:phone,address:address,email:email},
         items:items,
         subtotal:subB,
+          boutiqueName:_boutiqueName,        // ← AJOUT
+  boutiqueLogo:_boutiqueLogo,        // ← AJOUT
         shipping:k===0?(settings.shippingFee||0):0,
         total:subB+(k===0?(settings.shippingFee||0):0),
         fromChina:originChine,
@@ -3120,62 +3172,122 @@ function paintOrdersList(orders){
     return;
   }
 
-  // === Regroupement par "batch" (même timestamp à la minute) ===
-  var groups=[];
-  orders.forEach(function(o){
-    var ts=o.createdAt&&o.createdAt.toMillis?Math.floor(o.createdAt.toMillis()/60000):0;
-    var g=groups.find(function(x){return x.ts===ts});
-    if(!g){g={ts:ts,orders:[]};groups.push(g)}
-    g.orders.push(o);
-  });
+  // === Helpers ===
+  function statusMeta(status){
+    var map={
+      pending:{label:'En attente',color:'#00A854'},
+      pending_payment:{label:'Paiement en attente',color:'#F59E0B'},
+      payment_declared:{label:'Paiement déclaré',color:'#3B82F6'},
+      paid:{label:'Payée',color:'#00A854'},
+      shipped:{label:'Expédiée',color:'#3B82F6'},
+      delivered:{label:'Livrée',color:'#00A854'},
+      cancelled:{label:'Annulée',color:'#E02E24'}
+    };
+    return map[status]||{label:status||'—',color:'#888'};
+  }
 
-  var groupColors=['#00A854','#F59E0B','#EF4444','#3B82F6','#8B5CF6','#EC4899'];
   var html='';
-  groups.forEach(function(g,gi){
-    var isGroup=g.orders.length>1;
-    var color=isGroup?groupColors[gi%groupColors.length]:'transparent';
-    g.orders.forEach(function(o){
-      var date=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
-      var statusClass='';
-      if(o.status==='paid')statusClass='paid';
-      else if(o.status==='shipped')statusClass='shipped';
-      else if(o.status==='cancelled')statusClass='cancelled';
-      var statusLabel=({pending:'En attente',pending_payment:'⏳ En attente de paiement',payment_declared:'✓ Payé (validation)',paid:'Payée',shipped:'Expédiée',cancelled:'Annulée'})[o.status]||o.status||'—';
-      var items=o.items||[];
-      var first=items[0]||{};
-      var img=first.image||'';
-      var nbItems=items.reduce(function(s,i){return s+(i.qty||1)},0);
-      var optStr=Object.keys(first.variants||{}).map(function(k){return k+': '+first.variants[k]}).join(', ');
+  orders.forEach(function(o){
+    var d=o.createdAt&&o.createdAt.toMillis?new Date(o.createdAt.toMillis()):null;
+    var dateStr=d?d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    var timeStr=d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
+    var dateTimeStr=dateStr+(timeStr?' · '+timeStr:'');
 
-      html+='<div class="ord-card" data-oid="'+o.id+'" style="position:relative;padding-left:'+(isGroup?'18px':'12px')+'">'
-        +(isGroup?'<div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:'+color+';border-radius:12px 0 0 12px"></div>':'')
-        +'<div style="display:flex;gap:10px">'
-          +(img?'<img src="'+escapeHtml(img)+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;background:#eee;flex-shrink:0" onerror="this.style.background=\'#eee\'"/>':'')
-          +'<div style="flex:1;min-width:0">'
-            +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">'
-              +'<div class="ord-num">'+(o.orderNumber||'—')+'</div>'
-              +((o.status==='pending_payment')?' <span class="pay-status-badge pending">⏳ À payer</span>':(o.status==='payment_declared')?' <span class="pay-status-badge declared">✓ Payé (en attente validation)</span>':(o.status==='paid')?' <span class="pay-status-badge paid">✓ Payé</span>':'')
-            +'</div>'
-            +'<div style="font-size:13px;font-weight:600">'+escapeHtml(first.name||'—')+'</div>'
-            +(optStr?'<div style="font-size:11px;color:#888">'+escapeHtml(optStr)+'</div>':'')
-            +(nbItems>1?'<div style="font-size:11px;color:#666;margin-top:2px">+ '+(nbItems-1)+' autre(s) article(s)</div>':'')
-            +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">'
-              +'<div class="ord-date">'+date+'</div>'
-              +'<div class="ord-total">'+formatPrice(o.total||0)+' F</div>'
-            +'</div>'
-          +'</div>'
+    var st=statusMeta(o.status);
+    var canCancel=(['shipped','delivered','cancelled'].indexOf(o.status)<0);
+
+    var items=o.items||[];
+    var first=items[0]||{};
+    var nbItems=items.reduce(function(s,i){return s+(i.qty||1)},0);
+    var optStr=Object.keys(first.variants||{}).map(function(k){return k+': '+first.variants[k]}).join(', ');
+
+    // Boutique
+    var bname=o.boutiqueName||'Boutique';
+    var blogo=o.boutiqueLogo||'';
+    var initial=bname.charAt(0).toUpperCase();
+
+    // Promo ?
+    var isPromo=(first.promoPrice&&first.price&&first.promoPrice<first.price);
+
+    html+='<div class="ord-card" data-oid="'+o.id+'" style="padding:12px">'
+
+      // Ligne 1 : numéro + statut bordé
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+        +'<div class="ord-num" style="font-size:13px;font-weight:800;color:#1a1a1a">'+escapeHtml(o.orderNumber||o.id)+'</div>'
+        +'<span style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:999px;background:#fff;color:'+st.color+';border:1.5px solid '+st.color+';white-space:nowrap">'+escapeHtml(st.label)+'</span>'
+      +'</div>'
+
+      // Ligne 2 : date + heure
+      +'<div style="font-size:11px;color:#999;margin-top:4px">'+escapeHtml(dateTimeStr)+'</div>'
+
+      // Ligne 3 : produit (image + nom + variantes)
+      +'<div style="display:flex;gap:10px;margin-top:10px">'
+        +(first.image?'<img src="'+escapeHtml(first.image)+'" style="width:56px;height:56px;object-fit:cover;border-radius:8px;background:#eee;flex-shrink:0" onerror="this.style.background=\'#eee\'"/>':'')
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(first.name||'—')+'</div>'
+          +(optStr?'<div style="font-size:10px;color:#888;margin-top:2px">'+escapeHtml(optStr)+'</div>':'')
+          +(nbItems>1?'<div style="font-size:10px;color:#666;margin-top:2px">+ '+(nbItems-1)+' autre(s) article(s)</div>':'')
         +'</div>'
-      +'</div>';
-    });
+      +'</div>'
+
+      // Ligne 4 : boutique (gauche) + promo + prix (droite)
+        // Ligne 4 : boutique (logo + nom réel) + promo + prix
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px">'
+        +'<div style="display:flex;align-items:center;gap:6px;min-width:0">'
+          +(blogo
+            ?'<img src="'+escapeHtml(blogo)+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;background:#eee;flex-shrink:0" onerror="this.style.display=\'none\'"/>'
+            :'<div style="width:22px;height:22px;border-radius:50%;background:#E8FFF0;color:#00A854;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0">'+escapeHtml(initial)+'</div>')
+          +'<span style="font-size:11px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(bname)+'</span>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:6px">'
+          +(isPromo?'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;background:#E02E24;color:#fff">PROMO</span>':'')
+          +'<span style="font-size:15px;font-weight:800;color:#E02E24">'+formatPrice(o.total||0)+' F</span>'
+        +'</div>'
+      +'</div>'
+
+      // Ligne 5 : 3 boutons
+          // Ligne 5 : 3 boutons (petits, rectangles, à droite)
+      +'<div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end">'
+        +(canCancel?'<button type="button" data-cancel-order="'+o.id+'" style="height:28px;padding:0 10px;border-radius:4px;border:none;background:#FDECEC;color:#E02E24;font-weight:700;font-size:11px;white-space:nowrap">Annuler</button>':'')
+        +'<button type="button" data-status-order="'+o.id+'" style="height:28px;padding:0 10px;border-radius:4px;border:none;background:#E8FFF0;color:#00A854;font-weight:700;font-size:11px;white-space:nowrap">Statut</button>'
+        +(o.status==='delivered'?'<button type="button" data-review-order="'+o.id+'" style="height:28px;padding:0 10px;border-radius:4px;border:none;background:#FEF6E0;color:#C9A24B;font-weight:700;font-size:11px;white-space:nowrap">Avis</button>':'')
+      +'</div>'
+
+    +'</div>';
   });
   box.innerHTML=html;
+
+  // === Listeners ===
   box.querySelectorAll('[data-oid]').forEach(function(el){
-    el.addEventListener('click',function(){showPage('order-detail',el.getAttribute('data-oid'))});
+    el.addEventListener('click',function(e){
+      // Ne pas ouvrir le détail si on a cliqué sur un bouton
+      if(e.target.closest('button'))return;
+      showPage('order-detail',el.getAttribute('data-oid'));
+    });
+  });
+  box.querySelectorAll('[data-cancel-order]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      openCancelOrderPage(b.getAttribute('data-cancel-order'));
+    });
+  });
+  box.querySelectorAll('[data-status-order]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      showPage('order-detail',b.getAttribute('data-status-order'));
+    });
+  });
+  box.querySelectorAll('[data-review-order]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      openReviewPage(b.getAttribute('data-review-order'));
+    });
   });
 
   paintOrdRecos();
 }
-
+  
+  
 /* === Grille reco en bas de Mes commandes === */
 function paintOrdRecos(){
   var old=document.getElementById('ordRecoWrap');
@@ -3319,6 +3431,104 @@ function trunc27(s){
   if (s.length <= 27) return s;
   return s.slice(0, 27) + '…';
 }
+  
+  function openCancelOrderPage(orderId){
+  var page = document.getElementById('page-cancel-order');
+  if(!page){
+    page = document.createElement('div');
+    page.id = 'page-cancel-order';
+    page.className = 'page';
+    document.body.appendChild(page);
+  }
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});
+  page.classList.add('on');
+
+  page.innerHTML = '<div style="max-width:520px;margin:0 auto;padding:16px">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
+      +'<button type="button" id="cancelBackBtn" style="width:36px;height:36px;border-radius:50%;background:#f5f5f5;display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-arrow-left"></i></button>'
+      +'<b style="font-size:16px">Annuler la commande</b>'
+    +'</div>'
+    +'<p style="font-size:13px;color:#666;margin-bottom:12px">Expliquez pourquoi vous souhaitez annuler cette commande. Notre équipe examinera votre demande.</p>'
+    +'<textarea id="cancelReason" rows="5" placeholder="Raison de l\'annulation…" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:vertical"></textarea>'
+    +'<button type="button" id="cancelSubmitBtn" style="width:100%;height:46px;border-radius:23px;background:#E02E24;color:#fff;font-weight:800;margin-top:16px;border:none">Confirmer l\'annulation</button>'
+  +'</div>';
+
+  document.getElementById('cancelBackBtn').addEventListener('click', function(){
+    showPage('orders');
+  });
+  document.getElementById('cancelSubmitBtn').addEventListener('click', async function(){
+    var reason = document.getElementById('cancelReason').value.trim();
+    if(!reason){ toast('Raison requise'); return; }
+    try{
+      await updateDoc(doc(db,'orders',orderId), {
+        status:'cancelled',
+        cancelReason: reason,
+        cancelledAt: serverTimestamp()
+      });
+      toast('Commande annulée');
+      showPage('orders');
+    }catch(e){ toast(e.message); }
+  });
+}
+  
+  function openReviewPage(orderId){
+  var page = document.getElementById('page-review');
+  if(!page){
+    page = document.createElement('div');
+    page.id = 'page-review';
+    page.className = 'page';
+    document.body.appendChild(page);
+  }
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});
+  page.classList.add('on');
+
+  page.innerHTML = '<div style="max-width:520px;margin:0 auto;padding:16px">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
+      +'<button type="button" id="reviewBackBtn" style="width:36px;height:36px;border-radius:50%;background:#f5f5f5;display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-arrow-left"></i></button>'
+      +'<b style="font-size:16px">Donner mon avis</b>'
+    +'</div>'
+    +'<div style="display:flex;gap:6px;justify-content:center;margin:20px 0" id="reviewStars">'
+      +[1,2,3,4,5].map(function(n){return '<button type="button" data-star="'+n+'" style="background:none;border:none;font-size:32px;color:#ddd;cursor:pointer">★</button>'}).join('')
+    +'</div>'
+    +'<textarea id="reviewText" rows="5" placeholder="Votre avis sur ce produit…" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:vertical"></textarea>'
+    +'<button type="button" id="reviewSubmitBtn" style="width:100%;height:46px;border-radius:23px;background:#00A854;color:#fff;font-weight:800;margin-top:16px;border:none">Envoyer mon avis</button>'
+  +'</div>';
+
+  var selectedStars = 0;
+  page.querySelectorAll('[data-star]').forEach(function(b){
+    b.addEventListener('click', function(){
+      selectedStars = parseInt(b.getAttribute('data-star'));
+      page.querySelectorAll('[data-star]').forEach(function(x){
+        var n = parseInt(x.getAttribute('data-star'));
+        x.style.color = n <= selectedStars ? '#FCD34D' : '#ddd';
+      });
+    });
+  });
+
+  document.getElementById('reviewBackBtn').addEventListener('click', function(){
+    showPage('orders');
+  });
+  document.getElementById('reviewSubmitBtn').addEventListener('click', async function(){
+    var text = document.getElementById('reviewText').value.trim();
+    if(!selectedStars){ toast('Choisissez une note'); return; }
+    if(!text){ toast('Écrivez votre avis'); return; }
+    try{
+      var orderDoc = await getDoc(doc(db,'orders',orderId));
+      var o = orderDoc.data();
+      var pid = (o.items&&o.items[0]&&o.items[0].productId) || '';
+      await addDoc(collection(db,'reviews'), {
+        orderId: orderId,
+        productId: pid,
+        userId: currentUser ? currentUser.uid : null,
+        stars: selectedStars,
+        text: text,
+        createdAt: serverTimestamp()
+      });
+      toast('Merci pour votre avis !');
+      showPage('orders');
+    }catch(e){ toast(e.message); }
+  });
+}
 function renderAccount(){
   if(!currentUser){showPage('auth');return}
   var email=currentUser.email||'Compte IDA';
@@ -3433,11 +3643,11 @@ function renderAccount(){
   var accConf=document.getElementById('accConfBtn');
   if(accConf)accConf.addEventListener('click',openPrivacyModal);
 
-  // ============ CARTE PVC : handlers ============
+  // ============ CARTE PVC : handlers ============  
   (function(){
     var editBtn=document.getElementById('idaCardEditBtn');
     var dlBtn=document.getElementById('idaCardDlBtn');
-    if(!editBtn||!dlBtn)return;
+    if(!editBtn||!dlBtn)return; 
 
     // --- Modale d'édition ---
     editBtn.addEventListener('click',function(){
@@ -4414,16 +4624,52 @@ $('searchInput').addEventListener('input',function(e){clearTimeout(window._st);w
 onAuthStateChanged(auth,function(u){
   currentUser=u;
   updateCartBadge();
-  // Sauvegarde locale des infos utilisateur (nom/email)
+
+  // === Sauvegarde locale de la session à la connexion ===
   if(u){
+    try{
+      localStorage.setItem('vl_user',JSON.stringify({
+        uid:u.uid,
+        email:u.email||'',
+        displayName:u.displayName||'',
+        photoURL:u.photoURL||'',
+        savedAt:Date.now()
+      }));
+    }catch(e){}
     try{
       var p=loadLocalProfile();
       if(!p.email)p.email=u.email;
       if(!p.uid)p.uid=u.uid;
       localStorage.setItem('vl_profile',JSON.stringify(p));
     }catch(e){}
+  }else{
+    // Déconnexion → nettoie la session locale
+    try{localStorage.removeItem('vl_user')}catch(e){}
   }
 });
+
+/* === Restauration immédiate de l'UI depuis le cache (avant Firebase) === */
+(function restoreFromCache(){
+  try{
+    var cached=JSON.parse(localStorage.getItem('vl_user')||'null');
+    if(!cached)return;
+    // Hydrate currentUser immédiatement pour que les pages s'affichent instantanément
+    if(!currentUser){
+      currentUser={uid:cached.uid,email:cached.email,displayName:cached.displayName,photoURL:cached.photoURL};
+    }
+    // Si l'utilisateur est sur une page qui nécessite une connexion au chargement,
+    // on re-render après le DOMContentLoaded
+    setTimeout(function(){
+      var activePage=document.querySelector('.page.on');
+      if(!activePage)return;
+      var id=activePage.id.replace('page-','');
+      if(id==='account'&&typeof renderAccount==='function')renderAccount();
+      if(id==='orders'&&typeof renderOrders==='function')renderOrders();
+      if(id==='messages'&&typeof renderMessagesList==='function')renderMessagesList();
+      if(id==='chat'&&typeof renderMessagesList==='function')renderMessagesList();
+    },50);
+  }catch(e){}
+})();
 async function init(){
   updateCartBadge();
   // Attend 1 frame que Firebase restaure la session
