@@ -119,7 +119,7 @@ button{cursor:pointer}
 .ord-head{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid #eee}
 .ord-head button{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#333}
 .ord-head b{font-size:16px}
-.ord-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin:10px;cursor:pointer}
+.ord-card{background:#fff;border:1px solid #eee;border-radius:10px;padding:8px;margin:6px;cursor:pointer}
 .ord-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
 .ord-num{font-size:13px;font-weight:800;color:#1a1a1a}
 .ord-date{font-size:11px;color:#999}
@@ -2987,11 +2987,22 @@ if(placeBtn){
   }
 }
 async function placeOrder(){
-  var name=$('chkName').value.trim();
-  var phone=$('chkPhone').value.trim();
-  var email=$('chkEmail').value.trim();
   var prof=loadLocalProfile();
-  var address=(prof.address||'').trim();
+
+  // Récupération depuis le profil client
+  var name=String(prof.name||'').trim();
+  var phone=String(prof.phone||'').trim();
+  var email=String((currentUser&&currentUser.email)||prof.email||'').trim();
+  var address=String(prof.address||'').trim();
+
+  if(!name){toast('Renseignez votre nom dans votre profil');return}
+  if(!phone){toast('Renseignez votre téléphone dans votre profil');return}
+  if(!email){toast('Email du compte introuvable');return}
+  if(!address){toast('Adresse de livraison requise');return}
+  if(!cart.length){toast('Panier vide');return}
+
+  var btn=$('btnPlace');
+  if(btn){btn.disabled=true;btn.textContent='Envoi en cours…'}
 
   if(!name){toast('Nom requis');return}
   if(!phone){toast('Téléphone requis');return}
@@ -3074,7 +3085,23 @@ async function generateOrderNumber(country){
   }
   return 'IDA-'+code+Date.now().toString().slice(-7);
 }
-var orderNumber = await generateOrderNumber(address);
+// Récupère le pays réel du destinataire
+var _profileForOrder = loadLocalProfile();
+var _countryForOrder = String(_profileForOrder.country || '').trim();
+
+// Si le pays n'est pas enregistré séparément, on le recherche dans l'adresse
+if (!_countryForOrder) {
+  var _countryMatch = String(address || '').match(
+    /Sénégal|Senegal|France|Niger|Mali|Côte d'Ivoire|Cote d'Ivoire/i
+  );
+
+  _countryForOrder = _countryMatch
+    ? _countryMatch[0]
+    : 'Sénégal';
+}
+
+// Génère le numéro avec le code du pays de destination
+var orderNumber = await generateOrderNumber(_countryForOrder);
       // === Récupère nom + logo de la boutique (1 seule fois) ===
 var _boutiqueName = 'Boutique';
 var _boutiqueLogo = '';
@@ -3276,7 +3303,7 @@ function paintOrdersList(orders){
     // Promo ?
     var isPromo=(first.promoPrice&&first.price&&first.promoPrice<first.price);
 
-    html+='<div class="ord-card" data-oid="'+o.id+'" style="padding:12px">'
+    html+='<div class="ord-card" data-oid="'+o.id+'" style="padding:8px">'
 
       // Ligne 1 : numéro + statut bordé
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
@@ -3288,7 +3315,7 @@ function paintOrdersList(orders){
       
 
       // Ligne 3 : produit (image + nom + variantes)
-      +'<div style="display:flex;gap:10px;margin-top:10px">'
+      +'<div style="display:flex;gap:10px;margin-top:5px">'
         +(first.image?'<img src="'+escapeHtml(first.image)+'" style="width:56px;height:56px;object-fit:cover;border-radius:8px;background:#eee;flex-shrink:0" onerror="this.style.background=\'#eee\'"/>':'')
         +'<div style="flex:1;min-width:0">'
           +'<div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(first.name||'—')+'</div>'
@@ -3299,7 +3326,7 @@ function paintOrdersList(orders){
 
       // Ligne 4 : boutique (gauche) + promo + prix (droite)
         // Ligne 4 : boutique (logo + nom réel) + promo + prix
-   +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px">'
+   +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px">'
   // Conteneur gauche : empile la ligne boutique et la date
   +'<div style="display:flex;flex-direction:column;min-width:0">'
     // Ligne 1 : Logo + Nom de la boutique
@@ -3322,7 +3349,7 @@ function paintOrdersList(orders){
 
       // Ligne 5 : 3 boutons
           // Ligne 5 : 3 boutons (petits, rectangles, à droite)
-      +'<div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end">'
+      +'<div style="display:flex;gap:6px;margin-top:4px;justify-content:flex-end">'
         +(canCancel?'<button type="button" data-cancel-order="'+o.id+'" style="height:28px;padding:0 10px;border-radius:4px;border:none;background:#FDECEC;color:#E02E24;font-weight:700;font-size:11px;white-space:nowrap">Annuler</button>':'')
         +'<button type="button" data-status-order="'+o.id+'" style="height:28px;padding:0 10px;border-radius:4px;border:none;background:#E8FFF0;color:#00A854;font-weight:700;font-size:11px;white-space:nowrap">Statut</button>'
         +(o.status==='delivered'?'<button type="button" data-review-order="'+o.id+'" style="height:28px;padding:0 10px;border-radius:4px;border:none;background:#FEF6E0;color:#C9A24B;font-weight:700;font-size:11px;white-space:nowrap">Avis</button>':'')
