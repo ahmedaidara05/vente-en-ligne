@@ -3214,192 +3214,119 @@ if(placeBtn){
     });
   }
 }
-async function placeOrder(){
-  var prof=loadLocalProfile();
 
-  // Récupération depuis le profil client
-  var name=String(prof.name||'').trim();
-  var phone=String(prof.phone||'').trim();
-  var email=String((currentUser&&currentUser.email)||prof.email||'').trim();
-  var address=String(prof.address||'').trim();
+async function placeOrder(){
+  var prof = loadLocalProfile();
+
+  var name = String(prof.name || '').trim();
+  var phone = String(prof.phone || '').trim();
+  var email = String((currentUser && currentUser.email) || prof.email || '').trim();
+  var address = String(prof.address || '').trim();
 
   if(!name){toast('Renseignez votre nom dans votre profil');return}
   if(!phone){toast('Renseignez votre téléphone dans votre profil');return}
   if(!email){toast('Email du compte introuvable');return}
   if(!address){toast('Adresse de livraison requise');return}
   if(!cart.length){toast('Panier vide');return}
+  if(!currentUser){toast('Connectez-vous avant de commander');return}
 
-  var btn=$('btnPlace');
-  if(btn){btn.disabled=true;btn.textContent='Envoi en cours…'}
+  var btn = $('btnPlace');
 
-  if(!name){toast('Nom requis');return}
-  if(!phone){toast('Téléphone requis');return}
-  if(!email){toast('Email requis');return}
-  if(!address){toast('Adresse de livraison requise');return}
-  if(!cart.length){toast('Panier vide');return}
-
-  var btn=$('btnPlace');
-  if(btn){btn.disabled=true;btn.textContent='Envoi en cours…'}
+  if(btn){
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours…';
+  }
 
   try{
     saveLocalProfile({name:name,phone:phone});
 
-    var byBout={};
-    cart.forEach(function(it){
-      var bid=it.boutiqueId||null;
-      if(!bid){var pr=products.find(function(x){return x.id===it.productId});if(pr)bid=pr.boutiqueId||null}
-      var key=bid||'_none';
-      if(!byBout[key])byBout[key]=[];
-      byBout[key].push(it);
+    var transportChoices = {};
+
+    try{
+      transportChoices = JSON.parse(
+        localStorage.getItem('vl_transport_choice') || '{}'
+      );
+    }catch(e){}
+
+    var submittedItems = cart.map(function(it){
+      return {
+        productId: it.productId,
+        qty: Number(it.qty || 1),
+        variants: it.variants || {},
+        image: it.image || '',
+        deliveryAddress: it.deliveryAddress || '',
+        transportChoice: transportChoices[it.productId] || 'avion'
+      };
     });
 
-   var keys=Object.keys(byBout);
+    var pickupPoints = window._selectedPickup || {};
 
-// Vérifier que chaque produit est bien rattaché à une boutique
-if(byBout['_none'] && byBout['_none'].length){
-  throw new Error(
-    'Commande impossible : un ou plusieurs produits ne sont rattachés à aucune boutique. Vérifie leur boutiqueId.'
-  );
-}
+    var idToken = await currentUser.getIdToken(true);
 
-for(var k=0;k<keys.length;k++){
-      var key=keys[k];var items=byBout[key];
-      var subB=items.reduce(function(s,i){return s+i.price*i.qty},0);
-      var bid=key==='_none'?null:key;
-       var originChine=cart.some(function(it){
-    var p=products.find(function(x){return x.id===it.productId});
-    if(!p)return false;
-    return p.fromChina===true;
-  });
-  // Fallback : si products vide, on regarde dans le panier
-  if(!originChine&&!products.length){
-    originChine=cart.some(function(it){return it.fromChina===true});
-  }
-      var hasPickup=items.some(function(it){
-        var p=products.find(function(x){return x.id===it.productId});
-        return p&&p.pickupFree===true;
-      });
-            var payNowB=0,payLaterB=0,payModes={},mobileMoneyB='';
-      items.forEach(function(it){
-        var pm=computePaymentForItem(it);
-        payNowB+=pm.payNow;
-        payLaterB+=pm.payLater;
-        payModes[pm.mode]=true;
-        if(pm.mobileMoney&&!mobileMoneyB)mobileMoneyB=pm.mobileMoney;
-      });
-      var needsPrepayment=payNowB>0;
-      var initialStatus=needsPrepayment?'pending_payment':'pending';
-      // === Génère un numéro de commande unique : IDA-<PAYS><7 chiffres> ===
-function getCountryCode(c){
-  var k = String(c||'').toLowerCase();
-  if(k.indexOf('sénégal')>=0 || k.indexOf('senegal')>=0) return 'SEN';
-  if(k.indexOf('france')>=0) return 'FR';
-  if(k.indexOf('niger')>=0) return 'NG';
-  if(k.indexOf('mali')>=0) return 'ML';
-  if(k.indexOf('côte')>=0 || k.indexOf('cote')>=0) return 'CI';
-  return 'SEN';
-}
-async function generateOrderNumber(country){
-  var code = getCountryCode(country);
-  for(var i=0;i<20;i++){
-    var num = '';
-    for(var j=0;j<7;j++) num += Math.floor(Math.random()*10);
-    if(num[0]==='0') num = '1'+num.slice(1);
-    var full = 'IDA-'+code+num;
-    try{
-      var s = await getDocs(query(collection(db,'orders'),where('orderNumber','==',full)));
-      if(s.empty) return full;
-    }catch(e){ return full; }
-  }
-  return 'IDA-'+code+Date.now().toString().slice(-7);
-}
-// Récupère le pays réel du destinataire
-var _profileForOrder = loadLocalProfile();
-var _countryForOrder = String(_profileForOrder.country || '').trim();
-
-// Si le pays n'est pas enregistré séparément, on le recherche dans l'adresse
-if (!_countryForOrder) {
-  var _countryMatch = String(address || '').match(
-    /Sénégal|Senegal|France|Niger|Mali|Côte d'Ivoire|Cote d'Ivoire/i
-  );
-
-  _countryForOrder = _countryMatch
-    ? _countryMatch[0]
-    : 'Sénégal';
-}
-
-// Génère le numéro avec le code du pays de destination
-var orderNumber = await generateOrderNumber(_countryForOrder);
-      // === Récupère nom + logo de la boutique (1 seule fois) ===
-var _boutiqueName = 'Boutique';
-var _boutiqueLogo = '';
-if(bid){
-  // 1) Priorité : info déjà présente dans les produits du panier
-  var _sample = items.find(function(it){
-    var p = products.find(function(x){return x.id===it.productId});
-    return p && p.boutiqueName;
-  });
-  if(_sample){
-    var _p = products.find(function(x){return x.id===_sample.productId});
-    _boutiqueName = _p.boutiqueName || 'Boutique';
-    _boutiqueLogo = _p.boutiqueLogo || '';
-  }
-  // 2) Sinon : lit directement depuis Firestore
-  if(!_boutiqueLogo || _boutiqueName === 'Boutique'){
-    try{
-      var _bd = await getDoc(doc(db,'boutiques',bid));
-      if(_bd.exists()){
-        var _b = _bd.data();
-        _boutiqueName = _b.name || _boutiqueName;
-        _boutiqueLogo = _b.logo || _b.logoUrl || _b.image || _boutiqueLogo || '';
+    var response = await fetch(
+      'https://soft-surf-b4e9.ahmedsaidaidara5.workers.dev/orders/create',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + idToken
+        },
+        body: JSON.stringify({
+          customer: {
+            name: name,
+            phone: phone,
+            address: address
+          },
+          country: prof.country || 'Sénégal',
+          items: submittedItems,
+          pickupPoints: pickupPoints
+        })
       }
+    );
+
+    var result = await response.json();
+
+    if(!response.ok || !result.ok){
+      throw new Error(result.error || 'Impossible de créer la commande');
+    }
+
+    if(!Array.isArray(result.orders) || !result.orders.length){
+      throw new Error('Aucune commande retournée par le serveur');
+    }
+
+    try{
+      var cachedList = loadOrdersCache();
+
+      result.orders.forEach(function(order){
+        cachedList.unshift(order);
+      });
+
+      saveOrdersCache(cachedList);
     }catch(e){}
-  }
-}
-      var orderData={
-        orderNumber:orderNumber,
-        userId:currentUser?currentUser.uid:null,
-        boutiqueId:bid,
-        customer:{name:name,phone:phone,address:address,email:email},
-        items:items,
-        subtotal:subB,
-          boutiqueName:_boutiqueName,        // ← AJOUT
-  boutiqueLogo:_boutiqueLogo,        // ← AJOUT
-        shipping:k===0?(settings.shippingFee||0):0,
-        total:subB+(k===0?(settings.shippingFee||0):0),
-        fromChina:originChine,
-        pickupAvailable:hasPickup,
-        paymentMode:Object.keys(payModes).join(','),
-        payNow:payNowB,
-        payLater:payLaterB,
-        mobileMoney:mobileMoneyB,
-        pickupPoint:(window._selectedPickup&&window._selectedPickup[bid||'_none'])?window._selectedPickup[bid||'_none']:null,
-        status:initialStatus
-      };
-      var newRef=await addDoc(collection(db,'orders'),Object.assign({},orderData,{createdAt:serverTimestamp()}));
 
-      // === Ajout au cache local pour affichage instaané ===
-      try{
-        var cachedOrder=Object.assign({},orderData,{
-          id:newRef.id,
-          createdAt:{toMillis:function(){return Date.now()}}
-        });
-        var cachedList=loadOrdersCache();
-        cachedList.unshift(cachedOrder);
-        saveOrdersCache(cachedList);
-      }catch(e){}
-    } 
+    cart = [];
+    saveCart();
 
-    cart=[];saveCart();
-        window._selectedPickup=null;
-    try{localStorage.removeItem('vl_selected_pickup');}catch(e){}
+    window._selectedPickup = null;
+
+    try{
+      localStorage.removeItem('vl_selected_pickup');
+    }catch(e){}
+
     toast('Commande confirmée !');
     showPage('orders');
+
   }catch(e){
-    toast(e.message);
-    if(btn){btn.disabled=false;btn.textContent='Confirmer la commande'}
+    console.error('Erreur commande:', e);
+    toast(e.message || 'Erreur pendant la commande');
+
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = 'Confirmer la commande';
+    }
   }
 }
+
   
   /* === Commandes passées (Lot 2B) === */
   var ordersLiveUnsubscribe = null;
@@ -3419,7 +3346,7 @@ if(cachedOrders.length){
   // ========== 2. REFRESH FIRESTORE EN ARRIÈRE-PLAN ==========
 
 // ========== 2. ÉCOUTE EN TEMPS RÉEL DES COMMANDES ==========
-
+ 
 // Évite plusieurs écoutes simultanées
 if (ordersLiveUnsubscribe) {
   ordersLiveUnsubscribe();
