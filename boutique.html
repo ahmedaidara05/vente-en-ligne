@@ -6,105 +6,573 @@
 <meta name="theme-color" content="#00A854"/>
 <title>IDUS Boutique</title>
 <style>
-:root{--g:#00A854;--bg:#0f0f1a;--card:#1a1a2e;--text:#eee;--muted:#888;--danger:#ef4444;--border:#333}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.wrap{max-width:520px;margin:0 auto;padding:16px}
-.logo{text-align:center;font-size:28px;font-weight:800;color:var(--g);margin:24px 0 8px}
-.sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:24px}
-.card{background:var(--card);padding:16px;border-radius:12px;margin-bottom:12px}
-.card h3{color:var(--g);margin-bottom:12px;font-size:15px}
-label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-input,select,textarea{width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:#111;color:#fff;font-size:14px}
-button.p{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;margin-top:4px}
-button.s{padding:8px 12px;background:#222;color:#fff;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;margin:2px}
-button.d{color:var(--danger);border-color:var(--danger)}
-.nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.nav button{flex:1;min-width:70px;padding:10px 6px;background:var(--card);color:#fff;border:none;border-radius:8px;font-size:11px;cursor:pointer}
-.nav button.on{background:var(--g)}
-.item{padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.muted{color:var(--muted);font-size:12px}
-.err{color:var(--danger);font-size:13px;margin:8px 0}
-.ok{color:var(--g);font-size:13px}
-.thumb{width:48px;height:48px;object-fit:cover;border-radius:6px;background:#222}
-.filebtn{display:inline-block;padding:10px 14px;background:var(--g);color:#fff;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px}
-.filebtn input{display:none}
-.hidden{display:none!important}
-.msg-bubble{padding:8px 12px;border-radius:12px;margin:6px 0;max-width:85%;font-size:13px;word-wrap:break-word}
-.msg-me{background:var(--g);margin-left:auto;color:#fff}
-.msg-them{background:#333;color:#eee}
-#chatBox{max-height:50vh;overflow-y:auto;padding:8px}
-.img-grid{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
-.img-grid .box{width:72px;height:72px;border-radius:8px;overflow:hidden;position:relative;background:#222;border:1px solid var(--border)}
-.img-grid .box img{width:100%;height:100%;object-fit:cover}
-.img-grid .box .rm{position:absolute;top:2px;right:2px;background:#000a;color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer}
 
-/* === CHAT PLEIN ÉCRAN (page séparée) === */
+/* ==========================================================
+   IDUS BOUTIQUE — NOUVELLE IDENTITÉ VISUELLE
+   Interface vendeur professionnelle, claire et responsive.
+   Le HTML fonctionnel et le JavaScript métier sont conservés.
+   ========================================================== */
+:root{
+  color-scheme:light;
+  --brand:#087f5b;
+  --brand-dark:#066447;
+  --brand-soft:#e8f5ef;
+  --brand-pale:#f2faf6;
+  --ink:#17231f;
+  --muted:#718078;
+  --surface:#ffffff;
+  --surface-2:#f7f9f8;
+  --page:#f2f5f3;
+  --line:#e3eae6;
+  --danger:#d94848;
+  --warning:#a66a13;
+  --shadow:0 8px 28px rgba(20,48,35,.055);
+  --shadow-lg:0 18px 50px rgba(20,48,35,.10);
+  --radius:16px;
+  --nav-h:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{min-height:100%;scroll-behavior:smooth}
+body{
+  min-height:100vh;
+  background:var(--page);
+  color:var(--ink);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:14px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid rgba(8,127,91,.18);
+  outline-offset:2px;
+}
+#app.wrap{
+  width:100%;
+  max-width:100%;
+  min-height:100vh;
+  margin:0 auto;
+  padding:28px clamp(18px,3vw,52px) 48px;
+}
+.logo{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  color:var(--brand);
+  font-size:25px;
+  font-weight:850;
+  letter-spacing:-.8px;
+  margin:2px 0 2px;
+}
+.logo:before{
+  content:"ID";
+  display:grid;
+  place-items:center;
+  width:38px;height:38px;
+  border-radius:12px;
+  color:#fff;
+  background:linear-gradient(145deg,#0b9a6d,#066447);
+  font-size:14px;
+  letter-spacing:-.5px;
+  box-shadow:0 6px 14px rgba(8,127,91,.2);
+}
+.sub{
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  margin:0 0 28px;
+}
+.hidden{display:none!important}
+
+/* Connexion */
+#view-login.card{
+  width:min(100%,440px);
+  margin:clamp(30px,7vh,84px) auto;
+  padding:34px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow:var(--shadow-lg);
+}
+#view-login:before{
+  content:"Espace professionnel";
+  display:block;
+  color:var(--brand);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  margin-bottom:9px;
+}
+#view-login h3{
+  color:var(--ink);
+  font-size:23px;
+  letter-spacing:-.6px;
+  margin-bottom:24px;
+}
+.card{
+  min-width:0;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:24px;
+  margin-bottom:18px;
+  box-shadow:var(--shadow);
+}
+.card h3{
+  color:var(--ink);
+  font-size:19px;
+  font-weight:780;
+  letter-spacing:-.4px;
+  margin-bottom:18px;
+}
+label{
+  display:block;
+  color:#52635a;
+  font-size:12px;
+  font-weight:700;
+  margin:13px 0 6px;
+}
+input,select,textarea{
+  display:block;
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  padding:11px 13px;
+  margin:0 0 12px;
+  color:var(--ink);
+  background:#fbfcfb;
+  border:1px solid #dce5df;
+  border-radius:10px;
+  font-size:14px;
+  line-height:1.4;
+  box-shadow:inset 0 1px 2px rgba(20,48,35,.025);
+  transition:border-color .18s,box-shadow .18s,background .18s;
+}
+input::placeholder,textarea::placeholder{color:#9aa79f}
+input:focus,select:focus,textarea:focus{
+  outline:none;
+  border-color:var(--brand);
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(8,127,91,.10);
+}
+input[type=checkbox],input[type=radio]{
+  display:inline-block;
+  width:17px;height:17px;
+  min-height:0;
+  padding:0;margin:0 7px 0 0;
+  accent-color:var(--brand);
+  vertical-align:middle;
+  box-shadow:none;
+}
+textarea{min-height:90px;resize:vertical}
+button.p{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:44px;
+  width:100%;
+  padding:12px 18px;
+  color:#fff;
+  background:var(--brand);
+  border:1px solid var(--brand);
+  border-radius:10px;
+  font-size:13px;
+  font-weight:750;
+  letter-spacing:.01em;
+  box-shadow:0 5px 12px rgba(8,127,91,.14);
+}
+button.p:hover{background:var(--brand-dark);border-color:var(--brand-dark);transform:translateY(-1px);box-shadow:0 8px 18px rgba(8,127,91,.19)}
+button.s{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:34px;
+  padding:7px 12px;
+  margin:3px 4px 3px 0;
+  color:#42544a;
+  background:#f5f8f6;
+  border:1px solid #dce6df;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+}
+button.s:hover{background:var(--brand-soft);border-color:#b7d9c8;color:var(--brand-dark)}
+button.d{color:var(--danger)!important;background:#fff7f6!important;border-color:#f2d4d1!important}
+button.d:hover{background:#ffedeb!important;border-color:#e9aaa4!important}
+.filebtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:10px 14px;
+  color:var(--brand-dark);
+  background:var(--brand-soft);
+  border:1px dashed #9bcbb4;
+  border-radius:9px;
+  font-size:12px;
+  font-weight:750;
+  cursor:pointer;
+}
+.filebtn:hover{background:#dff1e7}
+.filebtn input{display:none}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--muted);font-size:12px}
+.err{display:block;color:var(--danger);font-size:12px;margin:9px 0}
+.ok{color:var(--brand);font-size:12px;font-weight:700}
+.thumb{width:52px;height:52px;object-fit:cover;border-radius:10px;background:var(--surface-2);border:1px solid var(--line)}
+.item{
+  padding:15px 0;
+  border-bottom:1px solid var(--line);
+  color:var(--ink);
+  font-size:13px;
+}
+.item:last-child{border-bottom:0}
+.item b{color:var(--ink)}
+.img-grid{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.img-grid .box{
+  width:82px;height:82px;
+  border-radius:11px;
+  overflow:hidden;
+  position:relative;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+}
+.img-grid .box img{width:100%;height:100%;object-fit:cover}
+.img-grid .box .rm{
+  position:absolute;top:5px;right:5px;
+  display:grid;place-items:center;
+  width:23px;height:23px;
+  color:#fff;background:rgba(25,35,29,.78);
+  border:0;border-radius:50%;
+  font-size:15px;cursor:pointer;
+}
+
+/* Tableau de bord : navigation latérale sur grand écran */
+#view-dash{
+  display:grid;
+  grid-template-columns:245px minmax(0,1fr);
+  grid-template-areas:"shophead shophead" "sidebar workspace";
+  align-items:start;
+  gap:0 28px;
+  width:100%;
+  max-width:1600px;
+  margin:0 auto;
+}
+#view-dash>.row:first-child{
+  grid-area:shophead;
+  min-height:76px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:16px 22px;
+  margin:0 0 22px!important;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+}
+#shopName{display:inline-block;font-size:16px;font-weight:800;letter-spacing:-.2px}
+#shopEmail{display:inline-block;margin-top:2px;font-size:12px}
+#btnLogout{min-height:36px;padding:8px 14px}
+.nav{
+  grid-area:sidebar;
+  position:sticky;
+  top:18px;
+  display:flex;
+  flex-direction:column;
+  flex-wrap:nowrap;
+  gap:5px;
+  padding:12px;
+  margin:0;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:15px;
+  box-shadow:var(--shadow);
+}
+.nav button{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  flex:0 0 auto;
+  width:100%;
+  min-height:44px;
+  padding:10px 13px;
+  color:#53635a;
+  background:transparent;
+  border:0;
+  border-radius:9px;
+  font-size:13px;
+  font-weight:680;
+  text-align:left;
+}
+.nav button:before{
+  content:"";
+  display:block;
+  width:7px;height:7px;
+  margin-right:11px;
+  border-radius:50%;
+  background:#bdc9c1;
+}
+.nav button:hover{color:var(--brand-dark);background:#f4f8f5}
+.nav button.on{
+  color:var(--brand-dark);
+  background:var(--brand-soft);
+  box-shadow:inset 3px 0 0 var(--brand);
+}
+.nav button.on:before{background:var(--brand)}
+#view-dash>.card{
+  grid-column:2;
+  grid-row:2;
+  min-width:0;
+  margin:0;
+  padding:clamp(22px,2.3vw,34px);
+  border-radius:15px;
+  box-shadow:var(--shadow);
+}
+#tab-home h3:before{content:"Vue d’ensemble";display:block;margin-bottom:5px;color:var(--brand);font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+#dashStats{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  font-size:0;
+}
+#dashStats b{
+  display:block;
+  margin-top:8px;
+  color:var(--brand-dark);
+  font-size:30px;
+  line-height:1.15;
+}
+#dashStats br{display:none}
+#dashStats{color:transparent}
+#dashStats b:after{display:block;color:var(--muted);font-size:11px;font-weight:650;margin-top:7px}
+#dashStats b:nth-of-type(1):after{content:"Produits"}
+#dashStats b:nth-of-type(2):after{content:"Commandes"}
+#dashStats b:nth-of-type(3):after{content:"Conversations"}
+
+/* Formulaires dynamiques, zones imbriquées et contenus */
+#view-dash [style*="background:#111"],
+#view-dash [style*="background: #111"]{
+  background:#f7faf8!important;
+  color:var(--ink)!important;
+}
+#view-dash [style*="border:1px solid #333"],
+#view-dash [style*="border: 1px solid #333"]{
+  border-color:var(--line)!important;
+}
+#view-dash [style*="border-top:1px solid #333"]{border-color:var(--line)!important}
+#view-dash [style*="color:#eee"],
+#view-dash [style*="color: #eee"]{color:var(--ink)!important}
+#view-dash [style*="color:#888"],
+#view-dash [style*="color: #888"]{color:var(--muted)!important}
+#view-dash [style*="border:1px dashed #333"]{border-color:#d8e4dc!important}
+#view-dash h3{scroll-margin-top:20px}
+#view-dash .item [style*="background:#111"]{border:1px solid var(--line);border-radius:10px!important}
+#view-dash video{display:block;max-width:100%;border-radius:12px}
+#view-dash select option{background:#fff;color:var(--ink)}
+#view-dash input:disabled{background:#eef2ef;color:#87938c}
+
+/* Messages et bulles */
+.msg-bubble{
+  width:fit-content;
+  max-width:85%;
+  padding:10px 14px;
+  margin:7px 0;
+  border-radius:15px;
+  font-size:13px;
+  line-height:1.5;
+  overflow-wrap:anywhere;
+}
+.msg-me{margin-left:auto;color:#fff;background:var(--brand);border-bottom-right-radius:5px}
+.msg-them{color:var(--ink);background:#edf2ee;border:1px solid var(--line);border-bottom-left-radius:5px}
+#chatBox{max-height:50vh;overflow-y:auto;padding:10px}
 #view-chat{
   position:fixed;inset:0;z-index:200;
-  background:var(--bg);
   display:flex;flex-direction:column;
+  background:#f5f8f6;
 }
 #view-chat.hidden{display:none!important}
 .chat-header{
-  display:flex;align-items:center;gap:10px;
-  padding:12px 14px;
-  background:var(--card);
-  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  padding:14px max(18px,calc((100vw - 1100px)/2));
+  background:#fff;
+  border-bottom:1px solid var(--line);
+  box-shadow:0 2px 12px rgba(20,48,35,.04);
   flex-shrink:0;
 }
 .chat-header .ch-back{
-  width:36px;height:36px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  background:#222;color:#fff;border:1px solid var(--border);
-  border-radius:50%;font-size:18px;cursor:pointer;
+  width:38px;height:38px;flex-shrink:0;
+  display:grid;place-items:center;
+  color:var(--brand-dark);background:var(--brand-soft);
+  border:0;border-radius:11px;font-size:19px;
 }
 .chat-header .ch-ava{
-  width:38px;height:38px;flex-shrink:0;border-radius:50%;
-  background:var(--g);color:#fff;
+  width:42px;height:42px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:15px;overflow:hidden;
+  color:#fff;background:var(--brand);
+  border-radius:13px;font-size:15px;font-weight:800;overflow:hidden;
 }
 .chat-header .ch-ava img{width:100%;height:100%;object-fit:cover}
-.chat-header .ch-title{
-  flex:1;min-width:0;
-  font-size:15px;font-weight:700;color:#fff;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.chat-header .ch-sub{
-  font-size:11px;color:var(--muted);font-weight:400;
-}
+.chat-header .ch-title{flex:1;min-width:0;color:var(--ink);font-size:15px;font-weight:800}
+.chat-header .ch-sub{color:var(--muted);font-size:11px}
 .chat-body{
   flex:1;overflow-y:auto;
-  padding:14px;
+  width:min(100%,1100px);
+  margin:0 auto;padding:24px clamp(16px,4vw,44px);
   display:flex;flex-direction:column;
 }
-.chat-body .msg-bubble{max-width:80%}
+.chat-body .msg-bubble{max-width:min(78%,680px)}
 .chat-bar{
   flex-shrink:0;
-  padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
-  background:var(--card);
-  border-top:1px solid var(--border);
-  display:flex;gap:8px;align-items:center;
+  display:flex;align-items:center;gap:10px;
+  padding:14px max(18px,calc((100vw - 1100px)/2)) calc(14px + env(safe-area-inset-bottom,0px));
+  background:#fff;border-top:1px solid var(--line);
 }
 .chat-bar input{
-  flex:1;margin:0;
-  padding:10px 14px;
-  border-radius:20px;
-  background:#111;
-  border:1px solid var(--border);
-  color:#fff;font-size:14px;
+  flex:1;min-width:0;min-height:46px;
+  margin:0;padding:11px 17px;
+  color:var(--ink);background:#f7faf8;
+  border:1px solid var(--line);border-radius:24px;font-size:14px;
 }
 .chat-bar button{
-  height:40px;padding:0 18px;
-  background:var(--g);color:#fff;border:none;
-  border-radius:20px;font-weight:700;font-size:13px;cursor:pointer;
+  min-height:44px;padding:0 22px;
+  color:#fff;background:var(--brand);border:0;border-radius:22px;
+  font-size:13px;font-weight:750;
 }
-.chat-empty{
-  color:var(--muted);text-align:center;
-  font-size:13px;padding:20px 0;
+.chat-empty{color:var(--muted);text-align:center;font-size:13px;padding:30px 0}
+
+/* Alertes et statuts */
+.err,.ok{line-height:1.5}
+#view-dash [style*="background:#FCD34D22"]{background:#fff8e8!important;border-color:#f0d9a8!important}
+#view-dash [style*="background:#00A85422"]{background:var(--brand-soft)!important}
+#view-dash [style*="background:#3B82F622"]{background:#edf4ff!important}
+#view-dash [style*="color:#00A854"]{color:var(--brand)!important}
+
+/* Tablettes et petits ordinateurs */
+@media(max-width:1050px){
+  #app.wrap{padding:22px 20px 36px}
+  #view-dash{grid-template-columns:205px minmax(0,1fr);gap:0 18px}
+  #view-dash>.card{padding:22px}
+  .nav{padding:9px}
+  .nav button{font-size:12px;padding:9px 10px}
 }
+@media(min-width:701px) and (max-width:900px){
+  #view-dash{grid-template-columns:1fr;grid-template-areas:"shophead" "sidebar" "workspace";gap:14px}
+  .nav{
+    position:relative;top:auto;
+    flex-direction:row;flex-wrap:nowrap;
+    overflow-x:auto;scrollbar-width:thin;
+    padding:8px;
+  }
+  .nav button{width:auto;min-width:max-content;justify-content:center;padding:10px 13px}
+  .nav button:before{display:none}
+  #view-dash>.card{grid-column:1;grid-row:3}
+  #dashStats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* Mobile : navigation compacte et interface tactile */
+@media(max-width:700px){
+  body{font-size:13px}
+  #app.wrap{padding:16px 12px calc(24px + env(safe-area-inset-bottom,0px))}
+  .logo{font-size:22px;margin-top:4px}
+  .logo:before{width:34px;height:34px;border-radius:10px}
+  .sub{font-size:10px;margin-bottom:19px}
+  #view-login.card{margin:34px auto;padding:24px 20px;border-radius:18px}
+  #view-login h3{font-size:20px;margin-bottom:19px}
+  .card{padding:17px 15px;margin-bottom:12px;border-radius:14px}
+  .card h3{font-size:17px;margin-bottom:14px}
+  input,select,textarea{min-height:44px;font-size:16px;padding:11px 12px}
+  button.p{min-height:45px}
+  #view-dash{
+    display:flex;flex-direction:column;gap:0;
+    width:100%;
+  }
+  #view-dash>.row:first-child{
+    width:100%;
+    min-height:64px;
+    padding:12px 13px;
+    margin:0 0 12px!important;
+    border-radius:12px;
+  }
+  #shopName{font-size:14px}
+  #shopEmail{font-size:10px;overflow-wrap:anywhere}
+  #btnLogout{font-size:11px;min-height:34px;padding:7px 10px}
+  .nav{
+    position:sticky;top:0;z-index:20;
+    display:flex;flex-direction:row;flex-wrap:nowrap;
+    width:calc(100% + 24px);
+    margin:0 -12px 12px;
+    padding:8px 12px;
+    gap:6px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    background:rgba(255,255,255,.96);
+    border:0;border-bottom:1px solid var(--line);
+    border-radius:0;
+    box-shadow:0 4px 12px rgba(20,48,35,.04);
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .nav::-webkit-scrollbar{display:none}
+  .nav button{
+    flex:0 0 auto;
+    width:auto;min-width:max-content;
+    min-height:37px;
+    padding:8px 12px;
+    justify-content:center;
+    color:#59685f;
+    background:#f4f7f5;
+    border:1px solid transparent;
+    border-radius:8px;
+    font-size:11px;
+  }
+  .nav button:before{display:none}
+  .nav button.on{color:#fff;background:var(--brand);box-shadow:none}
+  #view-dash>.card{width:100%;padding:17px 14px;margin:0;border-radius:13px}
+  #dashStats{grid-template-columns:1fr;gap:8px}
+  #dashStats b{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:13px 14px;margin:0;
+    color:var(--brand-dark);background:var(--brand-pale);
+    border:1px solid #e1f0e7;border-radius:10px;
+    font-size:23px;
+  }
+  #dashStats b:after{margin:0;font-size:11px}
+  #view-dash .row{gap:7px}
+  #view-dash .item{padding:12px 0}
+  #view-dash [style*="display:flex"]{min-width:0}
+  #view-dash [style*="width:70px"]{max-width:70px}
+  #view-dash .filebtn{min-height:40px}
+  .img-grid .box{width:72px;height:72px}
+  .chat-header{padding:10px 12px}
+  .chat-body{padding:14px 12px}
+  .chat-body .msg-bubble{max-width:88%}
+  .chat-bar{padding:9px 10px calc(9px + env(safe-area-inset-bottom,0px))}
+  .chat-bar input{font-size:16px;min-height:44px}
+  .chat-bar button{min-height:42px;padding:0 15px}
+}
+@media(max-width:380px){
+  #app.wrap{padding-left:9px;padding-right:9px}
+  #view-dash>.row:first-child{gap:6px;padding:10px}
+  #btnLogout{padding:6px 8px}
+  .nav{width:calc(100% + 18px);margin-left:-9px;margin-right:-9px;padding-left:9px;padding-right:9px}
+  #view-dash>.card{padding:14px 11px}
+  .card h3{font-size:16px}
+  .chat-bar button{padding:0 12px}
+}
+/* Respect des préférences de mouvement */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -333,54 +801,146 @@ function compressImage(file,maxW,q){
     r.readAsDataURL(file);
   });
 }
+
 async function uploadToR2(fileOrBlob,filename,mime){
-  try{
-    const fd=new FormData();
-    const f=(fileOrBlob instanceof File)?fileOrBlob:new File([fileOrBlob],filename||'img.jpg',{type:mime||'image/jpeg'});
-    fd.append('file',f,f.name);
-    const res=await fetch(MEDIA_WORKER+'/upload',{method:'POST',body:fd});
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    if(!data||!data.url)throw new Error('no url');
-    return data.url;
-  }catch(e){return null;}
-}
-async function uploadImg(dataUrl){
-  const res0=await fetch(dataUrl);
-  const blob=await res0.blob();
-  const file=new File([blob],'img_'+Date.now()+'.jpg',{type:'image/jpeg'});
-  const remote=await uploadToR2(file, file.name, 'image/jpeg');
-  if(!remote) throw new Error('Upload R2 échoué — réessaie');
-  return remote;
-}
-async function uploadBlobFile(file,nameHint){
-  if(file.type&&file.type.startsWith('image/')){
-    const dataUrl=await compressImage(file,480,0.45);
-    return {url:await uploadImg(dataUrl),key:''};
-  }
-  const remote=await uploadToR2(file,nameHint||file.name||'file.bin',file.type||'video/mp4');
-  if(remote)return{url:remote,key:''};
-  throw new Error('Upload échoué');
-}
-async function uploadVideoFile(file){
-  if(!file||!file.type.startsWith('video/'))throw new Error('Fichier video requis');
-  const dur=await new Promise((resolve,reject)=>{
-    const v=document.createElement('video');
-    v.preload='metadata';
-    v.onloadedmetadata=()=>{URL.revokeObjectURL(v.src);resolve(v.duration||0);};
-    v.onerror=()=>reject(new Error('Lecture video impossible'));
-    v.src=URL.createObjectURL(file);
+  const user = auth.currentUser;
+  if(!user) throw new Error('Connexion requise pour envoyer un fichier');
+
+  const token = await user.getIdToken();
+
+  const fd = new FormData();
+  const f = (fileOrBlob instanceof File)
+    ? fileOrBlob
+    : new File([fileOrBlob],filename||'img.jpg',{
+        type:mime||'image/jpeg'
+      });
+
+  fd.append('file',f,f.name);
+
+  const res = await fetch(MEDIA_WORKER+'/upload',{
+    method:'POST',
+    headers:{
+      Authorization:'Bearer '+token
+    },
+    body:fd
   });
-  if(dur>90)throw new Error('Max 1 min 30');
-  if(file.size>20*1024*1024)throw new Error('Max 20 Mo');
-  const up=await uploadBlobFile(file,file.name||'video.mp4');
-  return {url:up.url,key:up.key||'',size:file.size};
+
+  const data = await res.json().catch(()=>({}));
+
+  if(!res.ok){
+    throw new Error(data.error||'Erreur upload HTTP '+res.status);
+  }
+
+  if(!data.url){
+    throw new Error('URL du fichier introuvable');
+  }
+
+  return data;
 }
+
+async function uploadImg(dataUrl){
+  const res0 = await fetch(dataUrl);
+  const blob = await res0.blob();
+
+  const file = new File(
+    [blob],
+    'img_'+Date.now()+'.jpg',
+    {type:'image/jpeg'}
+  );
+
+  const remote = await uploadToR2(
+    file,
+    file.name,
+    'image/jpeg'
+  );
+
+  return remote.url;
+}
+
+async function uploadBlobFile(file,nameHint){
+  if(file.type && file.type.startsWith('image/')){
+    const dataUrl = await compressImage(file,480,0.45);
+    return {
+      url:await uploadImg(dataUrl),
+      key:''
+    };
+  }
+
+  const remote = await uploadToR2(
+    file,
+    nameHint||file.name||'file.bin',
+    file.type||'video/mp4'
+  );
+
+  return {
+    url:remote.url,
+    key:remote.key||''
+  };
+}
+
+async function uploadVideoFile(file){
+  if(!file||!file.type.startsWith('video/')){
+    throw new Error('Fichier video requis');
+  }
+
+  const dur = await new Promise((resolve,reject)=>{
+    const v = document.createElement('video');
+    v.preload = 'metadata';
+
+    v.onloadedmetadata = ()=>{
+      URL.revokeObjectURL(v.src);
+      resolve(v.duration||0);
+    };
+
+    v.onerror = ()=>{
+      reject(new Error('Lecture video impossible'));
+    };
+
+    v.src = URL.createObjectURL(file);
+  });
+
+  if(dur>90) throw new Error('Max 1 min 30');
+  if(file.size>20*1024*1024) throw new Error('Max 20 Mo');
+
+  const up = await uploadBlobFile(
+    file,
+    file.name||'video.mp4'
+  );
+
+  return {
+    url:up.url,
+    key:up.key||'',
+    size:file.size
+  };
+}
+
 async function deleteRemoteVideo(key){
-  if(!key)return;
-  try{await fetch(MEDIA_WORKER+'/file/'+encodeURIComponent(key),{method:'DELETE'});}catch(e){}
-  try{await fetch(MEDIA_WORKER+'/video/'+encodeURIComponent(key),{method:'DELETE'});}catch(e){}
+  if(!key) return;
+
+  const user = auth.currentUser;
+  if(!user) throw new Error('Connexion requise');
+
+  const token = await user.getIdToken();
+
+  const res = await fetch(
+    MEDIA_WORKER+'/video/'+encodeURIComponent(key),
+    {
+      method:'DELETE',
+      headers:{
+        Authorization:'Bearer '+token
+      }
+    }
+  );
+
+  const data = await res.json().catch(()=>({}));
+
+  if(!res.ok){
+    throw new Error(data.error||'Suppression vidéo impossible');
+  }
+
+  return true;
 }
+
 
 /* ================== PROFIL ================== */
 function renderProfil(){
@@ -449,8 +1009,17 @@ async function renderProduits(){
     el.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openProdForm(b.getAttribute('data-edit'))));
     el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
       if(!confirm('Supprimer?'))return;
-      await deleteDoc(doc(db,'products',b.getAttribute('data-del')));
-      renderProduits();
+     
+const productId = b.getAttribute('data-del');
+const product = products.find(x=>x.id===productId);
+
+if(product && product.videoKey){
+  await deleteRemoteVideo(product.videoKey);
+}
+
+await deleteDoc(doc(db,'products',productId));
+renderProduits();
+
     }));
   }catch(e){$('prodList').innerHTML='<span class="err">'+esc(e.message)+'</span>';}
 }
@@ -668,11 +1237,27 @@ function openProdForm(id){
     $('vidStatus').textContent='';
     e.target.value='';
   });
-  $('btnRmVid').addEventListener('click',async()=>{
-    if(!editVideoUrl)return;
-    await deleteRemoteVideo(editVideoKey);
-    editVideoUrl='';editVideoKey='';paintVid();
-  });
+
+$('btnRmVid').addEventListener('click',async()=>{
+  if(!editVideoUrl) return;
+
+  if(!confirm('Supprimer cette vidéo ?')) return;
+
+  try{
+    if(editVideoKey){
+      await deleteRemoteVideo(editVideoKey);
+    }
+
+    editVideoUrl='';
+    editVideoKey='';
+    paintVid();
+
+    $('vidStatus').textContent='Vidéo supprimée';
+  }catch(err){
+    alert(err.message);
+  }
+});
+
 
   function renderVars(){
     const vl=$('varList');
