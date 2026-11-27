@@ -1615,6 +1615,29 @@ body.page-orders-active #ordRecoGrid{
   font-size: 18px !important;
 }
   
+  /* === BOUTON REMONTER EN HAUT === */
+#catalogScrollTop{
+  position:fixed;
+  right:17px;
+  bottom:calc(85px + env(safe-area-inset-bottom,0px));
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  background:#fff;
+  color:#222;
+  border:1px solid #eee;
+  box-shadow:0 3px 12px rgba(0,0,0,.16);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+  z-index:9990;
+  cursor:pointer;
+}
+
+#catalogScrollTop.show{
+  display:flex;
+}
 </style>
 </head>
 <body>
@@ -2118,6 +2141,67 @@ var badgesHtml=''
   var old=document.getElementById('variantSheet');if(old)old.remove();
   document.body.insertAdjacentHTML('beforeend',html);
     document.getElementById('vsClose').addEventListener('click',function(){document.getElementById('variantSheet').remove()});
+  // === FERMETURE DE LA FENÊTRE EN GLISSANT VERS LE BAS ===
+
+(function(){
+
+  var panel=document.getElementById('vsSheetPanel');
+  var handle=document.getElementById('vsDragHandle');
+  var overlay=document.getElementById('variantSheet');
+
+  if(!panel || !handle || !overlay)return;
+
+  var startY=0;
+  var currentY=0;
+  var dragging=false;
+
+  handle.addEventListener('touchstart',function(e){
+
+    startY=e.touches[0].clientY;
+    currentY=0;
+    dragging=true;
+
+    panel.style.transition='none';
+
+  },{passive:true});
+
+  handle.addEventListener('touchmove',function(e){
+
+    if(!dragging)return;
+
+    var dy=e.touches[0].clientY-startY;
+
+    currentY=Math.max(0,dy);
+
+    panel.style.transform='translateY('+currentY+'px)';
+
+  },{passive:true});
+
+  handle.addEventListener('touchend',function(){
+
+    if(!dragging)return;
+
+    dragging=false;
+
+    if(currentY>100){
+
+      panel.style.transition='transform .18s ease';
+      panel.style.transform='translateY(100%)';
+
+      setTimeout(function(){
+        overlay.remove();
+      },180);
+
+    }else{
+
+      panel.style.transition='transform .22s ease';
+      panel.style.transform='translateY(0)';
+
+    }
+
+  });
+
+})();
 
   // Fermer en cliquant sur le fond sombre (hors de la feuille)
   var _vs=document.getElementById('variantSheet');
@@ -4994,15 +5078,22 @@ function trackingNotifCardHtml(n){
 
   html += escapeHtml(boutiqueName)+'</span></div>';
 
-  if(status){
+// Statut sur la même ligne, avec retour automatique si nécessaire
+if(status){
+  html += '<div style="display:flex;align-items:baseline;';
+  html += 'flex-wrap:wrap;column-gap:4px;row-gap:2px;';
+  html += 'margin-top:2px">';
 
-    html += '<div style="font-size:11px;color:#555;margin-bottom:3px">';
-    html += 'Votre commande est maintenant :</div>';
+  html += '<span style="font-size:11px;color:#555">';
+  html += 'Votre commande est maintenant :</span>';
 
-    html += '<div style="font-size:12px;font-weight:800;';
-    html += 'color:#00A854">'+escapeHtml(status)+'</div>';
+  html += '<span style="font-size:12px;font-weight:800;';
+  html += 'color:#00A854;line-height:1.4">';
+  html += escapeHtml(status);
+  html += '</span>';
 
-  }else{
+  html += '</div>';
+}else{
 
     html += '<div style="font-size:12px;color:#00A854">';
     html += escapeHtml(n.message || '')+'</div>';
@@ -5724,6 +5815,51 @@ onAuthStateChanged(auth,function(u){
       if(id==='chat'&&typeof renderMessagesList==='function')renderMessagesList();
     },50);
   }catch(e){}
+})();
+  /* === REMONTER EN HAUT DU CATALOGUE === */
+
+(function(){
+
+  var btn=document.createElement('button');
+
+  btn.type='button';
+  btn.id='catalogScrollTop';
+  btn.title='Remonter en haut';
+  btn.innerHTML='<i class="fa-solid fa-chevron-up"></i>';
+
+  document.body.appendChild(btn);
+
+  function updateScrollButton(){
+
+    var active=document.querySelector('.page.on');
+
+    var isCatalog=active && (
+      active.id==='page-catalog'
+    );
+
+    btn.classList.toggle(
+      'show',
+      isCatalog && window.scrollY>300
+    );
+  }
+
+  window.addEventListener('scroll',updateScrollButton,{
+    passive:true
+  });
+
+  btn.addEventListener('click',function(){
+
+    window.scrollTo({
+      top:0,
+      behavior:'smooth'
+    });
+
+  });
+
+  document.addEventListener('click',function(){
+    setTimeout(updateScrollButton,100);
+  });
+
 })();
 async function init(){
   updateCartBadge();
