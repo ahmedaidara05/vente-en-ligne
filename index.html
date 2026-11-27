@@ -514,6 +514,135 @@ body.page-cart-active .bn {
   color:#333;
 }
 
+  /* === NOTIFICATIONS DE COMMANDES === */
+
+.notif-history-page{
+  min-height:100vh;
+  background:#fff;
+}
+
+.notif-history-head{
+  position:sticky;
+  top:0;
+  z-index:110;
+  height:56px;
+  display:grid;
+  grid-template-columns:44px 1fr 44px;
+  align-items:center;
+  padding:0 12px;
+  background:#fff;
+  border-bottom:1px solid #eee;
+}
+
+.notif-history-head button{
+  width:40px;
+  height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  color:#000;
+  font-size:21px;
+}
+
+.notif-history-head h2{
+  text-align:center;
+  font-size:16px;
+  font-weight:750;
+  color:#1a1a1a;
+}
+
+.notif-history-list{
+  background:#fff;
+  padding-bottom:25px;
+}
+
+.notif-history-empty{
+  padding:65px 20px;
+  text-align:center;
+  color:#999;
+}
+
+.notif-history-empty i{
+  display:block;
+  font-size:38px;
+  margin-bottom:12px;
+  color:#bbb;
+}
+
+.notif-history-empty p{
+  font-size:13px;
+}
+  
+/* === HISTORIQUE DES NOTIFICATIONS DE COMMANDES === */
+
+.notif-history-page{
+  min-height:100vh;
+  background:#fff;
+}
+
+.notif-history-head{
+  position:sticky;
+  top:0;
+  z-index:110;
+  height:56px;
+  display:grid;
+  grid-template-columns:44px 1fr 44px;
+  align-items:center;
+  padding:0 12px;
+  background:#fff;
+  border-bottom:1px solid #eee;
+}
+
+.notif-history-head button{
+  width:40px;
+  height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  color:#000;
+  font-size:17px;
+}
+
+.notif-history-head button:last-child{
+  color:#E02E24;
+}
+
+.notif-history-head h2{
+  text-align:center;
+  font-size:16px;
+  font-weight:750;
+  color:#1a1a1a;
+  margin:0;
+}
+
+.notif-history-list{
+  background:#fff;
+  padding-bottom:25px;
+}
+
+.notif-history-empty{
+  padding:65px 20px;
+  text-align:center;
+  color:#999;
+}
+
+.notif-history-empty i{
+  display:block;
+  font-size:38px;
+  margin-bottom:12px;
+  color:#bbb;
+}
+
+.notif-history-empty p{
+  font-size:13px;
+}
+
 /* === Espace Compte IDA === */
 .account-page{max-width:760px;margin:0 auto;padding:22px 16px 30px;color:#17211b}
 .account-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 2px 18px}
@@ -1521,7 +1650,7 @@ body.page-orders-active #ordRecoGrid{
 <div id="page-favorites" class="page"></div>
 <div id="page-boutique" class="page"></div>
 <div id="page-messages" class="page"></div>
-<div id="page-chat-thread" class="page"></div>
+<div id="page-notifications" class="page"></div>
 <div id="page-follows" class="page"></div>
   <div id="page-orders" class="page"></div>
 <div id="page-order-detail" class="page"></div>
@@ -1707,8 +1836,10 @@ function setChrome(hide,headerOnly){
   );
 }  
   let lastPageArgs={};
-function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'||page==='messages'){setChrome(true)}else{setChrome(page==='product'||page==='boutique'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}document.body.classList.toggle('page-account-active', page === 'account');document.body.classList.toggle('page-cart-active', page === 'cart');
-document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows();else if(page==='orders')renderOrders();else if(page==='order-detail'&&data)renderOrderDetail(data);else if(page==='saved-checkouts')renderSavedCheckouts()}
+function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'||page==='messages'||page==='notifications'){
+  setChrome(true);
+}else{setChrome(page==='product'||page==='boutique'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}document.body.classList.toggle('page-account-active', page === 'account');document.body.classList.toggle('page-cart-active', page === 'cart');
+document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='notifications')renderTrackingNotificationHistory();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows();else if(page==='orders')renderOrders();else if(page==='order-detail'&&data)renderOrderDetail(data);else if(page==='saved-checkouts')renderSavedCheckouts()}
 function goBack(){
     var fs=document.getElementById('fsViewer');
     if(fs){fs.remove();return}
@@ -4692,51 +4823,19 @@ function saveDeleted(list){try{localStorage.setItem(loadDeletedKey(),JSON.string
 ========================================= */
 
 
+/* =========================================
+   NOTIFICATIONS DE SUIVI DES COMMANDES
+   STOCKAGE FIRESTORE UNIQUEMENT
+========================================= */
+
 var trackingNotifications = [];
 var trackingNotifUnsubscribe = null;
 
-// Clé du cache propre à chaque utilisateur
-function trackingNotifCacheKey(){
-  return 'vl_tracking_notifications_' +
-    (currentUser ? currentUser.uid : 'anon');
-}
 
-// Charger les notifications enregistrées sur le téléphone
-function loadTrackingNotifCache(){
-  try{
-    return JSON.parse(
-      localStorage.getItem(trackingNotifCacheKey()) || '[]'
-    );
-  }catch(e){
-    return [];
-  }
-}
-
-// Enregistrer les notifications sur le téléphone
-function saveTrackingNotifCache(list){
-  try{
-    var safeList = list.map(function(n){
-      var item = Object.assign({},n);
-
-      item.createdAtMs = n.createdAt && n.createdAt.toMillis
-        ? n.createdAt.toMillis()
-        : (n.createdAtMs || 0);
-
-      delete item.createdAt;
-      return item;
-    });
-
-    localStorage.setItem(
-      trackingNotifCacheKey(),
-      JSON.stringify(safeList)
-    );
-  }catch(e){
-    console.warn('Erreur cache notifications :',e);
-  }
-}
-
+/* === COMPTEUR DES NOTIFICATIONS NON LUES === */
 
 function updateTrackingNotifBadge(){
+
   var badge = document.getElementById('trackingNotifBadge');
   if(!badge)return;
 
@@ -4754,6 +4853,8 @@ function updateTrackingNotifBadge(){
 }
 
 
+/* === ÉCOUTE FIRESTORE === */
+
 function startTrackingNotifications(){
 
   if(trackingNotifUnsubscribe){
@@ -4767,19 +4868,6 @@ function startTrackingNotifications(){
     return;
   }
 
-  // 1. Afficher immédiatement les données locales
-  trackingNotifications = loadTrackingNotifCache();
-
-  trackingNotifications.sort(function(a,b){
-    return (b.createdAtMs || 0) - (a.createdAtMs || 0);
-  });
-
-  updateTrackingNotifBadge();
-
-  // Actualiser immédiatement si la liste est déjà présente
-  renderTrackingNotifications();
-
-  // 2. Écouter les nouvelles notifications Firebase
   var notifQuery = query(
     collection(db,'notifications'),
     where('userId','==',currentUser.uid)
@@ -4789,8 +4877,8 @@ function startTrackingNotifications(){
     notifQuery,
     function(snapshot){
 
-      // 3. Remplacer le cache par les données Firebase à jour
       trackingNotifications = snapshot.docs.map(function(d){
+
         var data = d.data();
 
         return Object.assign(
@@ -4803,17 +4891,13 @@ function startTrackingNotifications(){
                 : 0
           }
         );
+
       });
 
-      // Tri du plus récent au plus ancien
       trackingNotifications.sort(function(a,b){
         return (b.createdAtMs || 0) - (a.createdAtMs || 0);
       });
 
-      // 4. Sauvegarder localement
-      saveTrackingNotifCache(trackingNotifications);
-
-      // 5. Actualiser le compteur et l'affichage
       updateTrackingNotifBadge();
 
       var active = document.querySelector('.page.on');
@@ -4824,18 +4908,23 @@ function startTrackingNotifications(){
       )){
         renderTrackingNotifications();
       }
+
+      if(active && active.id === 'page-notifications'){
+        renderTrackingNotificationHistory();
+      }
+
     },
     function(error){
-      console.error(
-        'Erreur notifications de suivi :',
-        error
-      );
+      console.error('Erreur notifications :',error);
     }
   );
 }
 
 
+/* === ARRÊTER L'ÉCOUTE === */
+
 function stopTrackingNotifications(){
+
   if(trackingNotifUnsubscribe){
     trackingNotifUnsubscribe();
     trackingNotifUnsubscribe = null;
@@ -4846,120 +4935,152 @@ function stopTrackingNotifications(){
 }
 
 
-function renderTrackingNotifications(){
-  var box = document.getElementById('trackingNotifSection');
-  if(!box)return;
+/* === CARTE D'UNE NOTIFICATION === */
 
-  if(!trackingNotifications.length){
-    box.innerHTML = '';
-    return;
+function trackingNotifCardHtml(n){
+
+  var dateText = '';
+
+  var notificationDate = n.createdAtMs
+    ? new Date(n.createdAtMs)
+    : (n.createdAt && n.createdAt.toDate
+        ? n.createdAt.toDate()
+        : null);
+
+  if(notificationDate && !isNaN(notificationDate.getTime())){
+    dateText = notificationDate.toLocaleString('fr-FR',{
+      day:'2-digit',
+      month:'2-digit',
+      year:'numeric',
+      hour:'2-digit',
+      minute:'2-digit'
+    });
   }
+
+  var orderNumber = n.orderNumber || n.orderId || 'Commande';
+  var boutiqueName = n.boutiqueName || 'Boutique';
+  var status = n.status || '';
 
   var html = '';
 
-  
+  html += '<div data-tracking-notif="'+escapeHtml(n.id)+'"';
+  html += ' style="display:flex;width:100%;box-sizing:border-box;';
+  html += 'align-items:flex-start;gap:11px;padding:13px 14px;';
+  html += 'border-bottom:1px solid #eee;cursor:pointer">';
 
-  html += '</span></div>';
+  html += '<div style="width:42px;height:42px;flex:0 0 42px;';
+  html += 'border-radius:50%;overflow:hidden">';
 
-  trackingNotifications.forEach(function(n){
-
-    var unread = n.read !== true;
-  var dateText = '';
-var notificationDate = n.createdAtMs
-  ? new Date(n.createdAtMs)
-  : (n.createdAt && n.createdAt.toDate
-      ? n.createdAt.toDate()
-      : null);
-
-if(notificationDate && !isNaN(notificationDate.getTime())){
-  dateText = notificationDate.toLocaleString('fr-FR',{
-        day:'2-digit',
-        month:'2-digit',
-        year:'numeric',
-        hour:'2-digit',
-        minute:'2-digit'
-      });
-    } 
-
-    var orderNumber = n.orderNumber || n.orderId || 'Commande';
-    var boutiqueName = n.boutiqueName || 'Boutique';
-    var status = n.status || '';
-
-    html += '<div data-tracking-notif="'+escapeHtml(n.id)+'"';
-    html += ' style="display:flex;width:100%;box-sizing:border-box;';
-    html += 'align-items:flex-start;gap:11px;';
-    html += 'padding:13px 14px;';
-    html += 'background:transparent;border:0;border-radius:0;';
-    html += 'border-bottom:1px solid #EEEEEE;';
-    html += 'margin:0;cursor:pointer">';
-
-    // Logo
-    html += '<div style="width:42px;height:42px;flex:0 0 42px;';
-    html += 'border-radius:50%;overflow:hidden">';
-    html += '<img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" ';
-    html += 'style="width:100%;height:100%;object-fit:cover">';
-    html += '</div>';
-
-    html += '<div style="flex:1;min-width:0">';
-
-    // Numéro de commande + boutique
-    html += '<div style="display:flex;align-items:center;';
-    html += 'justify-content:space-between;gap:7px;margin-bottom:6px">';
-
-    html += '<b style="font-size:12px;color:#222;min-width:0;';
-    html += 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">';
-    html += escapeHtml(orderNumber);
-    html += '</b>';
-
-  
-html += '<span data-boutique-link="'+escapeHtml(n.boutiqueId || '')+'"';
-html += ' style="flex-shrink:0;padding:3px 7px;';
-html += 'border:1px solid #C49A35;border-radius:5px;';
-html += 'background:transparent;color:#C49A35;';
-html += 'font-size:10px;font-weight:700;white-space:nowrap;';
-html += 'cursor:pointer">';
-html += escapeHtml(boutiqueName);
-html += '</span>';
-
-
-    html += '</div>';
-
-    // Statut en vert
-    if(status){
-      html += '<div style="font-size:11px;color:#555;margin-bottom:3px">';
-      html += 'Votre commande est maintenant :</div>';
-
-      html += '<div style="font-size:12px;font-weight:800;';
-      html += 'color:#00A854;line-height:1.4">';
-      html += escapeHtml(status);
-      html += '</div>';
-    }else{
-      html += '<div style="font-size:12px;color:#00A854">';
-      html += escapeHtml(n.message || '');
-      html += '</div>';
-    }
-
-    // Date
-    html += '<div style="font-size:10px;color:#999;margin-top:7px">';
-    html += escapeHtml(dateText);
-    html += '</div>';
-
-    html += '</div>';
-
-    if(unread){
-      html += '<span style="width:7px;height:7px;flex:0 0 7px;';
-      html += 'border-radius:50%;background:#00A854;margin-top:5px"></span>';
-    }
-
-    html += '</div>';
-  });
+  html += '<img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" ';
+  html += 'style="width:100%;height:100%;object-fit:cover">';
 
   html += '</div>';
-  box.innerHTML = html;
+
+  html += '<div style="flex:1;min-width:0">';
+
+  html += '<div style="display:flex;align-items:center;';
+  html += 'justify-content:space-between;gap:7px;margin-bottom:6px">';
+
+  html += '<b style="font-size:12px;color:#222;min-width:0;';
+  html += 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">';
+
+  html += escapeHtml(orderNumber)+'</b>';
+
+  html += '<span data-boutique-link="'+escapeHtml(n.boutiqueId || '')+'"';
+  html += ' style="flex-shrink:0;padding:3px 7px;';
+  html += 'border:1px solid #C49A35;border-radius:5px;';
+  html += 'color:#C49A35;font-size:10px;font-weight:700;';
+  html += 'white-space:nowrap;cursor:pointer">';
+
+  html += escapeHtml(boutiqueName)+'</span></div>';
+
+  if(status){
+
+    html += '<div style="font-size:11px;color:#555;margin-bottom:3px">';
+    html += 'Votre commande est maintenant :</div>';
+
+    html += '<div style="font-size:12px;font-weight:800;';
+    html += 'color:#00A854">'+escapeHtml(status)+'</div>';
+
+  }else{
+
+    html += '<div style="font-size:12px;color:#00A854">';
+    html += escapeHtml(n.message || '')+'</div>';
+
+  }
+
+  // Date + petite poubelle rouge sur la même ligne
+
+  html += '<div style="display:flex;align-items:center;';
+  html += 'justify-content:space-between;gap:8px;margin-top:7px">';
+
+  html += '<span style="font-size:10px;color:#999">';
+  html += escapeHtml(dateText)+'</span>';
+
+  html += '<button type="button" data-delete-notif="'+escapeHtml(n.id)+'"';
+  html += ' title="Supprimer cette notification"';
+  html += ' style="border:0;background:transparent;color:#E02E24;';
+  html += 'padding:2px 4px;font-size:12px;line-height:1;cursor:pointer">';
+  html += '<i class="fa-solid fa-trash"></i></button>';
+
+  html += '</div>';
+
+  html += '</div>';
+
+  if(n.read !== true){
+    html += '<span style="width:7px;height:7px;flex:0 0 7px;';
+    html += 'border-radius:50%;background:#00A854;margin-top:5px"></span>';
+  }
+
+  html += '</div>';
+
+  return html;
+}
+
+
+/* === AFFICHAGE ET GESTION DES NOTIFICATIONS === */
+
+function renderTrackingNotificationList(box,historyMode){
+
+  if(!box)return;
+
+  var list = trackingNotifications.slice();
+
+  if(!historyMode){
+    list = list.filter(function(n){
+      return n.read !== true;
+    });
+  }
+
+  list.sort(function(a,b){
+    return (b.createdAtMs || 0) - (a.createdAtMs || 0);
+  });
+
+  if(!list.length){
+
+    box.innerHTML = historyMode
+      ? '<div class="notif-history-empty"><i class="fa-solid fa-box-open"></i><p>Aucune notification de commande</p></div>'
+      : '';
+
+    return;
+  }
+
+  box.innerHTML = list.map(function(n){
+    return trackingNotifCardHtml(n);
+  }).join('');
+
+
+  // Ouverture d'une notification
 
   box.querySelectorAll('[data-tracking-notif]').forEach(function(card){
-    card.addEventListener('click', async function(){
+
+    card.addEventListener('click',async function(e){
+
+      if(e.target.closest('[data-delete-notif]'))return;
+      if(e.target.closest('[data-boutique-link]'))return;
+
       var notifId = card.getAttribute('data-tracking-notif');
+
       var notif = trackingNotifications.find(function(n){
         return n.id === notifId;
       });
@@ -4967,11 +5088,19 @@ html += '</span>';
       if(!notif)return;
 
       try{
+
+        // Marquer comme lue dans Firestore.
+        // NE PAS SUPPRIMER LE DOCUMENT.
+
         if(notif.read !== true){
+
           await updateDoc(doc(db,'notifications',notifId),{
             read:true,
             readAt:serverTimestamp()
           });
+
+          notif.read = true;
+          updateTrackingNotifBadge();
         }
 
         if(!notif.orderId){
@@ -4984,11 +5113,53 @@ html += '</span>';
       }catch(e){
         toast('Erreur : '+e.message);
       }
+
     });
+
   });
-    // Clic sur le nom de la boutique
+
+
+  // Suppression individuelle avec confirmation
+
+  box.querySelectorAll('[data-delete-notif]').forEach(function(btn){
+
+    btn.addEventListener('click',function(e){
+
+      e.stopPropagation();
+
+      var notifId = btn.getAttribute('data-delete-notif');
+
+      confirmAction(
+        'Supprimer cette notification ?',
+        'Cette notification sera définitivement supprimée.',
+        async function(){
+
+          try{
+
+            await deleteDoc(doc(db,'notifications',notifId));
+
+            toast('Notification supprimée');
+
+          }catch(e){
+
+            toast('Erreur : '+e.message);
+
+          }
+
+        }
+      );
+
+    });
+
+  });
+
+
+  // Clic sur le nom de la boutique
+
   box.querySelectorAll('[data-boutique-link]').forEach(function(link){
+
     link.addEventListener('click',function(e){
+
       e.stopPropagation();
 
       var boutiqueId = link.getAttribute('data-boutique-link');
@@ -4999,9 +5170,106 @@ html += '</span>';
       }
 
       showPage('boutique',boutiqueId);
+
     });
+
   });
+
 }
+
+
+/* === NOTIFICATIONS NON LUES DANS CHAT === */
+
+function renderTrackingNotifications(){
+
+  var box = document.getElementById('trackingNotifSection');
+
+  if(!box)return;
+
+  renderTrackingNotificationList(box,false);
+
+}
+
+
+/* === PAGE HISTORIQUE DES NOTIFICATIONS === */
+
+function renderTrackingNotificationHistory(){
+
+  var page = document.getElementById('page-notifications');
+
+  if(!page)return;
+
+  page.innerHTML = ''
+
+    + '<div class="notif-history-page">'
+
+      + '<div class="notif-history-head">'
+
+        + '<button type="button" id="notifHistoryBack">'
+          + '<i class="fa-solid fa-arrow-left"></i>'
+        + '</button>'
+
+        + '<h2>Notification de commandes</h2>'
+
+        + '<button type="button" id="notifDeleteAllBtn" title="Tout supprimer">'
+          + '<i class="fa-solid fa-trash"></i>'
+        + '</button>'
+
+      + '</div>'
+
+      + '<div class="notif-history-list" id="notifHistoryList"></div>'
+
+    + '</div>';
+
+
+  document.getElementById('notifHistoryBack').addEventListener('click',function(){
+    goBack();
+  });
+
+
+  // Suppression totale avec confirmation obligatoire
+
+  document.getElementById('notifDeleteAllBtn').addEventListener('click',function(){
+
+    if(!trackingNotifications.length){
+      toast('Aucune notification à supprimer');
+      return;
+    }
+
+    confirmAction(
+      'Supprimer toutes les notifications ?',
+      'Toutes les notifications de commandes seront définitivement supprimées.',
+      async function(){
+
+        try{
+
+          await Promise.all(
+            trackingNotifications.map(function(n){
+              return deleteDoc(doc(db,'notifications',n.id));
+            })
+          );
+
+          toast('Toutes les notifications ont été supprimées');
+
+        }catch(e){
+
+          toast('Erreur : '+e.message);
+
+        }
+
+      }
+    );
+
+  });
+
+
+  renderTrackingNotificationList(
+    document.getElementById('notifHistoryList'),
+    true
+  );
+
+}
+
  
 
 async function renderMessagesList(){
@@ -5009,7 +5277,18 @@ if(!currentUser){$('page-messages').innerHTML='<div class="em"><p>Connectez-vous
 var target=document.querySelector('.page.on')||$('page-messages');
 var archived=loadArchived();var pinned=loadPinned();var deleted=loadDeleted();
 var cached=loadConvCache();
-var html='<div class="msg-head"><div class="ct-logo" style="width:36px;flex-shrink:0"><img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" style="height:26px;width:auto;max-width:90px;object-fit:contain;display:block"/></div><b>'+(msgShowArchived?'Archives':'Messages')+'</b><button type="button" id="msgMore">⋮</button></div>';
+var html='<div class="msg-head">'
+  +'<div class="ct-logo" style="width:36px;flex-shrink:0">'
+    +'<img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" style="height:26px;width:auto;max-width:90px;object-fit:contain;display:block"/>'
+  +'</div>'
+  +'<b>'+(msgShowArchived?'Archives':'Messages')+'</b>'
+  +'<div style="display:flex;align-items:center;gap:12px">'
+    +'<button type="button" id="trackingNotifHistoryBtn" title="Notifications de commandes" style="width:36px;height:36px;border:0;border-radius:0;background:transparent;color:#222;font-size:21px;display:flex;align-items:center;justify-content:center">'
+      +'<i class="fa-solid fa-box"></i>'
+    +'</button>'
+    +'<button type="button" id="msgMore">⋮</button>'
+  +'</div>'
++'</div>';
 html+='<div id="trackingNotifSection"></div>';
 html+='<div id="msgList">';
 if(cached.length){
@@ -5033,7 +5312,13 @@ html+='<div class="cart-reco-bar" style="margin:18px 0 0 0;padding:10px 16px 4px
 html+='<div class="pg" id="msgRecoGrid" style="padding-bottom:calc(var(--nav-h) + var(--safe-b) + 20px)"></div>';target.innerHTML=html;
 renderTrackingNotifications();
 bindConvRows(target);
-document.getElementById('msgMore').addEventListener('click',openMsgMenu);
+document.getElementById('trackingNotifHistoryBtn').addEventListener('click',function(){
+  showPage('notifications');
+});
+
+document.getElementById('trackingNotifHistoryBtn').addEventListener('click',function(){
+  showPage('notifications');
+});
 var cs=document.getElementById('msgCancelSel');if(cs)cs.addEventListener('click',function(){msgMode=null;msgSelected={};renderMessagesList()});
 var cf=document.getElementById('msgConfirmSel');if(cf)cf.addEventListener('click',async function(){await applyMsgAction();});
 /* refresh Firestore en arrière-plan */
