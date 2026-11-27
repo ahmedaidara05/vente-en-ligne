@@ -390,6 +390,84 @@ body.page-cart-active .bn {
 .vid-card .cta button{padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700}
 .vid-card .cta .buy{background:#E02E24;color:#fff}
 .vid-card .cta .cart{background:#fff;color:#E02E24;border:1px solid #E02E24}
+  /* === NOUVEL AFFICHAGE CARTE PRODUIT VIDEO === */
+
+.vid-card .vid-info{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  gap:3px;
+}
+
+.vid-card .vid-badges{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-bottom:2px;
+}
+
+.vid-card .badge{
+  display:inline-flex;
+  align-items:center;
+  background:#E02E24;
+  color:#fff;
+  font-size:9px;
+  font-weight:800;
+  padding:3px 6px;
+  border-radius:4px;
+}
+
+.vid-card .vid-free-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 6px;
+  border:1px solid #00A854;
+  border-radius:4px;
+  color:#008C45;
+  background:#E8FFF0;
+  font-size:9px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.vid-card .title{
+  font-size:13px;
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.vid-card .vid-description{
+  font-size:10px;
+  color:#777;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.vid-card .vid-price-row{
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:3px;
+}
+
+.vid-card .price{
+  font-size:17px;
+  font-weight:900;
+  color:#E02E24;
+}
+
+.vid-card .vid-old-price{
+  font-size:11px;
+  color:#999;
+  text-decoration:line-through;
+  font-weight:500;
+}
 .vid-top{position:absolute;top:0;left:0;right:0;z-index:6;padding:12px}
 .vid-top button{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.4);color:#fff}
 .vid-hide-ui .vid-top,.vid-hide-ui .vid-card,.vid-hide-ui .vid-side{opacity:0;pointer-events:none;transition:opacity .3s}
@@ -6132,7 +6210,26 @@ if(!products.length){
 /* 4) sinon refresh en arrière-plan (au cas où de nouvelles vidéos existent) */
 try{await loadProducts();var fresh=products.filter(function(p){return p.videoUrl&&p.published!==false});var same=fresh.length===videoFeed.length&&fresh[0]&&videoFeed[0]&&fresh[0].id===videoFeed[0].id;if(!same&&fresh.length){videoFeed=fresh;videoFeedIdx=0;paintVideoPlayer(videoFeed[0])}}catch(e){}
 }
-async function paintVideoPlayer(p,enterDirection){var price=minProductPrice(p);var img=(p.images&&p.images[0])||'';var liked=isVideoLiked(p.id);var likeCount=getLikeCount(p.id);var commentCount=getCommentCount(p.id);
+async function paintVideoPlayer(p,enterDirection){
+
+var price=minProductPrice(p);
+var promo=p.promoPrice&&p.promoPrice<p.price;
+var oldPrice=p.price||0;
+var freeDeliv=p.fastDelivery===true;
+
+var img=(p.images&&p.images[0])||'';
+var desc=(p.description||'').trim();
+var shortName=String(p.name||'').length>30
+  ?String(p.name||'').slice(0,30)+'…'
+  :String(p.name||'');
+
+var shortDesc=desc.length>30
+  ?desc.slice(0,30)+'…'
+  :desc;
+
+var liked=isVideoLiked(p.id);
+var likeCount=getLikeCount(p.id);
+var commentCount=getCommentCount(p.id);
 var shareCount=getShareCount(p.id);var shareCount=getShareCount(p.id);
 var followerCount=p.boutiqueId?getFollowCount(p.boutiqueId):0;var logoHtml='';
 var isFol=false;
@@ -6155,7 +6252,46 @@ if(p.boutiqueId){
       '<span id="vidFollowCount">'+followerCount+'</span>'+
     '</div>';
 }
-$('page-video').innerHTML='<div class="vid-page" id="vidPage"><div class="vid-top"><button type="button" id="vidBack"><i class="fa-solid fa-arrow-left"></i></button><button type="button" id="vidMute"><i class="fa-solid fa-volume-high"></i></button></div><div class="vid-stage"><video id="vidEl" src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay muted></video><div class="vid-side">'+logoHtml+'<button type="button" id="vidLike" class="'+(liked?'liked':'')+'"><i class="'+(liked?'fa-solid':'fa-regular')+' fa-thumbs-up"></i><span>'+likeCount+'</span></button><button type="button" id="vidComment"><i class="fa-regular fa-comment"></i><span>'+commentCount+'</span></button><button type="button" id="vidShare"><i class="fa-solid fa-share"></i><span>'+shareCount+'</span></button></div><div class="vid-card" id="vidCard">'+(img?'<img src="'+escapeHtml(img)+'" onerror="this.style.display=\'none\'"/>':'')+'<div style="flex:1;min-width:0"><span class="badge">Offre exclusive</span><div class="title">'+escapeHtml(String(p.name||'').length>20?String(p.name||'').substring(0,19)+'…':String(p.name||''))+'</div><div class="price">'+formatPrice(price)+' F</div></div><div class="cta"><button type="button" class="buy" id="vidBuy">Acheter</button><button type="button" class="cart" id="vidCart">Panier</button></div></div></div></div>';var page=$('vidPage'),video=$('vidEl');
+
+$('page-video').innerHTML=
+'<div class="vid-page" id="vidPage">'+
+'<div class="vid-top">'+
+'<button type="button" id="vidBack"><i class="fa-solid fa-arrow-left"></i></button>'+
+'<button type="button" id="vidMute"><i class="fa-solid fa-volume-high"></i></button>'+
+'</div>'+
+'<div class="vid-stage">'+
+'<video id="vidEl" src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay muted></video>'+
+'<div class="vid-side">'+logoHtml+
+'<button type="button" id="vidLike" class="'+(liked?'liked':'')+'"><i class="'+(liked?'fa-solid':'fa-regular')+' fa-thumbs-up"></i><span>'+likeCount+'</span></button>'+
+'<button type="button" id="vidComment"><i class="fa-regular fa-comment"></i><span>'+commentCount+'</span></button>'+
+'<button type="button" id="vidShare"><i class="fa-solid fa-share"></i><span>'+shareCount+'</span></button>'+
+'</div>'+
+
+'<div class="vid-card" id="vidCard">'+
+(img
+?'<img src="'+escapeHtml(img)+'" onerror="this.style.display=\'none\'"/>'
+:'')+
+'<div class="vid-info" style="flex:1;min-width:0">'+
+'<div class="vid-badges">'+
+(promo?'<span class="badge">Offre exclusive</span>':'')+
+(freeDeliv?'<span class="vid-free-badge"><i class="fa-solid fa-truck-fast"></i> Livraison gratuite</span>':'')+
+'</div>'+
+'<div class="title">'+escapeHtml(shortName)+'</div>'+
+(shortDesc?'<div class="vid-description">'+escapeHtml(shortDesc)+'</div>':'')+
+'<div class="vid-price-row">'+
+'<span class="price">'+formatPrice(price)+' F</span>'+
+(promo?'<span class="vid-old-price">'+formatPrice(oldPrice)+' F</span>':'')+
+'</div>'+
+'</div>'+
+'<div class="cta">'+
+'<button type="button" class="buy" id="vidBuy">Acheter</button>'+
+'<button type="button" class="cart" id="vidCart">Panier</button>'+
+'</div>'+
+'</div>'+
+'</div>'+
+'</div>';
+
+var page=$('vidPage'),video=$('vidEl');
 
 // Récupérer le lecteur déjà activé depuis le petit format
 if(
@@ -6356,7 +6492,81 @@ vidMuteBtn.addEventListener('click',function(e){
   vidMuteBtn.innerHTML=video.muted
     ?'<i class="fa-solid fa-volume-xmark"></i>'
     :'<i class="fa-solid fa-volume-high"></i>';
-});document.getElementById('vidCard').addEventListener('click',function(e){e.stopPropagation();if(e.target.closest('#vidBuy,#vidCart'))return;currentProduct=p;showPage('product',p.id)});document.getElementById('vidBuy').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('buy')});document.getElementById('vidCart').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('cart')});if(p.boutiqueId){var bl=document.getElementById('vidBoutLogo');if(bl){bl.addEventListener('click',function(e){e.stopPropagation();showPage('boutique',p.boutiqueId)});getDoc(doc(db,'boutiques',p.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();if(b.logo)bl.innerHTML='<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>'}}).catch(function(){})}var fb=document.getElementById('vidFollowBtn');
+});document.getElementById('vidCard').addEventListener('click',function(e){e.stopPropagation();if(e.target.closest('#vidBuy,#vidCart'))return;currentProduct=p;showPage('product',p.id)});// === BOUTON ACHETER DE LA CARTE VIDEO ===
+
+
+// === PREPARATION DU PRODUIT VIDEO ===
+function prepareVideoProduct(){
+  currentProduct=p;
+  selectedVariants={};
+  qty=1;
+
+  (p.variantGroups||[]).forEach(function(g){
+    if(g.options&&g.options.length){
+      selectedVariants[g.name]=g.options[0].label;
+    }
+  });
+}
+
+// === BOUTON ACHETER ===
+var vidBuyBtn=document.getElementById('vidBuy');
+
+if(vidBuyBtn){
+  vidBuyBtn.addEventListener('click',function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    prepareVideoProduct();
+    openVariantSheet('buy');
+  });
+}
+
+// === BOUTON PANIER ===
+var vidCartBtn=document.getElementById('vidCart');
+
+if(vidCartBtn){
+  vidCartBtn.addEventListener('click',function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    prepareVideoProduct();
+    openVariantSheet('cart');
+  });
+}
+
+
+
+// === BOUTON PANIER DE LA CARTE VIDEO ===
+
+var vidCartBtn=document.getElementById('vidCart');
+
+if(vidCartBtn){
+
+  vidCartBtn.addEventListener('click',function(e){
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    currentProduct=p;
+
+    selectedVariants={};
+    qty=1;
+
+    (p.variantGroups||[]).forEach(function(g){
+
+      if(g.options&&g.options.length){
+
+        selectedVariants[g.name]=g.options[0].label;
+
+      }
+
+    });
+
+    openVariantSheet('cart');
+
+  });
+
+}if(p.boutiqueId){var bl=document.getElementById('vidBoutLogo');if(bl){bl.addEventListener('click',function(e){e.stopPropagation();showPage('boutique',p.boutiqueId)});getDoc(doc(db,'boutiques',p.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();if(b.logo)bl.innerHTML='<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>'}}).catch(function(){})}var fb=document.getElementById('vidFollowBtn');
 
 if(fb){
   fb.addEventListener('click',async function(e){
