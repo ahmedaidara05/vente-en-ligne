@@ -1754,7 +1754,6 @@ setPersistence(auth,browserLocalPersistence).catch(function(){});
   // Authentification anonyme indépendante pour les interactions vidéo
 const videoAnonApp = initializeApp(firebaseConfig,'videoAnon');
 const videoAnonAuth = getAuth(videoAnonApp);
-  const videoDb = getFirestore(videoAnonApp);
 
 setPersistence(videoAnonAuth,browserLocalPersistence).catch(function(){});
 // Précharge le logo du site une seule fois (cache localStorage)   
@@ -5955,7 +5954,7 @@ if(p.boutiqueId){
       '<button type="button" id="vidFollowBtn" class="vid-follow'+(isFol?' following':'')+'">'+
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'+
       '</button>'+
-       
+      '<span id="vidFollowCount">'+followerCount+'</span>'+
     '</div>';
 }
 $('page-video').innerHTML='<div class="vid-page" id="vidPage"><div class="vid-top"><button type="button" id="vidBack"><i class="fa-solid fa-arrow-left"></i></button><button type="button" id="vidMute"><i class="fa-solid fa-volume-high"></i></button></div><div class="vid-stage"><video id="vidEl" src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay muted></video><div class="vid-side">'+logoHtml+'<button type="button" id="vidLike" class="'+(liked?'liked':'')+'"><i class="'+(liked?'fa-solid':'fa-regular')+' fa-thumbs-up"></i><span>'+likeCount+'</span></button><button type="button" id="vidComment"><i class="fa-regular fa-comment"></i><span>'+commentCount+'</span></button><button type="button" id="vidShare"><i class="fa-solid fa-share"></i><span>'+shareCount+'</span></button></div><div class="vid-card" id="vidCard">'+(img?'<img src="'+escapeHtml(img)+'" onerror="this.style.display=\'none\'"/>':'')+'<div style="flex:1;min-width:0"><span class="badge">Offre exclusive</span><div class="title">'+escapeHtml(String(p.name||'').length>20?String(p.name||'').substring(0,19)+'…':String(p.name||''))+'</div><div class="price">'+formatPrice(price)+' F</div></div><div class="cta"><button type="button" class="buy" id="vidBuy">Acheter</button><button type="button" class="cart" id="vidCart">Panier</button></div></div></div></div>';var page=$('vidPage'),video=$('vidEl');
@@ -6188,50 +6187,47 @@ if(fb){
       countEl.textContent=getFollowCount(p.boutiqueId);
     }
   });
-}}// BOUTON J'AIME
+}}
+// === BOUTON J'AIME ===
 document.getElementById('vidLike').addEventListener('click',async function(e){
-
   e.stopPropagation();
 
   var btn=this;
-
-  btn.disabled=true;
-
-  await toggleVideoLike(p.id);
-
-  btn.disabled=false;
-
-});
-
-// BOUTON COMMENTAIRES
-document.getElementById('vidComment').addEventListener('click',function(e){
-
-  e.stopPropagation();
-
-  openComments(p.id);
-
-});
-
-// BOUTON PARTAGE
-document.getElementById('vidShare').addEventListener('click',async function(e){
-
-  e.stopPropagation();
-
-  var btn=this;
-
   btn.disabled=true;
 
   try{
-
-    await shareProduct(p);
-
+    await toggleVideoLike(p.id);
   }finally{
-
     btn.disabled=false;
-
   }
+});
 
-});// === DEFILEMENT VIDEO FLUIDE COMME TIKTOK ===
+// === BOUTON COMMENTAIRES ===
+document.getElementById('vidComment').addEventListener('click',function(e){
+  e.preventDefault();
+  e.stopPropagation();
+
+  openComments(p.id);
+});
+
+// === BOUTON PARTAGE ===
+document.getElementById('vidShare').addEventListener('click',async function(e){
+  e.preventDefault();
+  e.stopPropagation();
+
+  var btn=this;
+  btn.disabled=true;
+
+  try{
+    await shareProduct(p);
+  }catch(err){
+    console.error('Erreur partage :',err);
+    toast('Impossible de partager ce produit');
+  }finally{
+    btn.disabled=false;
+  }
+});
+// === DEFILEMENT VIDEO FLUIDE COMME TIKTOK ===
 var swipeStartY=0;
 var swipeDeltaY=0;
 var swipeActive=false;
@@ -6459,11 +6455,8 @@ async function toggleVideoLike(pid){
 
     var actor=await getVideoActor();
 
-    // Utiliser Firestore associé à la bonne authentification
-    var activeDb=actor.isAnonymous?videoDb:db;
-
     var ref=doc(
-      activeDb,
+      db,
       'videoLikes',
       String(pid),
       'users',
@@ -6491,8 +6484,6 @@ async function toggleVideoLike(pid){
     }
 
   }catch(e){
-
-    console.error('Erreur J’aime :',e);
 
     toast('J’aime non enregistré : '+e.message);
 
@@ -6754,17 +6745,15 @@ async function openComments(pid){
 // ==========================================
 // PARTAGES
 // ==========================================
+
 async function recordVideoShare(pid){
 
   try{
 
     var actor=await getVideoActor();
 
-    // Utiliser Firestore associé à la bonne authentification
-    var activeDb=actor.isAnonymous?videoDb:db;
-
     await addDoc(
-      collection(activeDb,'videoShares',String(pid),'events'),
+      collection(db,'videoShares',String(pid),'events'),
       {
         productId:String(pid),
         userId:actor.uid,
@@ -6774,9 +6763,7 @@ async function recordVideoShare(pid){
 
   }catch(e){
 
-    console.error('Erreur comptage partage :',e);
-
-    toast('Partage non comptabilisé : '+e.message);
+    console.warn('Partage non comptabilisé',e);
 
   }
 
