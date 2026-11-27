@@ -5770,8 +5770,21 @@ if(!products.length){
 /* 4) sinon refresh en arrière-plan (au cas où de nouvelles vidéos existent) */
 try{await loadProducts();var fresh=products.filter(function(p){return p.videoUrl&&p.published!==false});var same=fresh.length===videoFeed.length&&fresh[0]&&videoFeed[0]&&fresh[0].id===videoFeed[0].id;if(!same&&fresh.length){videoFeed=fresh;videoFeedIdx=0;paintVideoPlayer(videoFeed[0])}}catch(e){}
 }
-async function paintVideoPlayer(p){var price=minProductPrice(p);var img=(p.images&&p.images[0])||'';var liked=isVideoLiked(p.id);var likeCount=getLikeCount(p.id);var commentCount=getCommentCount(p.id);var logoHtml='';var isFol=false;if(p.boutiqueId){try{isFol=await isFollowing(p.boutiqueId)}catch(e){}logoHtml='<div class="vid-logo-wrap"><button type="button" id="vidBoutLogo" style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:#fff;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00A854;box-shadow:0 2px 8px rgba(0,0,0,.3)"><i class="fa-solid fa-store"></i></button><button type="button" id="vidFollowBtn" class="vid-follow'+(isFol?' following':'')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>'}
+async function paintVideoPlayer(p,enterDirection){var price=minProductPrice(p);var img=(p.images&&p.images[0])||'';var liked=isVideoLiked(p.id);var likeCount=getLikeCount(p.id);var commentCount=getCommentCount(p.id);var logoHtml='';var isFol=false;if(p.boutiqueId){try{isFol=await isFollowing(p.boutiqueId)}catch(e){}logoHtml='<div class="vid-logo-wrap"><button type="button" id="vidBoutLogo" style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:#fff;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00A854;box-shadow:0 2px 8px rgba(0,0,0,.3)"><i class="fa-solid fa-store"></i></button><button type="button" id="vidFollowBtn" class="vid-follow'+(isFol?' following':'')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>'}
 $('page-video').innerHTML='<div class="vid-page" id="vidPage"><div class="vid-top"><button type="button" id="vidBack"><i class="fa-solid fa-arrow-left"></i></button><button type="button" id="vidMute"><i class="fa-solid fa-volume-high"></i></button></div><div class="vid-stage"><video id="vidEl" src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay></video><div class="vid-side">'+logoHtml+'<button type="button" id="vidLike" class="'+(liked?'liked':'')+'"><i class="'+(liked?'fa-solid':'fa-regular')+' fa-thumbs-up"></i><span>'+likeCount+'</span></button><button type="button" id="vidComment"><i class="fa-regular fa-comment"></i><span>'+commentCount+'</span></button><button type="button" id="vidShare"><i class="fa-solid fa-share"></i></button></div><div class="vid-card" id="vidCard">'+(img?'<img src="'+escapeHtml(img)+'" onerror="this.style.display=\'none\'"/>':'')+'<div style="flex:1;min-width:0"><span class="badge">Offre exclusive</span><div class="title">'+escapeHtml(String(p.name||'').length>20?String(p.name||'').substring(0,19)+'…':String(p.name||''))+'</div><div class="price">'+formatPrice(price)+' F</div></div><div class="cta"><button type="button" class="buy" id="vidBuy">Acheter</button><button type="button" class="cart" id="vidCart">Panier</button></div></div></div></div>';var page=$('vidPage'),video=$('vidEl');
+
+// Animation d'arrivée de la nouvelle vidéo
+if(enterDirection){
+  page.style.transition='none';
+  page.style.transform='translateY('+(enterDirection>0?'100%':'-100%')+')';
+
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      page.style.transition='transform .22s ease';
+      page.style.transform='translateY(0)';
+    });
+  });
+}
 var vidIndicator=document.createElement('div');
 vidIndicator.className='vid-play-indicator';
 vidIndicator.innerHTML='<i class="fa-solid fa-pause"></i>';
@@ -5803,7 +5816,83 @@ vidMuteBtn.addEventListener('click',function(e){
   vidMuteBtn.innerHTML=video.muted
     ?'<i class="fa-solid fa-volume-xmark"></i>'
     :'<i class="fa-solid fa-volume-high"></i>';
-});document.getElementById('vidCard').addEventListener('click',function(e){e.stopPropagation();if(e.target.closest('#vidBuy,#vidCart'))return;currentProduct=p;showPage('product',p.id)});document.getElementById('vidBuy').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('buy')});document.getElementById('vidCart').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('cart')});if(p.boutiqueId){var bl=document.getElementById('vidBoutLogo');if(bl){bl.addEventListener('click',function(e){e.stopPropagation();showPage('boutique',p.boutiqueId)});getDoc(doc(db,'boutiques',p.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();if(b.logo)bl.innerHTML='<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>'}}).catch(function(){})}var fb=document.getElementById('vidFollowBtn');if(fb){fb.addEventListener('click',async function(e){e.stopPropagation();if(!currentUser){showPage('auth');return}var nowFol=fb.classList.contains('following');await setFollow(p.boutiqueId,!nowFol);if(!nowFol){fb.classList.add('following');toast('Abonné')}else{fb.classList.remove('following');toast('Désabonné')}})}}document.getElementById('vidLike').addEventListener('click',function(e){e.stopPropagation();toggleVideoLike(p.id);var btn=this;var nowLiked=isVideoLiked(p.id);btn.classList.toggle('liked',nowLiked);btn.querySelector('i').className=(nowLiked?'fa-solid':'fa-regular')+' fa-thumbs-up';btn.querySelector('span').textContent=getLikeCount(p.id)});document.getElementById('vidComment').addEventListener('click',function(e){e.stopPropagation();openComments(p.id)});document.getElementById('vidShare').addEventListener('click',function(e){e.stopPropagation();shareProduct(p)});var sy=0;page.addEventListener('touchstart',function(e){sy=e.changedTouches[0].screenY},{passive:true});page.addEventListener('touchend',function(e){var dy=e.changedTouches[0].screenY-sy;if(dy<-60&&videoFeedIdx<videoFeed.length-1){videoFeedIdx++;paintVideoPlayer(videoFeed[videoFeedIdx])}else if(dy>60&&videoFeedIdx>0){videoFeedIdx--;paintVideoPlayer(videoFeed[videoFeedIdx])}},{passive:true});if(window._vidKeyHandler)document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=function(e){if(!document.getElementById('vidPage')){document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=null;return}if(e.key==='ArrowDown'){e.preventDefault();if(videoFeedIdx<videoFeed.length-1){videoFeedIdx++;paintVideoPlayer(videoFeed[videoFeedIdx])}}else if(e.key==='ArrowUp'){e.preventDefault();if(videoFeedIdx>0){videoFeedIdx--;paintVideoPlayer(videoFeed[videoFeedIdx])}}};document.addEventListener('keydown',window._vidKeyHandler)}
+});document.getElementById('vidCard').addEventListener('click',function(e){e.stopPropagation();if(e.target.closest('#vidBuy,#vidCart'))return;currentProduct=p;showPage('product',p.id)});document.getElementById('vidBuy').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('buy')});document.getElementById('vidCart').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('cart')});if(p.boutiqueId){var bl=document.getElementById('vidBoutLogo');if(bl){bl.addEventListener('click',function(e){e.stopPropagation();showPage('boutique',p.boutiqueId)});getDoc(doc(db,'boutiques',p.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();if(b.logo)bl.innerHTML='<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>'}}).catch(function(){})}var fb=document.getElementById('vidFollowBtn');if(fb){fb.addEventListener('click',async function(e){e.stopPropagation();if(!currentUser){showPage('auth');return}var nowFol=fb.classList.contains('following');await setFollow(p.boutiqueId,!nowFol);if(!nowFol){fb.classList.add('following');toast('Abonné')}else{fb.classList.remove('following');toast('Désabonné')}})}}document.getElementById('vidLike').addEventListener('click',function(e){e.stopPropagation();toggleVideoLike(p.id);var btn=this;var nowLiked=isVideoLiked(p.id);btn.classList.toggle('liked',nowLiked);btn.querySelector('i').className=(nowLiked?'fa-solid':'fa-regular')+' fa-thumbs-up';btn.querySelector('span').textContent=getLikeCount(p.id)});document.getElementById('vidComment').addEventListener('click',function(e){e.stopPropagation();openComments(p.id)});document.getElementById('vidShare').addEventListener('click',function(e){e.stopPropagation();shareProduct(p)});// === DEFILEMENT VIDEO FLUIDE COMME TIKTOK ===
+var swipeStartY=0;
+var swipeDeltaY=0;
+var swipeActive=false;
+var swipePointerId=null;
+
+page.style.touchAction='none';
+
+page.addEventListener('pointerdown',function(e){
+  if(e.pointerType==='mouse' && e.button!==0)return;
+
+  if(e.target.closest('.vid-card,.vid-side,.vid-top,.vid-comments'))return;
+
+  swipeStartY=e.clientY;
+  swipeDeltaY=0;
+  swipeActive=true;
+  swipePointerId=e.pointerId;
+
+  try{page.setPointerCapture(e.pointerId)}catch(err){}
+});
+
+page.addEventListener('pointermove',function(e){
+  if(!swipeActive || e.pointerId!==swipePointerId)return;
+
+  swipeDeltaY=e.clientY-swipeStartY;
+
+  if(Math.abs(swipeDeltaY)>8){
+    clearTimeout(pressTimer);
+    video.playbackRate=1;
+    e.preventDefault();
+
+    page.style.transition='none';
+    page.style.transform='translateY('+swipeDeltaY+'px)';
+  }
+},{passive:false});
+
+page.addEventListener('pointerup',function(e){
+  if(!swipeActive || e.pointerId!==swipePointerId)return;
+
+  swipeActive=false;
+  swipePointerId=null;
+
+  // Glissement vers le haut : vidéo suivante
+  if(swipeDeltaY<-70 && videoFeedIdx<videoFeed.length-1){
+
+    page.style.transition='transform .22s ease';
+    page.style.transform='translateY(-100%)';
+
+    setTimeout(function(){
+      videoFeedIdx++;
+      paintVideoPlayer(videoFeed[videoFeedIdx],1);
+    },220);
+
+  // Glissement vers le bas : vidéo précédente
+  }else if(swipeDeltaY>70 && videoFeedIdx>0){
+
+    page.style.transition='transform .22s ease';
+    page.style.transform='translateY(100%)';
+
+    setTimeout(function(){
+      videoFeedIdx--;
+      paintVideoPlayer(videoFeed[videoFeedIdx],-1);
+    },220);
+
+  }else{
+    // Mouvement insuffisant : retour à la position initiale
+    page.style.transition='transform .2s ease';
+    page.style.transform='translateY(0)';
+  }
+});
+
+page.addEventListener('pointercancel',function(){
+  swipeActive=false;
+  swipePointerId=null;
+  page.style.transition='transform .2s ease';
+  page.style.transform='translateY(0)';
+});if(window._vidKeyHandler)document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=function(e){if(!document.getElementById('vidPage')){document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=null;return}if(e.key==='ArrowDown'){e.preventDefault();if(videoFeedIdx<videoFeed.length-1){videoFeedIdx++;paintVideoPlayer(videoFeed[videoFeedIdx])}}else if(e.key==='ArrowUp'){e.preventDefault();if(videoFeedIdx>0){videoFeedIdx--;paintVideoPlayer(videoFeed[videoFeedIdx])}}};document.addEventListener('keydown',window._vidKeyHandler)}
 function likeKey(pid){return 'vl_like_'+(currentUser?currentUser.uid:'anon')+'_'+pid}
 function isVideoLiked(pid){try{return localStorage.getItem(likeKey(pid))==='1'}catch(e){return false}}
 function toggleVideoLike(pid){try{if(isVideoLiked(pid)){localStorage.removeItem(likeKey(pid))}else{localStorage.setItem(likeKey(pid),'1')}}catch(e){}}
