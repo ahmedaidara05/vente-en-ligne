@@ -1,0 +1,258 @@
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-File-Name, X-Content-Type',
+  'Access-Control-Max-Age': '86400',
+};
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...CORS, 'Content-Type': 'application/json' },
+  });
+}
+
+function emailList(value) {
+  return (value || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+async function authenticate(request, env) {
+  const header = request.headers.get('Authorization') || '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+
+  if (!match) {
+    return { error: 'Connexion requise', status: 401 };
+  }
+
+  if (!env.FIREBASE_API_KEY) {
+    return { error: 'Configuration Firebase manquante', status: 500 };
+  }
+
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${env.FIREBASE_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: match[1] }),
+    }
+  );
+
+  if (!response.ok) {
+    return { error: 'Session invalide ou expirée', status: 401 };
+  }
+
+  const data = await response.json();
+  const user = data.users?.[0];
+
+  if (!user || !user.email || user.emailVerified !== true) {
+    return { error: 'Adresse e-mail non vérifiée', status: 403 };
+  }
+
+  return { email: user.email.toLowerCase() };
+}
+
+async function authorizeUpload(request, env) {
+  const user = await authenticate(request, env);
+  if (user.error) return user;
+
+  const admins = emailList(env.VIDEO_ADMIN_EMAILS);
+  const owners = emailList(env.VIDEO_OWNER_EMAILS);
+
+  if (admins.includes(user.email)) {
+    return { email: user.email, admin: true };
+  }
+
+  if (owners.includes(user.email)) {
+    return { email: user.email, admin: false };
+  }
+
+  return { error: 'Permission refusée', status: 403 };
+}
+
+export default {
+  async fetch(request, env) {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS });
+    }
+
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/\/+$/, '') || '/';
+
+    try {
+      if (!env.VIDEOS) {
+        return json({ error: 'Binding R2 VIDEOS manquant' }, 500);
+      }
+
+      if (path === '/' && request.method === 'GET') {
+        return json({ ok: true, service: 'idus-videos', bucket: 'videos' });
+      }
+
+      // AJOUT VIDEO : boutiquiers autorisés et administrateurs
+      if (path === '/upload' && request.method === 'POST') {
+        const permission = await authorizeUpload(request, env);
+
+        if (permission.error) {
+          return json({ error: permission.error }, permission.status);
+        }
+
+        const ct = request.headers.get('content-type') || '';
+        let bytes, filename, contentType;
+
+        if (ct.includes('multipart/form-data')) {
+          const form = await request.formData();
+          const file = form.get('file');
+
+          if (!file || typeof file.arrayBuffer !== 'function') {
+            return json({ error: 'Champ file manquant' }, 400);
+          }
+
+          bytes = await file.arrayBuffer();
+          filename = file.name || 'video.mp4';
+          contentType = file.type || 'video/mp4';
+        } else {
+          bytes = await request.arrayBuffer();
+          filename = request.headers.get('X-File-Name') || 'video.mp4';
+          contentType = request.headers.get('X-Content-Type') || ct || 'video/mp4';
+        }
+
+        if (!bytes || bytes.byteLength === 0) {
+          return json({ error: 'Fichier vide' }, 400);
+        }
+
+        if (bytes.byteLength > 25 * 1024 * 1024) {
+          return json({ error: 'Fichier trop volumineux (max 25 Mo)' }, 413);
+        }
+
+     if (
+  !contentType.startsWith('video/') &&
+  !contentType.startsWith('image/')
+) {
+  return json({
+    error: 'Seuls les fichiers image et vidéo sont autorisés'
+  }, 415);
+}
+
+        const ext = (filename.split('.').pop() || 'mp4')
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '') || 'mp4';
+
+        const key = `v/${Date.now()}_${crypto.randomUUID()}.${ext}`;
+
+        await env.VIDEOS.put(key, bytes, {
+          httpMetadata: { contentType },
+          customMetadata: {
+            originalName: filename,
+            uploaderEmail: permission.email,
+          },
+        });
+
+        return json({
+          ok: true,
+          key,
+          url: `${url.origin}/video/${key}`,
+          size: bytes.byteLength,
+        });
+      }
+
+      // LECTURE PUBLIQUE : aucun compte nécessaire
+      if (path.startsWith('/video/') && request.method === 'GET') {
+        const key = decodeURIComponent(path.slice('/video/'.length));
+
+        if (!key || key.includes('..')) {
+          return json({ error: 'Clé invalide' }, 400);
+        }
+
+        const obj = await env.VIDEOS.get(key);
+
+        if (!obj) {
+          return json({ error: 'Vidéo introuvable' }, 404);
+        }
+
+        const headers = new Headers(CORS);
+        headers.set('Content-Type', obj.httpMetadata?.contentType || 'video/mp4');
+        headers.set('Accept-Ranges', 'bytes');
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+
+        if (obj.size != null) {
+          headers.set('Content-Length', String(obj.size));
+        }
+
+        const range = request.headers.get('Range');
+
+        if (range && obj.size) {
+          const m = /^bytes=(\d+)-(\d*)$/.exec(range);
+
+          if (m) {
+            const start = Number(m[1]);
+            const end = m[2] ? Number(m[2]) : obj.size - 1;
+
+            if (start >= obj.size || end < start || end >= obj.size) {
+              return new Response(null, {
+                status: 416,
+                headers: {
+                  ...Object.fromEntries(headers),
+                  'Content-Range': `bytes */${obj.size}`,
+                },
+              });
+            }
+
+            const slice = await env.VIDEOS.get(key, {
+              range: { offset: start, length: end - start + 1 },
+            });
+
+            headers.set('Content-Range', `bytes ${start}-${end}/${obj.size}`);
+            headers.set('Content-Length', String(end - start + 1));
+
+            return new Response(slice.body, { status: 206, headers });
+          }
+        }
+
+        return new Response(obj.body, { status: 200, headers });
+      }
+
+      // SUPPRESSION : propriétaire de la vidéo ou administrateur
+      if (path.startsWith('/video/') && request.method === 'DELETE') {
+        const permission = await authorizeUpload(request, env);
+
+        if (permission.error) {
+          return json({ error: permission.error }, permission.status);
+        }
+
+        const key = decodeURIComponent(path.slice('/video/'.length));
+
+        if (!key || key.includes('..') || !key.startsWith('v/')) {
+          return json({ error: 'Clé invalide' }, 400);
+        }
+
+        const obj = await env.VIDEOS.get(key);
+
+        if (!obj) {
+          return json({ error: 'Vidéo introuvable' }, 404);
+        }
+
+        const uploader = (
+          obj.customMetadata?.uploaderEmail || ''
+        ).toLowerCase();
+
+        if (!permission.admin && uploader !== permission.email) {
+          return json({
+            error: 'Vous ne pouvez supprimer que vos propres vidéos',
+          }, 403);
+        }
+
+        await env.VIDEOS.delete(key);
+
+        return json({ ok: true, deleted: key });
+      }
+
+      return json({ error: 'Not found', path }, 404);
+
+    } catch (e) {
+      return json({ error: e.message || String(e) }, 500);
+    }
+  },
+};
