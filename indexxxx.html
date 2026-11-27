@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
-<meta name="theme-color" content="#00A854"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#00A854"/>
 <title>IDA</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -344,6 +344,17 @@ body.page-cart-active .bn {
 .to2{position:fixed;left:50%;bottom:calc(var(--nav-h)+20px+var(--safe-b));transform:translateX(-50%);background:#333;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s}.to2.on{opacity:1}
 .br{background:var(--danger);color:#fff;height:44px;border-radius:22px;width:100%;font-weight:700;display:flex;align-items:center;justify-content:center}
 .ba{background:#E8FFF0;color:var(--red);border:1px solid #A7F3D0;height:40px;border-radius:20px;flex:1;font-weight:700}
+  /* === DESCRIPTION COMPLETE DU PRODUIT === */
+.pd-description{
+  font-size:13px;
+  line-height:1.7;
+  color:#333;
+  margin-top:12px;
+  margin-bottom:20px;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
 .pd-actions{position:fixed;left:0;right:0;bottom:0;z-index:120;padding:8px 10px calc(8px + var(--safe-b));background:#fff;border-top:1px solid var(--border);display:flex;gap:6px;align-items:center}
 .pd-ico{width:42px;height:42px;border-radius:10px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:18px}
 .pd-top{position:fixed;top:0;left:0;right:0;z-index:120;display:flex;justify-content:space-between;padding:10px 12px;pointer-events:none}
@@ -382,6 +393,13 @@ body.page-cart-active .bn {
 .vid-top{position:absolute;top:0;left:0;right:0;z-index:6;padding:12px}
 .vid-top button{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.4);color:#fff}
 .vid-hide-ui .vid-top,.vid-hide-ui .vid-card,.vid-hide-ui .vid-side{opacity:0;pointer-events:none;transition:opacity .3s}
+  /* Masquer les 5 boutons de navigation pendant la lecture vidéo */
+body.video-controls-hidden .bn{
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+  transition:opacity .3s,visibility .3s;
+}
 .vid-float{position:fixed;width:110px;height:180px;border-radius:12px;overflow:hidden;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.35);background:#000;border:2px solid #fff;right:12px;bottom:90px;touch-action:none}
 .vid-float video{width:100%;height:100%;object-fit:cover}
 .vid-float .vf-x{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff}
@@ -404,7 +422,14 @@ body.page-cart-active .bn {
 .bq-logo-fallback{font-size:38px;font-weight:800;color:var(--red)}
 .bq-head{padding:32px 16px 12px 16px;text-align:left;background:#fff}
 .bq-name{font-size:26px;font-weight:800;line-height:1.2}
-.bq-desc{font-size:13px;color:#555;margin-top:12px}
+.bq-desc{
+  font-size:13px;
+  color:#555;
+  margin-top:12px;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  line-height:1.6;
+}
 .bq-head{padding:40px 16px 0 16px;text-align:left;background:#fff}
 .bq-actions{display:flex;gap:8px;justify-content:flex-start;margin-top:0;padding:14px 16px 16px;background:#fff}
 .bq-btn-follow{height:36px;padding:0 20px;border-radius:18px;font-weight:700;color:#fff;background:var(--danger);border:1px solid var(--danger)}
@@ -512,6 +537,135 @@ body.page-cart-active .bn {
   font-size:21px;
   line-height:1;
   color:#333;
+}
+
+  /* === NOTIFICATIONS DE COMMANDES === */
+
+.notif-history-page{
+  min-height:100vh;
+  background:#fff;
+}
+
+.notif-history-head{
+  position:sticky;
+  top:0;
+  z-index:110;
+  height:56px;
+  display:grid;
+  grid-template-columns:44px 1fr 44px;
+  align-items:center;
+  padding:0 12px;
+  background:#fff;
+  border-bottom:1px solid #eee;
+}
+
+.notif-history-head button{
+  width:40px;
+  height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  color:#000;
+  font-size:21px;
+}
+
+.notif-history-head h2{
+  text-align:center;
+  font-size:16px;
+  font-weight:750;
+  color:#1a1a1a;
+}
+
+.notif-history-list{
+  background:#fff;
+  padding-bottom:25px;
+}
+
+.notif-history-empty{
+  padding:65px 20px;
+  text-align:center;
+  color:#999;
+}
+
+.notif-history-empty i{
+  display:block;
+  font-size:38px;
+  margin-bottom:12px;
+  color:#bbb;
+}
+
+.notif-history-empty p{
+  font-size:13px;
+}
+  
+/* === HISTORIQUE DES NOTIFICATIONS DE COMMANDES === */
+
+.notif-history-page{
+  min-height:100vh;
+  background:#fff;
+}
+
+.notif-history-head{
+  position:sticky;
+  top:0;
+  z-index:110;
+  height:56px;
+  display:grid;
+  grid-template-columns:44px 1fr 44px;
+  align-items:center;
+  padding:0 12px;
+  background:#fff;
+  border-bottom:1px solid #eee;
+}
+
+.notif-history-head button{
+  width:40px;
+  height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  color:#000;
+  font-size:17px;
+}
+
+.notif-history-head button:last-child{
+  color:#E02E24;
+}
+
+.notif-history-head h2{
+  text-align:center;
+  font-size:16px;
+  font-weight:750;
+  color:#1a1a1a;
+  margin:0;
+}
+
+.notif-history-list{
+  background:#fff;
+  padding-bottom:25px;
+}
+
+.notif-history-empty{
+  padding:65px 20px;
+  text-align:center;
+  color:#999;
+}
+
+.notif-history-empty i{
+  display:block;
+  font-size:38px;
+  margin-bottom:12px;
+  color:#bbb;
+}
+
+.notif-history-empty p{
+  font-size:13px;
 }
 
 /* === Espace Compte IDA === */
@@ -1336,13 +1490,196 @@ body.page-orders-active #ordRecoGrid{
       transform: scale(0); transition: transform 0.2s ease;
     }
     .delivery-option.active .radio-indicator::after { transform: scale(1); }
+  /* VIDEO PLEIN ECRAN SUR TELEPHONE */
+@media screen and (max-width: 768px) {
+  #page-video {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #000 !important;
+    z-index: 99999 !important;
+  }
+
+  .vid-page {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    background: #000 !important;
+  }
+
+  .vid-stage {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #vidEl {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+.vid-top {
+  position: absolute !important;
+  top: env(safe-area-inset-top, 0px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 12px 18px !important;
+  box-sizing: border-box !important;
+  z-index: 20 !important;
+}
+
+  .vid-card {
+    position: absolute !important;
+    bottom: env(safe-area-inset-bottom, 0px) !important;
+    z-index: 10 !important;
+  }
+
+  .vid-side {
+    position: absolute !important;
+    z-index: 10 !important;
+  }
+}
+  /* INDICATEUR PLAY / PAUSE VIDEO */
+.vid-play-indicator {
+  position: absolute;
+  z-index: 50;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%) scale(.8);
+  color: #fff;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,.5));
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.vid-play-indicator.show {
+  opacity: 1;
+  transform: translate(-50%,-50%) scale(1);
+}
+  /* BOUTON RETOUR VIDEO SANS FOND */
+.vid-top button#vidBack {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vid-top button#vidBack i {
+  background: transparent !important;
+  color: #fff !important;
+}
+  /* BOUTON SON VIDEO */
+.vid-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.vid-top button#vidMute {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  font-size: 21px;
+  padding: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vid-top button#vidMute i {
+  background: transparent !important;
+  color: #fff !important;
+}
+  /* TAILLE DES ICONES EN HAUT */
+.vid-top button#vidBack {
+  font-size: 25px !important;
+}
+
+.vid-top button#vidMute {
+  font-size: 18px !important;
+}
+  
+  /* === BOUTON REMONTER EN HAUT === */
+#catalogScrollTop{
+  position:fixed;
+  right:17px;
+  bottom:calc(85px + env(safe-area-inset-bottom,0px));
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  background:#fff;
+  color:#222;
+  border:1px solid #eee;
+  box-shadow:0 3px 12px rgba(0,0,0,.16);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+  z-index:9990;
+  cursor:pointer;
+}
+
+#catalogScrollTop.show{
+  display:flex;
+}
 </style>
 </head>
 <body>
 <div id="app">
 <header class="header"><div class="hi"><div class="sr">
 <div class="logo" id="logoBtn">
-  <img id="siteLogoImg" src="logo.png" alt="IDA" class="logo-img"/>
+  <img id="siteLogoImg" src="" alt="IDA" class="logo-img"/>
+<script>
+(function(){
+  var img = document.getElementById('siteLogoImg');
+  try{
+    img.src = localStorage.getItem('vl_site_logo') || 'logo.png';
+  }catch(e){
+    img.src = 'logo.png';
+  }
+})();
+</script>
 </div>
 <div class="sp"><i class="fa-solid fa-magnifying-glass" style="color:#999;font-size:14px"></i>
 <input type="search" id="searchInput" placeholder="Rechercher…"/></div>
@@ -1361,7 +1698,7 @@ body.page-orders-active #ordRecoGrid{
 <div id="page-favorites" class="page"></div>
 <div id="page-boutique" class="page"></div>
 <div id="page-messages" class="page"></div>
-<div id="page-chat-thread" class="page"></div>
+<div id="page-notifications" class="page"></div>
 <div id="page-follows" class="page"></div>
   <div id="page-orders" class="page"></div>
 <div id="page-order-detail" class="page"></div>
@@ -1387,13 +1724,18 @@ import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateD
 const firebaseConfig={apiKey:"AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",authDomain:"idus-a87a6.firebaseapp.com",projectId:"idus-a87a6",storageBucket:"idus-a87a6.firebasestorage.app",messagingSenderId:"284785552985",appId:"1:284785552985:web:4cb12a71465a0e167bcb48",measurementId:"G-M0EKXCDV3R"};
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
 setPersistence(auth,browserLocalPersistence).catch(function(){});
+  // Authentification anonyme indépendante pour les interactions vidéo
+const videoAnonApp = initializeApp(firebaseConfig,'videoAnon');
+const videoAnonAuth = getAuth(videoAnonApp);
+
+setPersistence(videoAnonAuth,browserLocalPersistence).catch(function(){});
 // Précharge le logo du site une seule fois (cache localStorage)   
 setTimeout(function(){ prefetchSiteLogo(); }, 0);
-  // Applique le logo du site mis en cache dès que possible
-document.addEventListener('DOMContentLoaded',function(){
+  // Applique le logo du site mis en cache dès que possibl 
+setTimeout(function(){
   var el=document.getElementById('siteLogoImg');
   if(el){var u=getSiteLogo(); if(u) el.src=u;}
-});
+},300);
 setTimeout(function(){
   var el=document.getElementById('siteLogoImg');
   if(el){var u=getSiteLogo(); if(u) el.src=u;}
@@ -1401,6 +1743,20 @@ setTimeout(function(){
 let favorites=JSON.parse(localStorage.getItem('vl_favs')||'[]');
 let currentUser=null,cart=JSON.parse(localStorage.getItem('vl_cart')||'[]'),products=[],categories=[],settings={shippingFee:1500},currentProduct=null,selectedVariants={},qty=1,searchTerm='',sheetMode='cart',pageHistory=[];
 let videoFeed=[],videoFeedIdx=0,videoHideTimer=null;
+
+let videoAnonUser=videoAnonAuth.currentUser;
+let videoStatsUnsubs=[];
+let videoStatsPid=null;
+
+let authReadyResolve=null;
+
+const authReadyPromise=new Promise(function(resolve){
+  authReadyResolve=resolve;
+});
+
+onAuthStateChanged(videoAnonAuth,function(u){
+  videoAnonUser=u;
+});
 let ads=[];
   let searchHistory=JSON.parse(localStorage.getItem('vl_search_history')||'[]');
 let viewedProducts=JSON.parse(localStorage.getItem('vl_viewed_products')||'[]');
@@ -1547,8 +1903,10 @@ function setChrome(hide,headerOnly){
   );
 }  
   let lastPageArgs={};
-function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'||page==='messages'){setChrome(true)}else{setChrome(page==='product'||page==='boutique'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}document.body.classList.toggle('page-account-active', page === 'account');document.body.classList.toggle('page-cart-active', page === 'cart');
-document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows();else if(page==='orders')renderOrders();else if(page==='order-detail'&&data)renderOrderDetail(data);else if(page==='saved-checkouts')renderSavedCheckouts()}
+function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'||page==='messages'||page==='notifications'){
+  setChrome(true);
+}else{setChrome(page==='product'||page==='boutique'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}document.body.classList.toggle('page-account-active', page === 'account');document.body.classList.toggle('page-cart-active', page === 'cart');
+document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='notifications')renderTrackingNotificationHistory();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows();else if(page==='orders')renderOrders();else if(page==='order-detail'&&data)renderOrderDetail(data);else if(page==='saved-checkouts')renderSavedCheckouts()}
 function goBack(){
     var fs=document.getElementById('fsViewer');
     if(fs){fs.remove();return}
@@ -1577,12 +1935,12 @@ document.querySelectorAll('.bn button').forEach(function(btn){btn.addEventListen
 async function loadCategories(){try{var s=await getDocs(collection(db,'categories'));categories=s.docs.map(function(d){return{id:d.id,...d.data()}})}catch(e){categories=[]}}
 async function loadProducts(){try{var s=await getDocs(query(collection(db,'products'),where('published','==',true)));products=s.docs.map(function(d){return{id:d.id,...d.data()}});saveProductCache(products)}catch(e){console.warn('loadProducts',e);if(!products.length)products=loadProductCache()}return products}
 function productCard(p){var promo=p.promoPrice&&p.promoPrice<p.price;var price=minProductPrice(p);var img=(p.images&&p.images[0])||'';var deliv=p.deliveryTime||'2 jours';
-var freeDeliv=p.fastDelivery===true;var showStock=p.showStock!==false;var struck=promo?' <span style="text-decoration:line-through;color:#999;font-size:11px">'+formatPrice(p.price)+' F</span>':'';var stockLine=showStock?'<div style="font-size:10px;color:#888">Stock: '+(p.stock!=null?p.stock:0)+'</div>':'';return'<div class="pc" data-pid="'+p.id+'"><div class="im">'+(img?'<img src="'+escapeHtml(img)+'" loading="lazy" onerror="this.onerror=null;this.style.background=\'#eee\'"/>':'')+'</div><div class="bd"><div class="tt">'+escapeHtml(p.name)+'</div><div style="font-size:11px;color:#00A854;margin-bottom:4px">'+(freeDeliv?'<span class="free-deliv"><span>Livraison Gratuite</span></span>':'Livraison:')+' '+escapeHtml(deliv)+'</div>'+stockLine+'<div><span class="px">'+formatPrice(price)+' F</span>'+struck+'</div></div></div>'}
+var freeDeliv=p.fastDelivery===true;var showStock=p.showStock!==false;var struck=promo?' <span style="text-decoration:line-through;color:#999;font-size:11px">'+formatPrice(p.price)+' F</span>':'';var stockLine=showStock?'<div style="font-size:10px;color:#888">Stock: '+(p.stock!=null?p.stock:0)+'</div>':'';return'<div class="pc" data-pid="'+p.id+'"><div class="im">'+(img?'<img src="'+escapeHtml(img)+'" loading="lazy" onerror="this.onerror=null;this.style.background=\'#eee\'"/>':'')+'</div><div class="bd"><div class="tt">'+escapeHtml((p.name||'').length>20?(p.name||'').slice(0,19)+'…':(p.name||''))+'</div><div style="font-size:11px;color:#00A854;margin-bottom:4px">'+(freeDeliv?'<span class="free-deliv"><span>Livraison Gratuite</span></span>':'Livraison:')+' '+escapeHtml(deliv)+'</div>'+stockLine+'<div><span class="px">'+formatPrice(price)+' F</span>'+struck+'</div></div></div>'}
 function diversifyProducts(list){var sorted=list.slice().sort(function(a,b){var ta=(a.createdAt&&a.createdAt.seconds)?a.createdAt.seconds*1000:(a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0);var tb=(b.createdAt&&b.createdAt.seconds)?b.createdAt.seconds*1000:(b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0);if(ta===0)ta=(a.updatedAt&&a.updatedAt.seconds)?a.updatedAt.seconds*1000:0;if(tb===0)tb=(b.updatedAt&&b.updatedAt.seconds)?b.updatedAt.seconds*1000:0;return tb-ta});var byCat={};var noCat=[];sorted.forEach(function(p){var c=p.categoryId||'_none';if(c==='_none')noCat.push(p);else{if(!byCat[c])byCat[c]=[];byCat[c].push(p)}});var cats=Object.keys(byCat);var result=[];var maxLen=0;cats.forEach(function(c){if(byCat[c].length>maxLen)maxLen=byCat[c].length});for(var i=0;i<maxLen;i++){cats.forEach(function(c){if(byCat[c][i])result.push(byCat[c][i])})}noCat.forEach(function(p){result.push(p)});return result}
 function paintHomeProducts(g,list){if(!g)return;g.innerHTML=list.length?list.map(productCard).join(''):'<div class="em" style="grid-column:1/-1"><p>Aucun produit</p></div>';g.querySelectorAll('[data-pid]').forEach(function(el){el.addEventListener('click',function(){showPage('product',el.getAttribute('data-pid'))})})}
 async function renderHome(){var cached=loadProductCache();if(cached.length&&!products.length)products=cached;$('page-home').innerHTML='<div class="pg" id="homeProducts"></div>';var g=$('homeProducts');if(products.length){paintHomeProducts(g,diversifyProducts(products))}else{g.innerHTML='<div class="em" style="grid-column:1/-1"><p>Chargement…</p></div>'}if(!products.length){try{await loadProducts();var g2=$('homeProducts');if(g2)paintHomeProducts(g2,diversifyProducts(products))}catch(e){}}setTimeout(async function(){try{await loadProducts();var g3=$('homeProducts');if(g3)paintHomeProducts(g3,diversifyProducts(products))}catch(e){}},100)}
 async function renderCatalog(){await loadProducts();var list=products.slice();if(searchTerm){var t=searchTerm.toLowerCase();list=list.filter(function(p){return((p.name||'')+(p.description||'')).toLowerCase().includes(t)})}$('page-catalog').innerHTML='<div class="pg">'+(list.length?list.map(productCard).join(''):'<div class="em" style="grid-column:1/-1"><p>Aucun</p></div>')+'</div>';$('page-catalog').querySelectorAll('[data-pid]').forEach(function(el){el.addEventListener('click',function(){showPage('product',el.getAttribute('data-pid'))})})}
-async function renderProduct(id){try{var p=products.find(function(x){return x.id===id});if(!p){var s=await getDoc(doc(db,'products',id));if(!s.exists()){$('page-product').innerHTML='<div class="em"><p>Introuvable</p></div>';return}p={id:s.id,...s.data()}}currentProduct=p;saveViewedProduct(p.id);selectedVariants={};qty=1;(p.variantGroups||[]).forEach(function(g){if(g.options&&g.options.length)selectedVariants[g.name]=g.options[0].label});var price=minProductPrice(p);var images=(p.images&&p.images.length)?p.images.filter(Boolean):[];if(!images.length)images=['data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="#eee" width="400" height="400"/></svg>')];var deliv=p.deliveryTime||'2 jours';var freeDeliv=p.fastDelivery===true;var showStock=p.showStock!==false;var promo=p.promoPrice&&p.promoPrice<p.price;var struck=promo?' <span style="text-decoration:line-through;color:#999;font-size:14px">'+formatPrice(p.price)+' F</span>':'';var imgHtml='<div class="gal" id="prodGal">'+images.map(function(im,i){return'<img src="'+escapeHtml(im)+'" data-img-i="'+i+'" loading="'+(i===0?'eager':'lazy')+'" onerror="this.onerror=null;this.style.background=\'#eee\'"/>'}).join('')+'</div>';$('page-product').innerHTML='<div class="pd-top"><button type="button" id="pdBack"><i class="fa-solid fa-arrow-left"></i></button></div>'+imgHtml+'<div style="background:#fff;padding:12px;margin-bottom:70px"><div style="font-size:26px;font-weight:800;color:#E02E24">'+formatPrice(price)+' F'+struck+'</div><div style="font-weight:600;margin:8px 0">'+escapeHtml(p.name)+'</div><div style="font-size:12px;color:#00A854">'+(freeDeliv?'<span class="free-deliv"><span>Livraison Gratuite</span></span> ':'Livraison: ')+escapeHtml(deliv)+'</div>'+(showStock?'<div style="font-size:12px;color:#888">Stock: '+(p.stock!=null?p.stock:0)+'</div>':'')+'<div style="font-size:13px;margin-top:8px">'+escapeHtml(p.description||'')+'<div class="pd-actions"><button type="button" class="pd-ico" id="btnShop"><i class="fa-solid fa-store"></i></button><button type="button" class="pd-ico" id="btnFav"><i class="'+(isFav(p.id)?'fa-solid':'fa-regular')+' fa-heart" style="'+(isFav(p.id)?'color:#E02E24':'')+'"></i></button><button type="button" class="pd-ico" id="btnChatProd"><i class="fa-regular fa-comment-dots"></i></button><button type="button" class="ba" id="btnAddCart" style="flex:1">Panier</button><button type="button" class="br" style="flex:1.2;margin:0;height:40px;border-radius:20px" id="btnBuy">Acheter</button></div>';document.getElementById('pdBack').addEventListener('click',goBack);document.getElementById('btnAddCart').addEventListener('click',function(){openVariantSheet('cart')});document.getElementById('btnBuy').addEventListener('click',function(){openVariantSheet('buy')});document.getElementById('btnShop').addEventListener('click',function(){if(p.boutiqueId)showPage('boutique',p.boutiqueId)});document.getElementById('btnFav').addEventListener('click',function(){toggleFav(p.id);var ic=this.querySelector('i');var now=isFav(p.id);ic.className=(now?'fa-solid':'fa-regular')+' fa-heart';ic.style.color=now?'#E02E24':'';});document.getElementById('btnChatProd').addEventListener('click',function(){openChatWithProduct(p)});document.getElementById('btnChatProd').addEventListener('click',function(){openChatWithProduct(p)});document.querySelectorAll('#prodGal img').forEach(function(im){im.addEventListener('click',function(){openFullscreen(p,+im.getAttribute('data-img-i'))})});if(p.videoUrl)showFloatingVideo(p)}catch(e){$('page-product').innerHTML='<div class="em"><p>'+escapeHtml(e.message)+'</p></div>'}}
+async function renderProduct(id){try{var p=products.find(function(x){return x.id===id});if(!p){var s=await getDoc(doc(db,'products',id));if(!s.exists()){$('page-product').innerHTML='<div class="em"><p>Introuvable</p></div>';return}p={id:s.id,...s.data()}}currentProduct=p;saveViewedProduct(p.id);selectedVariants={};qty=1;(p.variantGroups||[]).forEach(function(g){if(g.options&&g.options.length)selectedVariants[g.name]=g.options[0].label});var price=minProductPrice(p);var images=(p.images&&p.images.length)?p.images.filter(Boolean):[];if(!images.length)images=['data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="#eee" width="400" height="400"/></svg>')];var deliv=p.deliveryTime||'2 jours';var freeDeliv=p.fastDelivery===true;var showStock=p.showStock!==false;var promo=p.promoPrice&&p.promoPrice<p.price;var struck=promo?' <span style="text-decoration:line-through;color:#999;font-size:14px">'+formatPrice(p.price)+' F</span>':'';var imgHtml='<div class="gal" id="prodGal">'+images.map(function(im,i){return'<img src="'+escapeHtml(im)+'" data-img-i="'+i+'" loading="'+(i===0?'eager':'lazy')+'" onerror="this.onerror=null;this.style.background=\'#eee\'"/>'}).join('')+'</div>';$('page-product').innerHTML='<div class="pd-top"><button type="button" id="pdBack"><i class="fa-solid fa-arrow-left"></i></button></div>'+imgHtml+'<div style="background:#fff;padding:12px;margin-bottom:70px"><div style="font-size:26px;font-weight:800;color:#E02E24">'+formatPrice(price)+' F'+struck+'</div><div style="font-weight:600;margin:8px 0">'+escapeHtml(p.name)+'</div><div style="font-size:12px;color:#00A854">'+(freeDeliv?'<span class="free-deliv"><span>Livraison Gratuite</span></span> ':'Livraison: ')+escapeHtml(deliv)+'</div>'+(showStock?'<div style="font-size:12px;color:#888">Stock: '+(p.stock!=null?p.stock:0)+'</div>':'')+'<div class="pd-description">'+escapeHtml(p.description||'')+'</div><div class="pd-actions"><button type="button" class="pd-ico" id="btnShop"><i class="fa-solid fa-store"></i></button><button type="button" class="pd-ico" id="btnFav"><i class="'+(isFav(p.id)?'fa-solid':'fa-regular')+' fa-heart" style="'+(isFav(p.id)?'color:#E02E24':'')+'"></i></button><button type="button" class="pd-ico" id="btnChatProd"><i class="fa-regular fa-comment-dots"></i></button><button type="button" class="ba" id="btnAddCart" style="flex:1">Panier</button><button type="button" class="br" style="flex:1.2;margin:0;height:40px;border-radius:20px" id="btnBuy">Acheter</button></div>';document.getElementById('pdBack').addEventListener('click',goBack);document.getElementById('btnAddCart').addEventListener('click',function(){openVariantSheet('cart')});document.getElementById('btnBuy').addEventListener('click',function(){openVariantSheet('buy')});document.getElementById('btnShop').addEventListener('click',function(){if(p.boutiqueId)showPage('boutique',p.boutiqueId)});document.getElementById('btnFav').addEventListener('click',function(){toggleFav(p.id);var ic=this.querySelector('i');var now=isFav(p.id);ic.className=(now?'fa-solid':'fa-regular')+' fa-heart';ic.style.color=now?'#E02E24':'';});document.getElementById('btnChatProd').addEventListener('click',function(){openChatWithProduct(p)});document.getElementById('btnChatProd').addEventListener('click',function(){openChatWithProduct(p)});document.querySelectorAll('#prodGal img').forEach(function(im){im.addEventListener('click',function(){openFullscreen(p,+im.getAttribute('data-img-i'))})});if(p.videoUrl)showFloatingVideo(p)}catch(e){$('page-product').innerHTML='<div class="em"><p>'+escapeHtml(e.message)+'</p></div>'}}
 function openFullscreen(p,startIdx){
   var images=(p.images&&p.images.length)?p.images.filter(Boolean):[];
   if(!images.length)return;
@@ -1786,10 +2144,14 @@ var badgesHtml=''
 
   // === Structure : HEADER fixe + BODY scrollable + FOOTER fixe ===
   var html='<div id="variantSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:flex;align-items:flex-end">'
-    +'<div style="background:#fff;width:100%;max-height:85vh;border-radius:16px 16px 0 0;position:relative;display:flex;flex-direction:column;overflow:hidden;padding:0">'
+    +'<div id="vsSheetPanel" style="background:#fff;width:100%;max-height:85vh;border-radius:16px 16px 0 0;position:relative;display:flex;flex-direction:column;overflow:hidden;padding:0;transform:translateY(0);transition:transform .2s ease">'
 
     // === HEADER FIXE (bandeau + bouton ×) ===
       // === HEADER FIXE (bandeau + bouton × en dessous, séparés) ===
+ // === BARRE POUR FAIRE GLISSER LA FENÊTRE ===
+ 
+
+// === HEADER FIXE (bandeau + bouton ×) ===
     +'<div style="flex-shrink:0">'
       +delivBanner
     +'</div>'
@@ -1827,6 +2189,67 @@ var badgesHtml=''
   var old=document.getElementById('variantSheet');if(old)old.remove();
   document.body.insertAdjacentHTML('beforeend',html);
     document.getElementById('vsClose').addEventListener('click',function(){document.getElementById('variantSheet').remove()});
+  // === FERMETURE DE LA FENÊTRE EN GLISSANT VERS LE BAS ===
+
+(function(){
+
+  var panel=document.getElementById('vsSheetPanel');
+  var handle=document.getElementById('vsDragHandle');
+  var overlay=document.getElementById('variantSheet');
+
+  if(!panel || !handle || !overlay)return;
+
+  var startY=0;
+  var currentY=0;
+  var dragging=false;
+
+  handle.addEventListener('touchstart',function(e){
+
+    startY=e.touches[0].clientY;
+    currentY=0;
+    dragging=true;
+
+    panel.style.transition='none';
+
+  },{passive:true});
+
+  handle.addEventListener('touchmove',function(e){
+
+    if(!dragging)return;
+
+    var dy=e.touches[0].clientY-startY;
+
+    currentY=Math.max(0,dy);
+
+    panel.style.transform='translateY('+currentY+'px)';
+
+  },{passive:true});
+
+  handle.addEventListener('touchend',function(){
+
+    if(!dragging)return;
+
+    dragging=false;
+
+    if(currentY>100){
+
+      panel.style.transition='transform .18s ease';
+      panel.style.transform='translateY(100%)';
+
+      setTimeout(function(){
+        overlay.remove();
+      },180);
+
+    }else{
+
+      panel.style.transition='transform .22s ease';
+      panel.style.transform='translateY(0)';
+
+    }
+
+  });
+
+})();
 
   // Fermer en cliquant sur le fond sombre (hors de la feuille)
   var _vs=document.getElementById('variantSheet');
@@ -1838,6 +2261,64 @@ var badgesHtml=''
       }
     });
   }
+ // === FERMETURE EN GLISSANT SUR LE BANDEAU LIVRAISON ===
+(function(){
+  var panel=document.getElementById('vsSheetPanel');
+  var banner=document.getElementById('vsDelivBanner');
+  var overlay=document.getElementById('variantSheet');
+
+  if(!panel || !banner || !overlay)return;
+
+  var startY=0;
+  var currentY=0;
+  var dragging=false;
+  var moved=false;
+
+  banner.style.touchAction='none';
+
+  banner.addEventListener('touchstart',function(e){
+    startY=e.touches[0].clientY;
+    currentY=0;
+    dragging=true;
+    moved=false;
+    panel.style.transition='none';
+  },{passive:true});
+
+  banner.addEventListener('touchmove',function(e){
+    if(!dragging)return;
+
+    currentY=Math.max(0,e.touches[0].clientY-startY);
+
+    if(currentY>5)moved=true;
+
+    panel.style.transform='translateY('+currentY+'px)';
+  },{passive:true});
+
+  banner.addEventListener('touchend',function(){
+    if(!dragging)return;
+    dragging=false;
+
+    if(currentY>100){
+      panel.style.transition='transform .18s ease';
+      panel.style.transform='translateY(100%)';
+
+      setTimeout(function(){
+        overlay.remove();
+      },180);
+    }else{
+      panel.style.transition='transform .22s ease';
+      panel.style.transform='translateY(0)';
+    }
+  });
+
+  banner.addEventListener('click',function(e){
+    if(moved){
+      e.preventDefault();
+      e.stopPropagation();
+      moved=false;
+    }
+  },true);
+})();
   // === Clic sur le bandeau livraison → modifier l'adresse ===
   var delivAddrEl=document.getElementById('vsDelivAddr');
   if(delivAddrEl){
@@ -3054,192 +3535,119 @@ if(placeBtn){
     });
   }
 }
-async function placeOrder(){
-  var prof=loadLocalProfile();
 
-  // Récupération depuis le profil client
-  var name=String(prof.name||'').trim();
-  var phone=String(prof.phone||'').trim();
-  var email=String((currentUser&&currentUser.email)||prof.email||'').trim();
-  var address=String(prof.address||'').trim();
+async function placeOrder(){
+  var prof = loadLocalProfile();
+
+  var name = String(prof.name || '').trim();
+  var phone = String(prof.phone || '').trim();
+  var email = String((currentUser && currentUser.email) || prof.email || '').trim();
+  var address = String(prof.address || '').trim();
 
   if(!name){toast('Renseignez votre nom dans votre profil');return}
   if(!phone){toast('Renseignez votre téléphone dans votre profil');return}
   if(!email){toast('Email du compte introuvable');return}
   if(!address){toast('Adresse de livraison requise');return}
   if(!cart.length){toast('Panier vide');return}
+  if(!currentUser){toast('Connectez-vous avant de commander');return}
 
-  var btn=$('btnPlace');
-  if(btn){btn.disabled=true;btn.textContent='Envoi en cours…'}
+  var btn = $('btnPlace');
 
-  if(!name){toast('Nom requis');return}
-  if(!phone){toast('Téléphone requis');return}
-  if(!email){toast('Email requis');return}
-  if(!address){toast('Adresse de livraison requise');return}
-  if(!cart.length){toast('Panier vide');return}
-
-  var btn=$('btnPlace');
-  if(btn){btn.disabled=true;btn.textContent='Envoi en cours…'}
+  if(btn){
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours…';
+  }
 
   try{
     saveLocalProfile({name:name,phone:phone});
 
-    var byBout={};
-    cart.forEach(function(it){
-      var bid=it.boutiqueId||null;
-      if(!bid){var pr=products.find(function(x){return x.id===it.productId});if(pr)bid=pr.boutiqueId||null}
-      var key=bid||'_none';
-      if(!byBout[key])byBout[key]=[];
-      byBout[key].push(it);
+    var transportChoices = {};
+
+    try{
+      transportChoices = JSON.parse(
+        localStorage.getItem('vl_transport_choice') || '{}'
+      );
+    }catch(e){}
+
+    var submittedItems = cart.map(function(it){
+      return {
+        productId: it.productId,
+        qty: Number(it.qty || 1),
+        variants: it.variants || {},
+        image: it.image || '',
+        deliveryAddress: it.deliveryAddress || '',
+        transportChoice: transportChoices[it.productId] || 'avion'
+      };
     });
 
-   var keys=Object.keys(byBout);
+    var pickupPoints = window._selectedPickup || {};
 
-// Vérifier que chaque produit est bien rattaché à une boutique
-if(byBout['_none'] && byBout['_none'].length){
-  throw new Error(
-    'Commande impossible : un ou plusieurs produits ne sont rattachés à aucune boutique. Vérifie leur boutiqueId.'
-  );
-}
+    var idToken = await currentUser.getIdToken(true);
 
-for(var k=0;k<keys.length;k++){
-      var key=keys[k];var items=byBout[key];
-      var subB=items.reduce(function(s,i){return s+i.price*i.qty},0);
-      var bid=key==='_none'?null:key;
-       var originChine=cart.some(function(it){
-    var p=products.find(function(x){return x.id===it.productId});
-    if(!p)return false;
-    return p.fromChina===true;
-  });
-  // Fallback : si products vide, on regarde dans le panier
-  if(!originChine&&!products.length){
-    originChine=cart.some(function(it){return it.fromChina===true});
-  }
-      var hasPickup=items.some(function(it){
-        var p=products.find(function(x){return x.id===it.productId});
-        return p&&p.pickupFree===true;
-      });
-            var payNowB=0,payLaterB=0,payModes={},mobileMoneyB='';
-      items.forEach(function(it){
-        var pm=computePaymentForItem(it);
-        payNowB+=pm.payNow;
-        payLaterB+=pm.payLater;
-        payModes[pm.mode]=true;
-        if(pm.mobileMoney&&!mobileMoneyB)mobileMoneyB=pm.mobileMoney;
-      });
-      var needsPrepayment=payNowB>0;
-      var initialStatus=needsPrepayment?'pending_payment':'pending';
-      // === Génère un numéro de commande unique : IDA-<PAYS><7 chiffres> ===
-function getCountryCode(c){
-  var k = String(c||'').toLowerCase();
-  if(k.indexOf('sénégal')>=0 || k.indexOf('senegal')>=0) return 'SEN';
-  if(k.indexOf('france')>=0) return 'FR';
-  if(k.indexOf('niger')>=0) return 'NG';
-  if(k.indexOf('mali')>=0) return 'ML';
-  if(k.indexOf('côte')>=0 || k.indexOf('cote')>=0) return 'CI';
-  return 'SEN';
-}
-async function generateOrderNumber(country){
-  var code = getCountryCode(country);
-  for(var i=0;i<20;i++){
-    var num = '';
-    for(var j=0;j<7;j++) num += Math.floor(Math.random()*10);
-    if(num[0]==='0') num = '1'+num.slice(1);
-    var full = 'IDA-'+code+num;
-    try{
-      var s = await getDocs(query(collection(db,'orders'),where('orderNumber','==',full)));
-      if(s.empty) return full;
-    }catch(e){ return full; }
-  }
-  return 'IDA-'+code+Date.now().toString().slice(-7);
-}
-// Récupère le pays réel du destinataire
-var _profileForOrder = loadLocalProfile();
-var _countryForOrder = String(_profileForOrder.country || '').trim();
-
-// Si le pays n'est pas enregistré séparément, on le recherche dans l'adresse
-if (!_countryForOrder) {
-  var _countryMatch = String(address || '').match(
-    /Sénégal|Senegal|France|Niger|Mali|Côte d'Ivoire|Cote d'Ivoire/i
-  );
-
-  _countryForOrder = _countryMatch
-    ? _countryMatch[0]
-    : 'Sénégal';
-}
-
-// Génère le numéro avec le code du pays de destination
-var orderNumber = await generateOrderNumber(_countryForOrder);
-      // === Récupère nom + logo de la boutique (1 seule fois) ===
-var _boutiqueName = 'Boutique';
-var _boutiqueLogo = '';
-if(bid){
-  // 1) Priorité : info déjà présente dans les produits du panier
-  var _sample = items.find(function(it){
-    var p = products.find(function(x){return x.id===it.productId});
-    return p && p.boutiqueName;
-  });
-  if(_sample){
-    var _p = products.find(function(x){return x.id===_sample.productId});
-    _boutiqueName = _p.boutiqueName || 'Boutique';
-    _boutiqueLogo = _p.boutiqueLogo || '';
-  }
-  // 2) Sinon : lit directement depuis Firestore
-  if(!_boutiqueLogo || _boutiqueName === 'Boutique'){
-    try{
-      var _bd = await getDoc(doc(db,'boutiques',bid));
-      if(_bd.exists()){
-        var _b = _bd.data();
-        _boutiqueName = _b.name || _boutiqueName;
-        _boutiqueLogo = _b.logo || _b.logoUrl || _b.image || _boutiqueLogo || '';
+    var response = await fetch(
+      'https://soft-surf-b4e9.ahmedsaidaidara5.workers.dev/orders/create',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + idToken
+        },
+        body: JSON.stringify({
+          customer: {
+            name: name,
+            phone: phone,
+            address: address
+          },
+          country: prof.country || 'Sénégal',
+          items: submittedItems,
+          pickupPoints: pickupPoints
+        })
       }
+    );
+
+    var result = await response.json();
+
+    if(!response.ok || !result.ok){
+      throw new Error(result.error || 'Impossible de créer la commande');
+    }
+
+    if(!Array.isArray(result.orders) || !result.orders.length){
+      throw new Error('Aucune commande retournée par le serveur');
+    }
+
+    try{
+      var cachedList = loadOrdersCache();
+
+      result.orders.forEach(function(order){
+        cachedList.unshift(order);
+      });
+
+      saveOrdersCache(cachedList);
     }catch(e){}
-  }
-}
-      var orderData={
-        orderNumber:orderNumber,
-        userId:currentUser?currentUser.uid:null,
-        boutiqueId:bid,
-        customer:{name:name,phone:phone,address:address,email:email},
-        items:items,
-        subtotal:subB,
-          boutiqueName:_boutiqueName,        // ← AJOUT
-  boutiqueLogo:_boutiqueLogo,        // ← AJOUT
-        shipping:k===0?(settings.shippingFee||0):0,
-        total:subB+(k===0?(settings.shippingFee||0):0),
-        fromChina:originChine,
-        pickupAvailable:hasPickup,
-        paymentMode:Object.keys(payModes).join(','),
-        payNow:payNowB,
-        payLater:payLaterB,
-        mobileMoney:mobileMoneyB,
-        pickupPoint:(window._selectedPickup&&window._selectedPickup[bid||'_none'])?window._selectedPickup[bid||'_none']:null,
-        status:initialStatus
-      };
-      var newRef=await addDoc(collection(db,'orders'),Object.assign({},orderData,{createdAt:serverTimestamp()}));
 
-      // === Ajout au cache local pour affichage instaané ===
-      try{
-        var cachedOrder=Object.assign({},orderData,{
-          id:newRef.id,
-          createdAt:{toMillis:function(){return Date.now()}}
-        });
-        var cachedList=loadOrdersCache();
-        cachedList.unshift(cachedOrder);
-        saveOrdersCache(cachedList);
-      }catch(e){}
-    } 
+    cart = [];
+    saveCart();
 
-    cart=[];saveCart();
-        window._selectedPickup=null;
-    try{localStorage.removeItem('vl_selected_pickup');}catch(e){}
+    window._selectedPickup = null;
+
+    try{
+      localStorage.removeItem('vl_selected_pickup');
+    }catch(e){}
+
     toast('Commande confirmée !');
     showPage('orders');
+
   }catch(e){
-    toast(e.message);
-    if(btn){btn.disabled=false;btn.textContent='Confirmer la commande'}
+    console.error('Erreur commande:', e);
+    toast(e.message || 'Erreur pendant la commande');
+
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = 'Confirmer la commande';
+    }
   }
 }
+
   
   /* === Commandes passées (Lot 2B) === */
   var ordersLiveUnsubscribe = null;
@@ -3259,7 +3667,7 @@ if(cachedOrders.length){
   // ========== 2. REFRESH FIRESTORE EN ARRIÈRE-PLAN ==========
 
 // ========== 2. ÉCOUTE EN TEMPS RÉEL DES COMMANDES ==========
-
+ 
 // Évite plusieurs écoutes simultanées
 if (ordersLiveUnsubscribe) {
   ordersLiveUnsubscribe();
@@ -4604,10 +5012,20 @@ function saveDeleted(list){try{localStorage.setItem(loadDeletedKey(),JSON.string
    NOTIFICATIONS DE SUIVI DES COMMANDES
 ========================================= */
 
+
+/* =========================================
+   NOTIFICATIONS DE SUIVI DES COMMANDES
+   STOCKAGE FIRESTORE UNIQUEMENT
+========================================= */
+
 var trackingNotifications = [];
 var trackingNotifUnsubscribe = null;
 
+
+/* === COMPTEUR DES NOTIFICATIONS NON LUES === */
+
 function updateTrackingNotifBadge(){
+
   var badge = document.getElementById('trackingNotifBadge');
   if(!badge)return;
 
@@ -4624,16 +5042,21 @@ function updateTrackingNotifBadge(){
   }
 }
 
+
+/* === ÉCOUTE FIRESTORE === */
+
 function startTrackingNotifications(){
+
   if(trackingNotifUnsubscribe){
     trackingNotifUnsubscribe();
     trackingNotifUnsubscribe = null;
   }
 
-  trackingNotifications = [];
-  updateTrackingNotifBadge();
-
-  if(!currentUser || !currentUser.uid)return;
+  if(!currentUser || !currentUser.uid){
+    trackingNotifications = [];
+    updateTrackingNotifBadge();
+    return;
+  }
 
   var notifQuery = query(
     collection(db,'notifications'),
@@ -4643,40 +5066,55 @@ function startTrackingNotifications(){
   trackingNotifUnsubscribe = onSnapshot(
     notifQuery,
     function(snapshot){
+
       trackingNotifications = snapshot.docs.map(function(d){
-        return Object.assign({id:d.id},d.data());
+
+        var data = d.data();
+
+        return Object.assign(
+          {id:d.id},
+          data,
+          {
+            createdAtMs:
+              data.createdAt && data.createdAt.toMillis
+                ? data.createdAt.toMillis()
+                : 0
+          }
+        );
+
       });
 
-      // Tri du plus récent au plus ancien
       trackingNotifications.sort(function(a,b){
-        var ta = a.createdAt && a.createdAt.toMillis
-          ? a.createdAt.toMillis() : 0;
-        var tb = b.createdAt && b.createdAt.toMillis
-          ? b.createdAt.toMillis() : 0;
-        return tb - ta;
+        return (b.createdAtMs || 0) - (a.createdAtMs || 0);
       });
 
       updateTrackingNotifBadge();
 
-      // Actualise la liste si le client est sur Chat
       var active = document.querySelector('.page.on');
+
       if(active && (
         active.id === 'page-chat' ||
         active.id === 'page-messages'
       )){
         renderTrackingNotifications();
       }
+
+      if(active && active.id === 'page-notifications'){
+        renderTrackingNotificationHistory();
+      }
+
     },
     function(error){
-      console.error(
-        'Erreur notifications de suivi :',
-        error
-      );
+      console.error('Erreur notifications :',error);
     }
   );
 }
 
+
+/* === ARRÊTER L'ÉCOUTE === */
+
 function stopTrackingNotifications(){
+
   if(trackingNotifUnsubscribe){
     trackingNotifUnsubscribe();
     trackingNotifUnsubscribe = null;
@@ -4685,113 +5123,369 @@ function stopTrackingNotifications(){
   trackingNotifications = [];
   updateTrackingNotifBadge();
 }
-  function renderTrackingNotifications(){
-  var box = document.getElementById('trackingNotifSection');
-  if(!box)return;
 
-  if(!trackingNotifications.length){
-    box.innerHTML = '';
-    return;
+
+/* === CARTE D'UNE NOTIFICATION === */
+
+function trackingNotifCardHtml(n){
+
+  var dateText = '';
+
+  var notificationDate = n.createdAtMs
+    ? new Date(n.createdAtMs)
+    : (n.createdAt && n.createdAt.toDate
+        ? n.createdAt.toDate()
+        : null);
+
+  if(notificationDate && !isNaN(notificationDate.getTime())){
+    dateText = notificationDate.toLocaleString('fr-FR',{
+      day:'2-digit',
+      month:'2-digit',
+      year:'numeric',
+      hour:'2-digit',
+      minute:'2-digit'
+    });
   }
+
+  var orderNumber = n.orderNumber || n.orderId || 'Commande';
+  var boutiqueName = n.boutiqueName || 'Boutique';
+  var status = n.status || '';
 
   var html = '';
 
-  html += '<div style="padding:14px 12px 6px">';
-  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
-  html += '<b style="font-size:15px">Notifications de suivi</b>';
-  html += '<span style="font-size:11px;color:#888">';
-  html += trackingNotifications.length + ' notification(s)';
-  html += '</span></div>';
+  html += '<div data-tracking-notif="'+escapeHtml(n.id)+'"';
+  html += ' style="display:flex;width:100%;box-sizing:border-box;';
+  html += 'align-items:flex-start;gap:11px;padding:13px 14px;';
+  html += 'border-bottom:1px solid #eee;cursor:pointer">';
 
-  trackingNotifications.forEach(function(n){
+  html += '<div style="width:42px;height:42px;flex:0 0 42px;';
+  html += 'border-radius:50%;overflow:hidden">';
 
-    var unread = n.read !== true;
-
-    var dateText = '';
-    if(n.createdAt && n.createdAt.toDate){
-      dateText = n.createdAt.toDate().toLocaleString('fr-FR',{
-        day:'2-digit',
-        month:'2-digit',
-        year:'numeric',
-        hour:'2-digit',
-        minute:'2-digit'
-      });
-    }
-
-    html += '<div data-tracking-notif="'+escapeHtml(n.id)+'"';
-html += ' style="background:'+(unread?'#F0FFF5':'#fff')+';';
-html += 'border:1px solid '+(unread?'#B7E4C7':'#eee')+';';
-html += 'border-radius:10px;padding:12px;margin-bottom:8px;';
-html += 'cursor:pointer">';
-    html += 'border:1px solid '+(unread?'#B7E4C7':'#eee')+';';
-    html += 'border-radius:10px;padding:12px;margin-bottom:8px">';
-
-    html += '<div style="display:flex;align-items:center;gap:8px">';
-
-    if(unread){
-      html += '<span style="width:8px;height:8px;border-radius:50%;background:#E02E24;flex-shrink:0"></span>';
-    }
-
-    html += '<b style="font-size:13px;flex:1">';
-    html += escapeHtml(n.title || 'Mise à jour de commande');
-    html += '</b></div>';
-
-    html += '<div style="font-size:12px;color:#444;margin-top:7px">';
-    html += escapeHtml(n.message || '');
-    html += '</div>';
-
-    html += '<div style="display:flex;justify-content:space-between;gap:8px;margin-top:9px">';
-    html += '<span style="font-size:10px;color:#888">';
-    html += escapeHtml(dateText);
-    html += '</span>';
-
-    html += '<span style="font-size:10px;font-weight:700;color:#00A854">';
-    html += escapeHtml(n.status || '');
-    html += '</span></div>';
-
-    html += '</div>';
-  });
+  html += '<img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" ';
+  html += 'style="width:100%;height:100%;object-fit:cover">';
 
   html += '</div>';
 
-  box.innerHTML = html;
+  html += '<div style="flex:1;min-width:0">';
 
-box.querySelectorAll('[data-tracking-notif]').forEach(function(card){
-  card.addEventListener('click', async function(){
-    var notifId = card.getAttribute('data-tracking-notif');
-    var notif = trackingNotifications.find(function(n){
-      return n.id === notifId;
+  html += '<div style="display:flex;align-items:center;';
+  html += 'justify-content:space-between;gap:7px;margin-bottom:6px">';
+
+  html += '<b style="font-size:12px;color:#222;min-width:0;';
+  html += 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">';
+
+  html += escapeHtml(orderNumber)+'</b>';
+
+  html += '<span data-boutique-link="'+escapeHtml(n.boutiqueId || '')+'"';
+  html += ' style="flex-shrink:0;padding:3px 7px;';
+  html += 'border:1px solid #C49A35;border-radius:5px;';
+  html += 'color:#C49A35;font-size:10px;font-weight:700;';
+  html += 'white-space:nowrap;cursor:pointer">';
+
+  html += escapeHtml(boutiqueName)+'</span></div>';
+
+// Statut sur la même ligne, avec retour automatique si nécessaire
+if(status){
+  html += '<div style="display:flex;align-items:baseline;';
+  html += 'flex-wrap:wrap;column-gap:4px;row-gap:2px;';
+  html += 'margin-top:2px">';
+
+  html += '<span style="font-size:11px;color:#555">';
+  html += 'Votre commande est maintenant :</span>';
+
+  html += '<span style="font-size:12px;font-weight:800;';
+  html += 'color:#00A854;line-height:1.4">';
+  html += escapeHtml(status);
+  html += '</span>';
+
+  html += '</div>';
+}else{
+
+    html += '<div style="font-size:12px;color:#00A854">';
+    html += escapeHtml(n.message || '')+'</div>';
+
+  }
+
+  // Date + petite poubelle rouge sur la même ligne
+
+  html += '<div style="display:flex;align-items:center;';
+  html += 'justify-content:space-between;gap:8px;margin-top:7px">';
+
+  html += '<span style="font-size:10px;color:#999">';
+  html += escapeHtml(dateText)+'</span>';
+
+  html += '<button type="button" data-delete-notif="'+escapeHtml(n.id)+'"';
+  html += ' title="Supprimer cette notification"';
+  html += ' style="border:0;background:transparent;color:#E02E24;';
+  html += 'padding:2px 4px;font-size:12px;line-height:1;cursor:pointer">';
+  html += '<i class="fa-solid fa-trash"></i></button>';
+
+  html += '</div>';
+
+  html += '</div>';
+
+  if(n.read !== true){
+    html += '<span style="width:7px;height:7px;flex:0 0 7px;';
+    html += 'border-radius:50%;background:#00A854;margin-top:5px"></span>';
+  }
+
+  html += '</div>';
+
+  return html;
+}
+
+
+/* === AFFICHAGE ET GESTION DES NOTIFICATIONS === */
+
+function renderTrackingNotificationList(box,historyMode){
+
+  if(!box)return;
+
+  var list = trackingNotifications.slice();
+
+  if(!historyMode){
+    list = list.filter(function(n){
+      return n.read !== true;
     });
+  }
 
-    if(!notif)return;
+  list.sort(function(a,b){
+    return (b.createdAtMs || 0) - (a.createdAtMs || 0);
+  });
 
-    try{
-      if(notif.read !== true){
-        await updateDoc(doc(db,'notifications',notifId),{
-          read:true,
-          readAt:serverTimestamp()
-        });
+  if(!list.length){
+
+    box.innerHTML = historyMode
+      ? '<div class="notif-history-empty"><i class="fa-solid fa-box-open"></i><p>Aucune notification de commande</p></div>'
+      : '';
+
+    return;
+  }
+
+  box.innerHTML = list.map(function(n){
+    return trackingNotifCardHtml(n);
+  }).join('');
+
+
+  // Ouverture d'une notification
+
+  box.querySelectorAll('[data-tracking-notif]').forEach(function(card){
+
+    card.addEventListener('click',async function(e){
+
+      if(e.target.closest('[data-delete-notif]'))return;
+      if(e.target.closest('[data-boutique-link]'))return;
+
+      var notifId = card.getAttribute('data-tracking-notif');
+
+      var notif = trackingNotifications.find(function(n){
+        return n.id === notifId;
+      });
+
+      if(!notif)return;
+
+      try{
+
+        // Marquer comme lue dans Firestore.
+        // NE PAS SUPPRIMER LE DOCUMENT.
+
+        if(notif.read !== true){
+
+          await updateDoc(doc(db,'notifications',notifId),{
+            read:true,
+            readAt:serverTimestamp()
+          });
+
+          notif.read = true;
+          updateTrackingNotifBadge();
+        }
+
+        if(!notif.orderId){
+          toast('Commande introuvable dans cette notification');
+          return;
+        }
+
+        showPage('order-detail',notif.orderId);
+
+      }catch(e){
+        toast('Erreur : '+e.message);
       }
 
-      if(!notif.orderId){
-        toast('Commande introuvable dans cette notification');
+    });
+
+  });
+
+
+  // Suppression individuelle avec confirmation
+
+  box.querySelectorAll('[data-delete-notif]').forEach(function(btn){
+
+    btn.addEventListener('click',function(e){
+
+      e.stopPropagation();
+
+      var notifId = btn.getAttribute('data-delete-notif');
+
+      confirmAction(
+        'Supprimer cette notification ?',
+        'Cette notification sera définitivement supprimée.',
+        async function(){
+
+          try{
+
+            await deleteDoc(doc(db,'notifications',notifId));
+
+            toast('Notification supprimée');
+
+          }catch(e){
+
+            toast('Erreur : '+e.message);
+
+          }
+
+        }
+      );
+
+    });
+
+  });
+
+
+  // Clic sur le nom de la boutique
+
+  box.querySelectorAll('[data-boutique-link]').forEach(function(link){
+
+    link.addEventListener('click',function(e){
+
+      e.stopPropagation();
+
+      var boutiqueId = link.getAttribute('data-boutique-link');
+
+      if(!boutiqueId){
+        toast('Page de cette boutique introuvable');
         return;
       }
 
-      showPage('order-detail',notif.orderId);
+      showPage('boutique',boutiqueId);
 
-    }catch(e){
-      toast('Erreur : '+e.message);
-    }
+    });
+
   });
-});
+
 }
+
+
+/* === NOTIFICATIONS NON LUES DANS CHAT === */
+
+function renderTrackingNotifications(){
+
+  var box = document.getElementById('trackingNotifSection');
+
+  if(!box)return;
+
+  renderTrackingNotificationList(box,false);
+
+}
+
+
+/* === PAGE HISTORIQUE DES NOTIFICATIONS === */
+
+function renderTrackingNotificationHistory(){
+
+  var page = document.getElementById('page-notifications');
+
+  if(!page)return;
+
+  page.innerHTML = ''
+
+    + '<div class="notif-history-page">'
+
+      + '<div class="notif-history-head">'
+
+        + '<button type="button" id="notifHistoryBack">'
+          + '<i class="fa-solid fa-arrow-left"></i>'
+        + '</button>'
+
+        + '<h2>Notification de commandes</h2>'
+
+        + '<button type="button" id="notifDeleteAllBtn" title="Tout supprimer">'
+          + '<i class="fa-solid fa-trash"></i>'
+        + '</button>'
+
+      + '</div>'
+
+      + '<div class="notif-history-list" id="notifHistoryList"></div>'
+
+    + '</div>';
+
+
+  document.getElementById('notifHistoryBack').addEventListener('click',function(){
+    goBack();
+  });
+
+
+  // Suppression totale avec confirmation obligatoire
+
+  document.getElementById('notifDeleteAllBtn').addEventListener('click',function(){
+
+    if(!trackingNotifications.length){
+      toast('Aucune notification à supprimer');
+      return;
+    }
+
+    confirmAction(
+      'Supprimer toutes les notifications ?',
+      'Toutes les notifications de commandes seront définitivement supprimées.',
+      async function(){
+
+        try{
+
+          await Promise.all(
+            trackingNotifications.map(function(n){
+              return deleteDoc(doc(db,'notifications',n.id));
+            })
+          );
+
+          toast('Toutes les notifications ont été supprimées');
+
+        }catch(e){
+
+          toast('Erreur : '+e.message);
+
+        }
+
+      }
+    );
+
+  });
+
+
+  renderTrackingNotificationList(
+    document.getElementById('notifHistoryList'),
+    true
+  );
+
+}
+
+ 
+
 async function renderMessagesList(){
 if(!currentUser){$('page-messages').innerHTML='<div class="em"><p>Connectez-vous</p></div>';$('page-chat').innerHTML='<div class="em"><p>Connectez-vous</p></div>';return}
 var target=document.querySelector('.page.on')||$('page-messages');
 var archived=loadArchived();var pinned=loadPinned();var deleted=loadDeleted();
 var cached=loadConvCache();
-var html='<div class="msg-head"><div class="ct-logo" style="width:36px;flex-shrink:0"><img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" style="height:26px;width:auto;max-width:90px;object-fit:contain;display:block"/></div><b>'+(msgShowArchived?'Archives':'Messages')+'</b><button type="button" id="msgMore">⋮</button></div>';
+var html='<div class="msg-head">'
+  +'<div class="ct-logo" style="width:36px;flex-shrink:0">'
+    +'<img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" style="height:26px;width:auto;max-width:90px;object-fit:contain;display:block"/>'
+  +'</div>'
+  +'<b>'+(msgShowArchived?'Archives':'Messages')+'</b>'
+  +'<div style="display:flex;align-items:center;gap:12px">'
+    +'<button type="button" id="trackingNotifHistoryBtn" title="Notifications de commandes" style="width:36px;height:36px;border:0;border-radius:0;background:transparent;color:#222;font-size:21px;display:flex;align-items:center;justify-content:center">'
+      +'<i class="fa-solid fa-box"></i>'
+    +'</button>'
+    +'<button type="button" id="msgMore">⋮</button>'
+  +'</div>'
++'</div>';
 html+='<div id="trackingNotifSection"></div>';
 html+='<div id="msgList">';
 if(cached.length){
@@ -4815,7 +5509,13 @@ html+='<div class="cart-reco-bar" style="margin:18px 0 0 0;padding:10px 16px 4px
 html+='<div class="pg" id="msgRecoGrid" style="padding-bottom:calc(var(--nav-h) + var(--safe-b) + 20px)"></div>';target.innerHTML=html;
 renderTrackingNotifications();
 bindConvRows(target);
-document.getElementById('msgMore').addEventListener('click',openMsgMenu);
+document.getElementById('trackingNotifHistoryBtn').addEventListener('click',function(){
+  showPage('notifications');
+});
+
+document.getElementById('trackingNotifHistoryBtn').addEventListener('click',function(){
+  showPage('notifications');
+});
 var cs=document.getElementById('msgCancelSel');if(cs)cs.addEventListener('click',function(){msgMode=null;msgSelected={};renderMessagesList()});
 var cf=document.getElementById('msgConfirmSel');if(cf)cf.addEventListener('click',async function(){await applyMsgAction();});
 /* refresh Firestore en arrière-plan */
@@ -5104,7 +5804,24 @@ async function renderVideos(){
 if(!products.length){var cached=loadProductCache();if(cached.length)products=cached}
 /* 2) affichage immédiat si products existe */
 var list=products.filter(function(p){return p.videoUrl&&p.published!==false});
-if(list.length){videoFeed=list;videoFeedIdx=0;paintVideoPlayer(videoFeed[0]);}
+if(list.length){
+
+  videoFeed=list;
+
+  var requested=window._videoRequestedProductId||'';
+
+  var requestedIndex=requested
+    ?list.findIndex(function(x){
+        return String(x.id)===String(requested);
+      })
+    :-1;
+
+  videoFeedIdx=requestedIndex>=0?requestedIndex:0;
+
+  window._videoRequestedProductId=null;
+
+  paintVideoPlayer(videoFeed[videoFeedIdx]);
+}
 else{$('page-video').innerHTML='<div class="em"><p>Chargement…</p></div>'}
 /* 3) si products est vide, on attend loadProducts puis on affiche */
 if(!products.length){
@@ -5114,20 +5831,953 @@ if(!products.length){
 /* 4) sinon refresh en arrière-plan (au cas où de nouvelles vidéos existent) */
 try{await loadProducts();var fresh=products.filter(function(p){return p.videoUrl&&p.published!==false});var same=fresh.length===videoFeed.length&&fresh[0]&&videoFeed[0]&&fresh[0].id===videoFeed[0].id;if(!same&&fresh.length){videoFeed=fresh;videoFeedIdx=0;paintVideoPlayer(videoFeed[0])}}catch(e){}
 }
-async function paintVideoPlayer(p){var price=minProductPrice(p);var img=(p.images&&p.images[0])||'';var liked=isVideoLiked(p.id);var likeCount=getLikeCount(p.id);var commentCount=getCommentCount(p.id);var logoHtml='';var isFol=false;if(p.boutiqueId){try{isFol=await isFollowing(p.boutiqueId)}catch(e){}logoHtml='<div class="vid-logo-wrap"><button type="button" id="vidBoutLogo" style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:#fff;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00A854;box-shadow:0 2px 8px rgba(0,0,0,.3)"><i class="fa-solid fa-store"></i></button><button type="button" id="vidFollowBtn" class="vid-follow'+(isFol?' following':'')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>'}
-$('page-video').innerHTML='<div class="vid-page" id="vidPage"><div class="vid-top"><button type="button" id="vidBack"><i class="fa-solid fa-arrow-left"></i></button></div><div class="vid-stage"><video id="vidEl" src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay></video><div class="vid-side">'+logoHtml+'<button type="button" id="vidLike" class="'+(liked?'liked':'')+'"><i class="'+(liked?'fa-solid':'fa-regular')+' fa-thumbs-up"></i><span>'+likeCount+'</span></button><button type="button" id="vidComment"><i class="fa-regular fa-comment"></i><span>'+commentCount+'</span></button><button type="button" id="vidShare"><i class="fa-solid fa-share"></i></button></div><div class="vid-card" id="vidCard">'+(img?'<img src="'+escapeHtml(img)+'" onerror="this.style.display=\'none\'"/>':'')+'<div style="flex:1;min-width:0"><span class="badge">Offre exclusive</span><div class="title">'+escapeHtml(p.name)+'</div><div class="price">'+formatPrice(price)+' F</div></div><div class="cta"><button type="button" class="buy" id="vidBuy">Acheter</button><button type="button" class="cart" id="vidCart">Panier</button></div></div></div></div>';var page=$('vidPage'),video=$('vidEl');video.play().catch(function(){});video.addEventListener('play',function(){clearTimeout(videoHideTimer);videoHideTimer=setTimeout(function(){page.classList.add('vid-hide-ui')},15000)});page.addEventListener('click',function(e){if(e.target.closest('.vid-card,.vid-side,.vid-top,.vid-comments'))return;if(page.classList.contains('vid-hide-ui')){page.classList.remove('vid-hide-ui');clearTimeout(videoHideTimer);videoHideTimer=setTimeout(function(){page.classList.add('vid-hide-ui')},15000)}else{if(video.paused)video.play();else video.pause()}});var pressTimer=null;var pressStart=0;var wasLongPress=false;page.addEventListener('pointerdown',function(e){if(e.target.closest('.vid-card,.vid-side,.vid-top,.vid-comments'))return;pressStart=Date.now();wasLongPress=false;pressTimer=setTimeout(function(){video.playbackRate=2;wasLongPress=true},200)});page.addEventListener('pointerup',function(){clearTimeout(pressTimer);video.playbackRate=1;if(Date.now()-pressStart<200)wasLongPress=false});page.addEventListener('pointercancel',function(){clearTimeout(pressTimer);video.playbackRate=1;wasLongPress=false});page.addEventListener('pointerleave',function(){clearTimeout(pressTimer);video.playbackRate=1;wasLongPress=false});document.getElementById('vidBack').addEventListener('click',function(e){e.stopPropagation();clearTimeout(videoHideTimer);goBack()});document.getElementById('vidCard').addEventListener('click',function(e){e.stopPropagation();if(e.target.closest('#vidBuy,#vidCart'))return;currentProduct=p;showPage('product',p.id)});document.getElementById('vidBuy').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('buy')});document.getElementById('vidCart').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('cart')});if(p.boutiqueId){var bl=document.getElementById('vidBoutLogo');if(bl){bl.addEventListener('click',function(e){e.stopPropagation();showPage('boutique',p.boutiqueId)});getDoc(doc(db,'boutiques',p.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();if(b.logo)bl.innerHTML='<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>'}}).catch(function(){})}var fb=document.getElementById('vidFollowBtn');if(fb){fb.addEventListener('click',async function(e){e.stopPropagation();if(!currentUser){showPage('auth');return}var nowFol=fb.classList.contains('following');await setFollow(p.boutiqueId,!nowFol);if(!nowFol){fb.classList.add('following');toast('Abonné')}else{fb.classList.remove('following');toast('Désabonné')}})}}document.getElementById('vidLike').addEventListener('click',function(e){e.stopPropagation();toggleVideoLike(p.id);var btn=this;var nowLiked=isVideoLiked(p.id);btn.classList.toggle('liked',nowLiked);btn.querySelector('i').className=(nowLiked?'fa-solid':'fa-regular')+' fa-thumbs-up';btn.querySelector('span').textContent=getLikeCount(p.id)});document.getElementById('vidComment').addEventListener('click',function(e){e.stopPropagation();openComments(p.id)});document.getElementById('vidShare').addEventListener('click',function(e){e.stopPropagation();shareProduct(p)});var sy=0;page.addEventListener('touchstart',function(e){sy=e.changedTouches[0].screenY},{passive:true});page.addEventListener('touchend',function(e){var dy=e.changedTouches[0].screenY-sy;if(dy<-60&&videoFeedIdx<videoFeed.length-1){videoFeedIdx++;paintVideoPlayer(videoFeed[videoFeedIdx])}else if(dy>60&&videoFeedIdx>0){videoFeedIdx--;paintVideoPlayer(videoFeed[videoFeedIdx])}},{passive:true});if(window._vidKeyHandler)document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=function(e){if(!document.getElementById('vidPage')){document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=null;return}if(e.key==='ArrowDown'){e.preventDefault();if(videoFeedIdx<videoFeed.length-1){videoFeedIdx++;paintVideoPlayer(videoFeed[videoFeedIdx])}}else if(e.key==='ArrowUp'){e.preventDefault();if(videoFeedIdx>0){videoFeedIdx--;paintVideoPlayer(videoFeed[videoFeedIdx])}}};document.addEventListener('keydown',window._vidKeyHandler)}
-function likeKey(pid){return 'vl_like_'+(currentUser?currentUser.uid:'anon')+'_'+pid}
-function isVideoLiked(pid){try{return localStorage.getItem(likeKey(pid))==='1'}catch(e){return false}}
-function toggleVideoLike(pid){try{if(isVideoLiked(pid)){localStorage.removeItem(likeKey(pid))}else{localStorage.setItem(likeKey(pid),'1')}}catch(e){}}
-function getLikeCount(pid){try{var c=parseInt(localStorage.getItem('vl_likecount_'+pid)||'0');return c+(isVideoLiked(pid)?1:0)}catch(e){return isVideoLiked(pid)?1:0}}
-function commentsKey(pid){return 'vl_comments_'+pid}
-function getComments(pid){try{return JSON.parse(localStorage.getItem(commentsKey(pid))||'[]')}catch(e){return[]}}
-function saveComments(pid,list){try{localStorage.setItem(commentsKey(pid),JSON.stringify(list.slice(-200)))}catch(e){}}
-function getCommentCount(pid){return getComments(pid).length}
-function openComments(pid){var old=document.getElementById('vidComments');if(old)old.remove();var comments=getComments(pid);var html='<div class="vid-comments" id="vidComments"><div class="vid-comments-head"><span>Commentaires ('+comments.length+')</span><button type="button" id="vcClose" style="font-size:20px">×</button></div><div class="vid-comments-list" id="vcList">'+comments.map(function(c){return'<div class="vid-comment"><div class="vc-ava">'+escapeHtml((c.name||'A')[0].toUpperCase())+'</div><div class="vc-body"><div class="vc-name">'+escapeHtml(c.name||'Anonyme')+'</div><div class="vc-text">'+escapeHtml(c.text||'')+'</div></div></div>'}).join('')+(comments.length?'':'<div class="em"><p>Aucun commentaire</p></div>')+'</div><div class="vid-comments-in"><input id="vcIn" placeholder="Ajouter un commentaire…"/><button type="button" id="vcSend">Envoyer</button></div></div>';document.body.insertAdjacentHTML('beforeend',html);setTimeout(function(){document.getElementById('vidComments').classList.add('open')},10);document.getElementById('vcClose').addEventListener('click',function(){var el=document.getElementById('vidComments');el.classList.remove('open');setTimeout(function(){el.remove()},250)});document.getElementById('vcSend').addEventListener('click',async function(){var inp=document.getElementById('vcIn');var text=(inp.value||'').trim();if(!text)return;var name=currentUser?currentUser.email.split('@')[0]:'Anonyme';var list=getComments(pid);list.push({name:name,text:text,ts:Date.now()});saveComments(pid,list);inp.value='';var cntBtn=document.getElementById('vidComment');if(cntBtn){var sp=cntBtn.querySelector('span');if(sp)sp.textContent=list.length}openComments(pid);try{if(currentUser)await addDoc(collection(db,'videoComments'),{productId:pid,userId:currentUser.uid,name:name,text:text,createdAt:serverTimestamp()})}catch(e){}})}
-function shareProduct(p){var link=location.href.split('#')[0]+'#product='+p.id;if(navigator.share){navigator.share({title:p.name,text:'Découvre ce produit sur IDA',url:link}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(link).then(function(){toast('Lien copié')}).catch(function(){toast('Lien: '+link)})}else{toast('Lien: '+link)}}
-function showFloatingVideo(p){var old=document.getElementById('vidFloat');if(old)old.remove();if(!p.videoUrl)return;var el=document.createElement('div');el.className='vid-float';el.id='vidFloat';el.innerHTML='<video src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay muted></video><button type="button" class="vf-x" id="vfClose">×</button>';document.body.appendChild(el);document.getElementById('vfClose').addEventListener('click',function(){el.remove()});el.addEventListener('click',function(e){if(e.target.id==='vfClose')return;showPage('video')});var dragging=false,ox=0,oy=0;el.addEventListener('touchstart',function(e){dragging=true;ox=e.touches[0].clientX-el.offsetLeft;oy=e.touches[0].clientY-el.offsetTop},{passive:true});el.addEventListener('touchmove',function(e){if(!dragging)return;el.style.left=(e.touches[0].clientX-ox)+'px';el.style.top=(e.touches[0].clientY-oy)+'px';el.style.right='auto';el.style.bottom='auto'},{passive:true});el.addEventListener('touchend',function(){dragging=false})}
-function adSeenKey(id){return 'ad_seen_'+id}
+async function paintVideoPlayer(p,enterDirection){var price=minProductPrice(p);var img=(p.images&&p.images[0])||'';var liked=isVideoLiked(p.id);var likeCount=getLikeCount(p.id);var commentCount=getCommentCount(p.id);var logoHtml='';var isFol=false;if(p.boutiqueId){try{isFol=await isFollowing(p.boutiqueId)}catch(e){}logoHtml='<div class="vid-logo-wrap"><button type="button" id="vidBoutLogo" style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:#fff;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00A854;box-shadow:0 2px 8px rgba(0,0,0,.3)"><i class="fa-solid fa-store"></i></button><button type="button" id="vidFollowBtn" class="vid-follow'+(isFol?' following':'')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>'}
+$('page-video').innerHTML='<div class="vid-page" id="vidPage"><div class="vid-top"><button type="button" id="vidBack"><i class="fa-solid fa-arrow-left"></i></button><button type="button" id="vidMute"><i class="fa-solid fa-volume-high"></i></button></div><div class="vid-stage"><video id="vidEl" src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay muted></video><div class="vid-side">'+logoHtml+'<button type="button" id="vidLike" class="'+(liked?'liked':'')+'"><i class="'+(liked?'fa-solid':'fa-regular')+' fa-thumbs-up"></i><span>'+likeCount+'</span></button><button type="button" id="vidComment"><i class="fa-regular fa-comment"></i><span>'+commentCount+'</span></button><button type="button" id="vidShare"><i class="fa-solid fa-share"></i></button></div><div class="vid-card" id="vidCard">'+(img?'<img src="'+escapeHtml(img)+'" onerror="this.style.display=\'none\'"/>':'')+'<div style="flex:1;min-width:0"><span class="badge">Offre exclusive</span><div class="title">'+escapeHtml(String(p.name||'').length>20?String(p.name||'').substring(0,19)+'…':String(p.name||''))+'</div><div class="price">'+formatPrice(price)+' F</div></div><div class="cta"><button type="button" class="buy" id="vidBuy">Acheter</button><button type="button" class="cart" id="vidCart">Panier</button></div></div></div></div>';var page=$('vidPage'),video=$('vidEl');
+
+// Récupérer le lecteur déjà activé depuis le petit format
+if(
+  window._videoActiveElement &&
+  window._videoActiveProductId===String(p.id)
+){
+
+  var previewVideo=window._videoActiveElement;
+
+  previewVideo.id='vidEl';
+  previewVideo.muted=false;
+  previewVideo.removeAttribute('muted');
+
+  // Remplacer le nouveau lecteur par celui qui joue déjà avec le son
+  video.replaceWith(previewVideo);
+
+  video=previewVideo;
+
+  window._videoActiveElement=null;
+  window._videoActiveProductId=null;
+
+  var floating=document.getElementById('vidFloat');
+  if(floating)floating.remove();
+}
+
+// Animation d'arrivée de la nouvelle vidéo
+if(enterDirection){
+  page.style.transition='none';
+  page.style.transform='translateY('+(enterDirection>0?'100%':'-100%')+')';
+
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      page.style.transition='transform .22s ease';
+      page.style.transform='translateY(0)';
+    });
+  });
+}
+var vidIndicator=document.createElement('div');
+vidIndicator.className='vid-play-indicator';
+vidIndicator.innerHTML='<i class="fa-solid fa-pause"></i>';
+page.appendChild(vidIndicator);
+var vidIndicatorTimer;
+function showVidState(playing){
+  vidIndicator.innerHTML='<i class="fa-solid '+(playing?'fa-pause':'fa-play')+'"></i>';
+  vidIndicator.classList.remove('show');
+  void vidIndicator.offsetWidth;
+  vidIndicator.classList.add('show');
+  clearTimeout(vidIndicatorTimer);
+  vidIndicatorTimer=setTimeout(function(){
+    vidIndicator.classList.remove('show');
+  },700);
+}
+video.play().catch(function(){});video.muted = true;
+var vidMuteBtn = document.getElementById('vidMute');
+
+function updateVideoSoundIcon(){
+  if(!vidMuteBtn)return;
+  vidMuteBtn.innerHTML = video.muted
+    ? '<i class="fa-solid fa-volume-xmark"></i>'
+    : '<i class="fa-solid fa-volume-high"></i>';
+}video.addEventListener('play',function(){
+  clearTimeout(videoHideTimer);
+  videoHideTimer=setTimeout(function(){
+    page.classList.add('vid-hide-ui');
+  },5000);
+});
+
+video.addEventListener('pause',function(){
+  clearTimeout(videoHideTimer);
+  page.classList.remove('vid-hide-ui');
+});page.addEventListener('click',function(e){if(e.target.closest('.vid-card,.vid-side,.vid-top,.vid-comments'))return;if(video.muted){
+  video.muted = false;
+  video.play().catch(function(){});
+  updateVideoSoundIcon();
+  showVidState(true);
+  clearTimeout(videoHideTimer);
+  videoHideTimer = setTimeout(function(){
+    page.classList.add('vid-hide-ui');
+  },5000);
+  return;
+}if(page.classList.contains('vid-hide-ui')){page.classList.remove('vid-hide-ui');clearTimeout(videoHideTimer);videoHideTimer=setTimeout(function(){page.classList.add('vid-hide-ui')},15000)}else{
+  if(video.paused){
+    video.play().then(function(){
+      showVidState(true);
+    }).catch(function(){});
+  }else{
+    video.pause();
+    showVidState(false);
+  }
+}});var pressTimer=null;var pressStart=0;var wasLongPress=false;page.addEventListener('pointerdown',function(e){if(e.target.closest('.vid-card,.vid-side,.vid-top,.vid-comments'))return;pressStart=Date.now();wasLongPress=false;pressTimer=setTimeout(function(){video.playbackRate=2;wasLongPress=true},200)});page.addEventListener('pointerup',function(){clearTimeout(pressTimer);video.playbackRate=1;if(Date.now()-pressStart<200)wasLongPress=false});page.addEventListener('pointercancel',function(){clearTimeout(pressTimer);video.playbackRate=1;wasLongPress=false});page.addEventListener('pointerleave',function(){clearTimeout(pressTimer);video.playbackRate=1;wasLongPress=false});document.getElementById('vidBack').addEventListener('click',function(e){e.stopPropagation();clearTimeout(videoHideTimer);goBack()});var vidMuteBtn=document.getElementById('vidMute');
+vidMuteBtn.addEventListener('click',function(e){
+  e.stopPropagation();
+  video.muted=!video.muted;
+  vidMuteBtn.innerHTML=video.muted
+    ?'<i class="fa-solid fa-volume-xmark"></i>'
+    :'<i class="fa-solid fa-volume-high"></i>';
+});document.getElementById('vidCard').addEventListener('click',function(e){e.stopPropagation();if(e.target.closest('#vidBuy,#vidCart'))return;currentProduct=p;showPage('product',p.id)});document.getElementById('vidBuy').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('buy')});document.getElementById('vidCart').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('cart')});if(p.boutiqueId){var bl=document.getElementById('vidBoutLogo');if(bl){bl.addEventListener('click',function(e){e.stopPropagation();showPage('boutique',p.boutiqueId)});getDoc(doc(db,'boutiques',p.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();if(b.logo)bl.innerHTML='<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>'}}).catch(function(){})}var fb=document.getElementById('vidFollowBtn');if(fb){fb.addEventListener('click',async function(e){e.stopPropagation();if(!currentUser){showPage('auth');return}var nowFol=fb.classList.contains('following');await setFollow(p.boutiqueId,!nowFol);if(!nowFol){fb.classList.add('following');toast('Abonné')}else{fb.classList.remove('following');toast('Désabonné')}})}}document.getElementById('vidLike').addEventListener('click',function(e){e.stopPropagation();toggleVideoLike(p.id);var btn=this;var nowLiked=isVideoLiked(p.id);btn.classList.toggle('liked',nowLiked);btn.querySelector('i').className=(nowLiked?'fa-solid':'fa-regular')+' fa-thumbs-up';btn.querySelector('span').textContent=getLikeCount(p.id)});document.getElementById('vidComment').addEventListener('click',function(e){e.stopPropagation();openComments(p.id)});document.getElementById('vidShare').addEventListener('click',function(e){e.stopPropagation();shareProduct(p)});// === DEFILEMENT VIDEO FLUIDE COMME TIKTOK ===
+var swipeStartY=0;
+var swipeDeltaY=0;
+var swipeActive=false;
+var swipePointerId=null;
+
+page.style.touchAction='none';
+
+page.addEventListener('pointerdown',function(e){
+  if(e.pointerType==='mouse' && e.button!==0)return;
+
+  if(e.target.closest('.vid-card,.vid-side,.vid-top,.vid-comments'))return;
+
+  swipeStartY=e.clientY;
+  swipeDeltaY=0;
+  swipeActive=true;
+  swipePointerId=e.pointerId;
+
+  try{page.setPointerCapture(e.pointerId)}catch(err){}
+});
+
+page.addEventListener('pointermove',function(e){
+  if(!swipeActive || e.pointerId!==swipePointerId)return;
+
+  swipeDeltaY=e.clientY-swipeStartY;
+
+  if(Math.abs(swipeDeltaY)>8){
+    clearTimeout(pressTimer);
+    video.playbackRate=1;
+    e.preventDefault();
+
+    page.style.transition='none';
+    page.style.transform='translateY('+swipeDeltaY+'px)';
+  }
+},{passive:false});
+
+page.addEventListener('pointerup',function(e){
+  if(!swipeActive || e.pointerId!==swipePointerId)return;
+
+  swipeActive=false;
+  swipePointerId=null;
+
+  // Glissement vers le haut : vidéo suivante
+  if(swipeDeltaY<-70 && videoFeedIdx<videoFeed.length-1){
+
+    page.style.transition='transform .22s ease';
+    page.style.transform='translateY(-100%)';
+
+    setTimeout(function(){
+      videoFeedIdx++;
+      paintVideoPlayer(videoFeed[videoFeedIdx],1);
+    },220);
+
+  // Glissement vers le bas : vidéo précédente
+  }else if(swipeDeltaY>70 && videoFeedIdx>0){
+
+    page.style.transition='transform .22s ease';
+    page.style.transform='translateY(100%)';
+
+    setTimeout(function(){
+      videoFeedIdx--;
+      paintVideoPlayer(videoFeed[videoFeedIdx],-1);
+    },220);
+
+  }else{
+    // Mouvement insuffisant : retour à la position initiale
+    page.style.transition='transform .2s ease';
+    page.style.transform='translateY(0)';
+  }
+});
+
+page.addEventListener('pointercancel',function(){
+  swipeActive=false;
+  swipePointerId=null;
+  page.style.transition='transform .2s ease';
+  page.style.transform='translateY(0)';
+});if(window._vidKeyHandler)document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=function(e){if(!document.getElementById('vidPage')){document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=null;return}if(e.key==='ArrowDown'){e.preventDefault();if(videoFeedIdx<videoFeed.length-1){videoFeedIdx++;paintVideoPlayer(videoFeed[videoFeedIdx])}}else if(e.key==='ArrowUp'){e.preventDefault();if(videoFeedIdx>0){videoFeedIdx--;paintVideoPlayer(videoFeed[videoFeedIdx])}}};document.addEventListener('keydown',window._vidKeyHandler);
+
+watchVideoStats(p.id,p.boutiqueId);
+
+}
+// ==========================================
+// IDENTIFICATION DES VISITEURS ET DES CLIENTS
+// ==========================================
+
+function asyncHasRealUser(){
+
+  return !!(
+    currentUser &&
+    currentUser.uid &&
+    !currentUser.isAnonymous &&
+    typeof currentUser.getIdToken==='function'
+  );
+
+}
+
+async function waitForRealUser(){
+
+  await authReadyPromise;
+
+  return asyncHasRealUser()?currentUser:null;
+
+}
+
+async function getVideoActor(){
+
+  // Client connecté
+  if(asyncHasRealUser())return currentUser;
+
+  // Visiteur anonyme déjà identifié
+  if(videoAnonAuth.currentUser)return videoAnonAuth.currentUser;
+
+  // Créer une identité anonyme
+  var cred=await signInAnonymously(videoAnonAuth);
+
+  videoAnonUser=cred.user;
+
+  return cred.user;
+
+}
+
+
+// ==========================================
+// ARRÊT DES ÉCOUTES FIRESTORE
+// ==========================================
+
+function stopVideoStats(){
+
+  videoStatsUnsubs.forEach(function(fn){
+    try{fn()}catch(e){}
+  });
+
+  videoStatsUnsubs=[];
+
+  videoStatsPid=null;
+
+}
+
+
+// ==========================================
+// COMPTEURS
+// ==========================================
+
+function updateVideoCountButton(id,count){
+
+  var btn=document.getElementById(id);
+
+  if(btn){
+
+    var sp=btn.querySelector('span');
+
+    if(sp)sp.textContent=String(count);
+
+  }
+
+}
+
+function getLikeCount(pid){
+
+  try{
+    return parseInt(localStorage.getItem('vl_likecount_'+pid)||'0',10)||0;
+  }catch(e){
+    return 0;
+  }
+
+}
+
+function getCommentCount(pid){
+
+  try{
+    return parseInt(localStorage.getItem('vl_commentcount_'+pid)||'0',10)||0;
+  }catch(e){
+    return 0;
+  }
+
+}
+
+function getShareCount(pid){
+
+  try{
+    return parseInt(localStorage.getItem('vl_sharecount_'+pid)||'0',10)||0;
+  }catch(e){
+    return 0;
+  }
+
+}
+
+function getFollowCount(bid){
+
+  try{
+    return parseInt(localStorage.getItem('vl_followcount_'+bid)||'0',10)||0;
+  }catch(e){
+    return 0;
+  }
+
+}
+
+
+// ==========================================
+// IDENTIFICATION DES J'AIME
+// ==========================================
+
+function likeKey(pid){
+
+  var uid=asyncHasRealUser()
+    ?currentUser.uid
+    :(videoAnonAuth.currentUser?videoAnonAuth.currentUser.uid:'anon');
+
+  return 'vl_like_'+uid+'_'+pid;
+
+}
+
+function isVideoLiked(pid){
+
+  try{
+    return localStorage.getItem(likeKey(pid))==='1';
+  }catch(e){
+    return false;
+  }
+
+}
+
+async function toggleVideoLike(pid){
+
+  try{
+
+    var actor=await getVideoActor();
+
+    var ref=doc(
+      db,
+      'videoLikes',
+      String(pid),
+      'users',
+      actor.uid
+    );
+
+    var existing=await getDoc(ref);
+
+    if(existing.exists()){
+
+      await deleteDoc(ref);
+
+      localStorage.removeItem('vl_like_'+actor.uid+'_'+pid);
+
+    }else{
+
+      await setDoc(ref,{
+        userId:actor.uid,
+        productId:String(pid),
+        createdAt:serverTimestamp()
+      });
+
+      localStorage.setItem('vl_like_'+actor.uid+'_'+pid,'1');
+
+    }
+
+  }catch(e){
+
+    toast('J’aime non enregistré : '+e.message);
+
+  }
+
+}
+
+
+// ==========================================
+// COMMENTAIRES
+// ==========================================
+
+function commentsKey(pid){
+  return 'vl_comments_'+pid;
+}
+
+function getComments(pid){
+
+  try{
+    return JSON.parse(localStorage.getItem(commentsKey(pid))||'[]');
+  }catch(e){
+    return [];
+  }
+
+}
+
+function saveComments(pid,list){
+
+  try{
+    localStorage.setItem(
+      commentsKey(pid),
+      JSON.stringify(list.slice(-200))
+    );
+  }catch(e){}
+
+}
+
+function renderVideoCommentsList(pid,comments){
+
+  var listEl=document.getElementById('vcList');
+
+  var head=document.querySelector(
+    '#vidComments .vid-comments-head span'
+  );
+
+  if(head){
+    head.textContent='Commentaires ('+comments.length+')';
+  }
+
+  if(!listEl)return;
+
+  listEl.innerHTML=comments.map(function(c){
+
+    return '<div class="vid-comment">'+
+      '<div class="vc-ava">'+
+        escapeHtml((c.name||'A')[0].toUpperCase())+
+      '</div>'+
+      '<div class="vc-body">'+
+        '<div class="vc-name">'+escapeHtml(c.name||'Client')+'</div>'+
+        '<div class="vc-text">'+escapeHtml(c.text||'')+'</div>'+
+      '</div>'+
+    '</div>';
+
+  }).join('')+
+  (comments.length?'':'<div class="em"><p>Aucun commentaire</p></div>');
+
+}
+
+
+// ==========================================
+// FENÊTRE DES COMMENTAIRES
+// ==========================================
+
+async function openComments(pid){
+
+  // Attendre que Firebase ait déterminé la vraie connexion
+  await authReadyPromise;
+
+  var old=document.getElementById('vidComments');
+
+  if(old)old.remove();
+
+  window._openVideoCommentsPid=pid;
+
+  var comments=getComments(pid);
+
+  var canComment=asyncHasRealUser();
+
+  var inputHtml=canComment
+
+    ?'<div class="vid-comments-in">'+
+       '<input id="vcIn" placeholder="Ajouter un commentaire…"/>'+
+       '<button type="button" id="vcSend">Envoyer</button>'+
+     '</div>'
+
+    :'<div class="vid-comments-in">'+
+       '<button type="button" id="vcLogin" style="width:100%;height:42px;border-radius:22px;background:#00A854;color:#fff;font-weight:700">'+
+         'Connectez-vous d’abord'+
+       '</button>'+
+     '</div>';
+
+  var html=
+    '<div class="vid-comments" id="vidComments">'+
+
+      '<div class="vid-comments-head">'+
+        '<span>Commentaires ('+comments.length+')</span>'+
+        '<button type="button" id="vcClose" style="font-size:20px">×</button>'+
+      '</div>'+
+
+      '<div class="vid-comments-list" id="vcList">'+
+
+        comments.map(function(c){
+
+          return '<div class="vid-comment">'+
+            '<div class="vc-ava">'+
+              escapeHtml((c.name||'A')[0].toUpperCase())+
+            '</div>'+
+            '<div class="vc-body">'+
+              '<div class="vc-name">'+escapeHtml(c.name||'Client')+'</div>'+
+              '<div class="vc-text">'+escapeHtml(c.text||'')+'</div>'+
+            '</div>'+
+          '</div>';
+
+        }).join('')+
+
+        (comments.length?'':'<div class="em"><p>Aucun commentaire</p></div>')+
+
+      '</div>'+
+
+      inputHtml+
+
+    '</div>';
+
+  document.body.insertAdjacentHTML('beforeend',html);
+
+  setTimeout(function(){
+
+    var el=document.getElementById('vidComments');
+
+    if(el)el.classList.add('open');
+
+  },10);
+
+  // Fermer
+  document.getElementById('vcClose').addEventListener('click',function(){
+
+    window._openVideoCommentsPid=null;
+
+    var el=document.getElementById('vidComments');
+
+    if(el){
+
+      el.classList.remove('open');
+
+      setTimeout(function(){
+        el.remove();
+      },250);
+
+    }
+
+  });
+
+  // Visiteur non connecté
+  if(!canComment){
+
+    document.getElementById('vcLogin').addEventListener('click',function(){
+
+      window._openVideoCommentsPid=null;
+
+      var el=document.getElementById('vidComments');
+
+      if(el)el.remove();
+
+      showPage('auth');
+
+    });
+
+    return;
+
+  }
+
+  var inp=document.getElementById('vcIn');
+
+  // Limite de 50 caractères
+  inp.addEventListener('input',function(){
+
+    if(inp.value.length>50){
+
+      inp.value=inp.value.slice(0,50);
+
+      toast('50 caractères maximum');
+
+    }
+
+  });
+
+  // Envoyer
+  document.getElementById('vcSend').addEventListener('click',async function(){
+
+    var user=await waitForRealUser();
+
+    if(!user){
+
+      var el=document.getElementById('vidComments');
+
+      if(el)el.remove();
+
+      showPage('auth');
+
+      return;
+
+    }
+
+    var text=(inp.value||'').trim();
+
+    if(!text)return;
+
+    if(text.length>50){
+
+      toast('50 caractères maximum');
+
+      return;
+
+    }
+
+    var name=(user.displayName||user.email||'Client').split('@')[0];
+
+    var sendBtn=document.getElementById('vcSend');
+
+    sendBtn.disabled=true;
+
+    try{
+
+      await addDoc(collection(db,'videoComments'),{
+
+        productId:String(pid),
+        userId:user.uid,
+        name:name,
+        text:text,
+        createdAt:serverTimestamp()
+
+      });
+
+      inp.value='';
+
+    }catch(e){
+
+      toast('Commentaire non envoyé : '+e.message);
+
+      sendBtn.disabled=false;
+
+    }
+
+  });
+
+}
+
+
+// ==========================================
+// PARTAGES
+// ==========================================
+
+async function recordVideoShare(pid){
+
+  try{
+
+    var actor=await getVideoActor();
+
+    await addDoc(
+      collection(db,'videoShares',String(pid),'events'),
+      {
+        productId:String(pid),
+        userId:actor.uid,
+        createdAt:serverTimestamp()
+      }
+    );
+
+  }catch(e){
+
+    console.warn('Partage non comptabilisé',e);
+
+  }
+
+}
+
+async function shareProduct(p){
+
+  var link=location.href.split('#')[0]+'#product='+p.id;
+
+  if(navigator.share){
+
+    try{
+
+      await navigator.share({
+        title:p.name,
+        text:'Découvre ce produit sur IDA',
+        url:link
+      });
+
+      await recordVideoShare(p.id);
+
+    }catch(e){
+
+      if(e&&e.name!=='AbortError'){
+        toast('Partage impossible');
+      }
+
+    }
+
+  }else if(navigator.clipboard){
+
+    try{
+
+      await navigator.clipboard.writeText(link);
+
+      await recordVideoShare(p.id);
+
+      toast('Lien copié');
+
+    }catch(e){
+
+      toast('Copie impossible');
+
+    }
+
+  }else{
+
+    toast('Lien : '+link);
+
+  }
+
+}
+
+
+// ==========================================
+// COMPTEURS PUBLICS EN TEMPS RÉEL
+// ==========================================
+
+function watchVideoStats(pid,boutiqueId){
+
+  stopVideoStats();
+
+  videoStatsPid=pid;
+
+  getVideoActor().then(function(actor){
+
+    if(videoStatsPid!==pid)return;
+
+    // J'AIME
+    var likeCol=collection(
+      db,
+      'videoLikes',
+      String(pid),
+      'users'
+    );
+
+    videoStatsUnsubs.push(
+
+      onSnapshot(likeCol,function(snap){
+
+        if(videoStatsPid!==pid)return;
+
+        var count=snap.size;
+
+        localStorage.setItem(
+          'vl_likecount_'+pid,
+          String(count)
+        );
+
+        updateVideoCountButton('vidLike',count);
+
+        var liked=snap.docs.some(function(d){
+          return d.id===actor.uid;
+        });
+
+        var btn=document.getElementById('vidLike');
+
+        if(btn){
+
+          btn.classList.toggle('liked',liked);
+
+          var ic=btn.querySelector('i');
+
+          if(ic){
+            ic.className=(liked?'fa-solid':'fa-regular')+' fa-thumbs-up';
+          }
+
+        }
+
+        if(liked){
+          localStorage.setItem('vl_like_'+actor.uid+'_'+pid,'1');
+        }else{
+          localStorage.removeItem('vl_like_'+actor.uid+'_'+pid);
+        }
+
+      })
+
+    );
+
+
+    // COMMENTAIRES
+    var commentsQ=query(
+      collection(db,'videoComments'),
+      where('productId','==',String(pid))
+    );
+
+    videoStatsUnsubs.push(
+
+      onSnapshot(commentsQ,function(snap){
+
+        if(videoStatsPid!==pid)return;
+
+        var arr=snap.docs.map(function(d){
+
+          var x=d.data();
+
+          var ts=x.createdAt&&typeof x.createdAt.toMillis==='function'
+            ?x.createdAt.toMillis()
+            :0;
+
+          return {
+            id:d.id,
+            name:x.name||'Client',
+            text:x.text||'',
+            ts:ts
+          };
+
+        });
+
+        arr.sort(function(a,b){
+          return a.ts-b.ts;
+        });
+
+        saveComments(pid,arr);
+
+        localStorage.setItem(
+          'vl_commentcount_'+pid,
+          String(snap.size)
+        );
+
+        updateVideoCountButton('vidComment',snap.size);
+
+        if(window._openVideoCommentsPid===pid){
+
+          renderVideoCommentsList(pid,arr);
+
+        }
+
+      })
+
+    );
+
+
+    // PARTAGES
+    var shareCol=collection(
+      db,
+      'videoShares',
+      String(pid),
+      'events'
+    );
+
+    videoStatsUnsubs.push(
+
+      onSnapshot(shareCol,function(snap){
+
+        if(videoStatsPid!==pid)return;
+
+        localStorage.setItem(
+          'vl_sharecount_'+pid,
+          String(snap.size)
+        );
+
+        updateVideoCountButton('vidShare',snap.size);
+
+      })
+
+    );
+
+
+    // ABONNÉS DE LA BOUTIQUE
+    if(boutiqueId){
+
+      var followersCol=collection(
+        db,
+        'publicFollows',
+        String(boutiqueId),
+        'users'
+      );
+
+      videoStatsUnsubs.push(
+
+        onSnapshot(followersCol,function(snap){
+
+          if(videoStatsPid!==pid)return;
+
+          localStorage.setItem(
+            'vl_followcount_'+boutiqueId,
+            String(snap.size)
+          );
+
+          var countEl=document.getElementById('vidFollowCount');
+
+          if(countEl){
+            countEl.textContent=String(snap.size);
+          }
+
+        })
+
+      );
+
+    }
+
+  }).catch(function(e){
+
+    console.warn('Erreur statistiques vidéo :',e);
+
+  });
+
+}
+function showFloatingVideo(p){
+
+  var old=document.getElementById('vidFloat');
+  if(old)old.remove();
+
+  if(!p.videoUrl)return;
+
+  var el=document.createElement('div');
+  el.className='vid-float';
+  el.id='vidFloat';
+
+  el.innerHTML=
+    '<video src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay muted></video>'+
+    '<button type="button" class="vf-x" id="vfClose">×</button>';
+
+  document.body.appendChild(el);
+
+  var previewVideo=el.querySelector('video');
+
+  // Fermer le petit lecteur
+  document.getElementById('vfClose').addEventListener('click',function(e){
+    e.stopPropagation();
+    el.remove();
+  });
+
+  // Ouvrir la vidéo en plein écran AVEC LE SON
+  el.addEventListener('click',function(e){
+
+    if(e.target.id==='vfClose')return;
+
+    // Le clic autorise immédiatement le son
+    previewVideo.muted=false;
+    previewVideo.volume=1;
+
+    previewVideo.play().catch(function(){});
+
+    // Conserver le même élément vidéo
+    window._videoActiveElement=previewVideo;
+    window._videoActiveProductId=String(p.id);
+    window._videoRequestedProductId=String(p.id);
+
+    showPage('video');
+  });
+
+  // Déplacement du petit lecteur
+  var dragging=false,ox=0,oy=0;
+
+  el.addEventListener('touchstart',function(e){
+
+    if(e.target.id==='vfClose')return;
+
+    dragging=true;
+    ox=e.touches[0].clientX-el.offsetLeft;
+    oy=e.touches[0].clientY-el.offsetTop;
+
+  },{passive:true});
+
+  el.addEventListener('touchmove',function(e){
+
+    if(!dragging)return;
+
+    el.style.left=(e.touches[0].clientX-ox)+'px';
+    el.style.top=(e.touches[0].clientY-oy)+'px';
+    el.style.right='auto';
+    el.style.bottom='auto';
+
+  },{passive:true});
+
+  el.addEventListener('touchend',function(){
+    dragging=false;
+  });
+}
+  function adSeenKey(id){return 'ad_seen_'+id}
 function adSeen(id){try{return localStorage.getItem(adSeenKey(id))==='1'}catch(e){return false}}
 function markAdSeen(id){try{localStorage.setItem(adSeenKey(id),'1')}catch(e){}}
 function adLinkHandler(a){if(a.linkType==='url'&&a.linkUrl)return function(){location.href=a.linkUrl};if(a.linkType==='product'&&a.linkId)return function(){showPage('product',a.linkId)};if(a.linkType==='boutique'&&a.linkId)return function(){showPage('boutique',a.linkId)};return null}
@@ -5137,6 +6787,10 @@ function renderInappAds(){var list=ads.filter(function(a){return a.type==='inapp
 $('searchInput').addEventListener('input',function(e){clearTimeout(window._st);window._st=setTimeout(function(){searchTerm=e.target.value.trim();if(searchTerm)showPage('catalog')},300)});
 onAuthStateChanged(auth,function(u){
   currentUser=u;
+    if(authReadyResolve){
+    authReadyResolve(u);
+    authReadyResolve=null;
+  }
   updateCartBadge();
 
   if(u){
@@ -5189,6 +6843,51 @@ onAuthStateChanged(auth,function(u){
       if(id==='chat'&&typeof renderMessagesList==='function')renderMessagesList();
     },50);
   }catch(e){}
+})();
+  /* === REMONTER EN HAUT DU CATALOGUE === */
+
+(function(){
+
+  var btn=document.createElement('button');
+
+  btn.type='button';
+  btn.id='catalogScrollTop';
+  btn.title='Remonter en haut';
+  btn.innerHTML='<i class="fa-solid fa-chevron-up"></i>';
+
+  document.body.appendChild(btn);
+
+  function updateScrollButton(){
+
+    var active=document.querySelector('.page.on');
+
+    var isCatalog=active && (
+      active.id==='page-catalog'
+    );
+
+    btn.classList.toggle(
+      'show',
+      isCatalog && window.scrollY>300
+    );
+  }
+
+  window.addEventListener('scroll',updateScrollButton,{
+    passive:true
+  });
+
+  btn.addEventListener('click',function(){
+
+    window.scrollTo({
+      top:0,
+      behavior:'smooth'
+    });
+
+  });
+
+  document.addEventListener('click',function(){
+    setTimeout(updateScrollButton,100);
+  });
+
 })();
 async function init(){
   updateCartBadge();
