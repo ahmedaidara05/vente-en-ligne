@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#00A854"/>
+<title>IDUS Admin</title>
+<style>
+
+:root{
+  color-scheme:light;
+  --bg:#f4f7f6;--surface:#fff;--surface-soft:#f8faf9;
+  --accent:#079b62;--accent-dark:#087a50;--accent-soft:#e7f6ef;
+  --text:#17231e;--muted:#718078;--danger:#dc4545;
+  --border:#e3ebe6;--shadow:0 8px 28px rgba(24,54,39,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{min-height:100%;background:var(--bg)}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+button,input,select,textarea{font:inherit}
+button{transition:background .18s ease,border-color .18s ease,transform .18s ease}
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 15% 10%,#e2f5eb 0,transparent 42%),radial-gradient(ellipse at 90% 90%,#eaf2ee 0,transparent 38%),var(--bg)}
+.login-box{width:min(100%,410px);padding:36px;background:var(--surface);border:1px solid var(--border);border-radius:22px;box-shadow:0 24px 70px rgba(20,55,38,.10)}
+.login-box h2{font-size:25px;letter-spacing:-.7px;color:var(--text);margin-bottom:7px}
+.login-box h2:before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--accent);margin:0 10px 3px 0}
+.login-box .sub{color:var(--muted);font-size:13px;margin-bottom:25px}
+#app{display:none;min-height:100vh;grid-template-columns:248px minmax(0,1fr);grid-template-rows:76px minmax(0,1fr);align-items:start}
+.top{grid-column:1/-1;grid-row:1;height:76px;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 34px;display:flex;justify-content:flex-end;align-items:center;gap:18px;position:sticky;top:0;z-index:20}
+.top h2{margin-right:auto;font-size:19px;font-weight:800;letter-spacing:-.5px;color:var(--text);display:flex;align-items:center;gap:10px}
+.top h2:before{content:"";width:11px;height:25px;border-radius:5px;background:var(--accent)}
+#admUserLabel{font-size:12px!important;color:var(--muted)!important;background:var(--surface-soft);padding:8px 12px;border-radius:30px}
+.nav{grid-column:1;grid-row:2;align-self:stretch;min-height:calc(100vh - 76px);background:var(--surface);border-right:1px solid var(--border);padding:24px 14px;display:flex;flex-direction:column;gap:7px;position:sticky;top:76px}
+.nav:before{content:"ESPACE ADMINISTRATION";font-size:10px;font-weight:800;letter-spacing:1.1px;color:#9aa79f;padding:2px 12px 12px}
+.nav button{width:100%;text-align:left;padding:11px 14px;border:1px solid transparent;border-radius:10px;background:transparent;color:#5d6c64;font-size:13px;font-weight:650;cursor:pointer}
+.nav button:hover{background:var(--surface-soft);color:var(--accent-dark)}
+.nav button.on{background:var(--accent-soft);color:var(--accent-dark);border-color:#d4efdf}
+.panel{grid-column:2;grid-row:2;display:none;width:100%;max-width:1500px;margin:0 auto;padding:34px 38px 60px;min-width:0}
+.panel.on{display:block}
+.card{background:var(--surface);padding:26px;border:1px solid var(--border);border-radius:17px;margin-bottom:20px;box-shadow:var(--shadow);min-width:0}
+.card h3{font-size:17px;font-weight:750;letter-spacing:-.3px;color:var(--text);margin-bottom:18px}
+.card h3:not(:first-child){padding-top:8px}
+.muted{color:var(--muted);font-size:12px}
+label{font-size:12px;font-weight:650;color:#56665d;display:block;margin:12px 0 6px}
+input,select,textarea{display:block;width:100%;padding:12px 14px;margin:0 0 12px;border-radius:10px;border:1px solid #dce6df;background:#fff;color:var(--text);font-size:14px;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(7,155,98,.10)}
+input[type=checkbox]{display:inline-block;width:17px;height:17px;vertical-align:middle;margin:0 7px 0 0;accent-color:var(--accent)}
+input[type=file]{padding:10px;background:var(--surface-soft)}
+button.primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;background:var(--accent);color:#fff;border:1px solid var(--accent);border-radius:10px;font-weight:750;font-size:13px;cursor:pointer;box-shadow:0 4px 10px rgba(7,155,98,.13)}
+button.primary:hover{background:var(--accent-dark);border-color:var(--accent-dark);transform:translateY(-1px)}
+button.sm{display:inline-flex;align-items:center;justify-content:center;padding:7px 11px;font-size:12px;font-weight:650;border-radius:8px;border:1px solid var(--border);background:#fff;color:#526159;cursor:pointer;margin:3px}
+button.sm:hover{background:var(--surface-soft);border-color:#cbd9d0}
+button.danger{color:var(--danger);border-color:#f0cccc;background:#fff8f8}
+button.danger:hover{background:#fff0f0}
+.item{padding:16px 4px;border-bottom:1px solid var(--border);font-size:13px;line-height:1.7;overflow-wrap:anywhere}
+.item:last-child{border-bottom:0}
+.item b{font-size:14px;color:var(--text)}
+.err{color:var(--danger);font-size:13px;margin:10px 0;padding:10px 12px;background:#fff1f1;border-radius:8px}
+#stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;font-size:0}
+#stats b{display:block;font-size:28px;line-height:1.2;color:var(--accent-dark);margin-top:7px}
+#stats br{display:none}
+#stats{color:transparent}
+#stats b:before{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px}
+#stats b:nth-of-type(1):before{content:"PRODUITS"}
+#stats b:nth-of-type(2):before{content:"COMMANDES"}
+#stats b:nth-of-type(3):before{content:"CATÉGORIES"}
+#stats b:nth-of-type(4):before{content:"BOUTIQUES"}
+#stats b{background:var(--surface-soft);border:1px solid var(--border);border-radius:13px;padding:18px}
+#adPreview img{display:block;border:1px solid var(--border);padding:4px;background:#fff;border-radius:10px}
+#panel-ads .card:first-child{max-width:760px}
+#panel-boutiques .card{max-width:1000px}
+#panel-add .card{max-width:800px}
+@media(max-width:1050px){
+ #app{grid-template-columns:210px minmax(0,1fr)}
+ .panel{padding:26px 24px 48px}
+ .top{padding:0 24px}
+ .card{padding:22px}
+ #stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ body{font-size:13px}
+ #app{display:none;grid-template-columns:minmax(0,1fr);grid-template-rows:62px auto minmax(0,1fr)}
+ .top{grid-column:1;grid-row:1;height:62px;padding:0 15px;gap:8px}
+ .top h2{font-size:17px}
+ #admUserLabel{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 9px}
+ .top .sm{margin:0;padding:7px 9px;font-size:11px}
+ .nav{grid-column:1;grid-row:2;min-height:0;position:sticky;top:62px;z-index:15;display:flex;flex-direction:row;gap:6px;padding:9px 10px;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--border);scrollbar-width:none;white-space:nowrap}
+ .nav::-webkit-scrollbar{display:none}
+ .nav:before{display:none}
+ .nav button{width:auto;flex:0 0 auto;text-align:center;padding:9px 12px;font-size:12px;border-radius:9px;background:var(--surface-soft)}
+ .panel{grid-column:1;grid-row:3;padding:17px 13px 38px}
+ .card{padding:18px 15px;border-radius:14px;margin-bottom:14px}
+ .card h3{font-size:16px;margin-bottom:14px}
+ input,select,textarea{font-size:16px;padding:12px}
+ button.primary{width:auto;max-width:100%;padding:11px 15px}
+ .item{padding:13px 2px}
+ #stats{gap:9px}
+ #stats b{font-size:23px;padding:15px 12px}
+ .login-box{padding:27px 22px;border-radius:18px}
+}
+@media(max-width:380px){
+ .top{padding:0 10px}
+ .top h2{font-size:15px}
+ #admUserLabel{font-size:10px!important;max-width:85px}
+ .nav{padding:8px}
+ .nav button{padding:8px 10px;font-size:11px}
+ .panel{padding:13px 9px 30px}
+ .card{padding:15px 12px}
+ #stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #stats b{font-size:21px}
+}
+
+</style>
+</head>
+<body>
+<div id="loginScreen">
+  <div class="login-box">
+    <h2>IDUS Admin</h2>
+    <p class="sub">Connexion réservée. E-mail vérifié requis.</p>
+    <label>E-mail</label>
+    <input id="admEmail" type="email" autocomplete="username"/>
+    <label>Mot de passe</label>
+    <input id="admPass" type="password" autocomplete="current-password"/>
+    <button type="button" class="primary" id="admLoginBtn" style="width:100%;margin-top:8px">Connexion</button>
+    <button type="button" class="sm" id="admResendBtn" style="width:100%;margin-top:8px;display:none">Renvoyer l'e-mail de validation</button>
+    <p id="admLoginErr" class="err" style="display:none"></p>
+    <p id="admLoginOk" class="muted" style="display:none;color:#00A854"></p>
+  </div>
+</div>
+<div id="app">
+<div class="top"><h2>IDUS Admin</h2><span class="muted" id="admUserLabel">—</span> <button type="button" class="sm" id="admLogout">Déconnexion</button></div>
+<div class="nav">
+<button type="button" class="on" data-p="dash">Dashboard</button>
+<button type="button" data-p="products">Produits</button>
+<button type="button" data-p="orders">Commandes</button>
+<button type="button" data-p="categories">Catégories</button>
+<button type="button" data-p="boutiques">Boutiques</button>
+<button type="button" data-p="ads">Pubs</button>
+<button type="button" data-p="reports">Signalements</button>
+<button type="button" data-p="blocks">Blocages</button>
+<button type="button" data-p="add">+ Produit</button>
+</div>
+<div id="panel-dash" class="panel on"><div class="card"><h3>Dashboard</h3><p id="stats">…</p></div></div>
+<div id="panel-products" class="panel"><div class="card"><h3>Produits</h3><div id="prodList"></div></div></div>
+<div id="panel-orders" class="panel"><div class="card"><h3>Commandes</h3><div id="orderList"></div></div></div>
+<div id="panel-categories" class="panel"><div class="card"><h3>Catégories</h3><div id="catList"></div><div style="margin-top:12px"><input id="newCat" placeholder="Nouvelle catégorie"/><button type="button" class="primary" id="btnAddCat">Ajouter</button></div></div></div>
+<div id="panel-boutiques" class="panel"><div class="card"><h3>Boutiques</h3><div id="boutList"></div>
+<h3 style="margin-top:16px">Créer une boutique</h3>
+<label>Email vendeur *</label><input id="bEmail" type="email"/>
+<label>Nom boutique</label><input id="bName"/>
+<label>Mot de passe temporaire *</label><input id="bTempPass" type="text"/>
+<button type="button" class="primary" id="btnCreateBout">Créer</button>
+<p id="boutErr" class="err" style="display:none"></p></div></div>
+<div id="panel-ads" class="panel">
+<div class="card">
+<h3>Publicités</h3>
+<p class="muted">Sans pub active, rien ne s'affiche côté client.</p>
+<label>Type</label>
+<select id="adType"><option value="banner">Bannière</option><option value="inapp">In-app (popup)</option></select>
+<label>Image</label>
+<input type="file" id="adImg" accept="image/*"/>
+<div id="adPreview" class="muted" style="margin:8px 0"></div>
+<label>Lien</label>
+<select id="adLinkType"><option value="none">Aucun</option><option value="url">URL externe</option><option value="product">Produit</option><option value="boutique">Boutique</option></select>
+<input id="adLinkUrl" placeholder="https://..." style="display:none"/>
+<input id="adLinkId" placeholder="ID produit ou boutique" style="display:none"/>
+<label><input type="checkbox" id="adActive" checked/> Actif</label>
+<button type="button" class="primary" id="adSave">Ajouter la pub</button>
+<p id="adMsg" class="muted"></p>
+</div>
+<div class="card"><h3>Pubs existantes</h3><div id="adList">…</div></div>
+</div>
+  <div id="panel-reports" class="panel"><div class="card"><h3>Signalements</h3><div id="reportList">…</div></div></div>
+<div id="panel-blocks" class="panel"><div class="card"><h3>Blocages</h3><div id="blockList">…</div></div></div>
+<div id="panel-add" class="panel"><div class="card"><p class="muted">Produits gérés depuis boutique.html</div></div></div>
+</div>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendEmailVerification } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+const MEDIA_WORKER='https://soft-surf-b4e9.ahmedsaidaidara5.workers.dev';
+const firebaseConfig={apiKey:"AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",authDomain:"idus-a87a6.firebaseapp.com",projectId:"idus-a87a6",storageBucket:"idus-a87a6.firebasestorage.app",messagingSenderId:"284785552985",appId:"1:284785552985:web:4cb12a71465a0e167bcb48",measurementId:"G-M0EKXCDV3R"};
+const app=initializeApp(firebaseConfig);const db=getFirestore(app);const auth=getAuth(app);
+let adminReady=false;
+function esc(s){if(s==null)return'';const d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
+function showLogin(){document.getElementById('loginScreen').style.display='flex';document.getElementById('app').style.display='none';adminReady=false;}
+function showApp(user){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';document.getElementById('admUserLabel').textContent=(user.email||'').split('@')[0]+' · admin';adminReady=true;show('dash');}
+async function isPlatformAdmin(uid){try{const s=await getDoc(doc(db,'users',uid));if(!s.exists())return false;const r=s.data().role;return r==='superadmin'||r==='admin';}catch(e){return false;}}
+function setLoginErr(msg){const el=document.getElementById('admLoginErr');el.style.display=msg?'block':'none';el.textContent=msg||'';document.getElementById('admLoginOk').style.display='none';}
+function setLoginOk(msg){const el=document.getElementById('admLoginOk');el.style.display=msg?'block':'none';el.textContent=msg||'';document.getElementById('admLoginErr').style.display='none';}
+document.getElementById('admLoginBtn').addEventListener('click',async()=>{const email=document.getElementById('admEmail').value.trim();const pass=document.getElementById('admPass').value;setLoginErr('');if(!email||!pass){setLoginErr('E-mail et mot de passe requis');return;}try{const cred=await signInWithEmailAndPassword(auth,email,pass);await cred.user.reload();if(!cred.user.emailVerified){document.getElementById('admResendBtn').style.display='block';setLoginErr('E-mail non validé. Ouvre le lien reçu par e-mail, puis reconnecte-toi.');await signOut(auth);return;}const ok=await isPlatformAdmin(cred.user.uid);if(!ok){setLoginErr('Compte non autorisé (rôle admin requis).');await signOut(auth);return;}showApp(cred.user);}catch(e){setLoginErr(e.message||'Connexion impossible');}});
+document.getElementById('admResendBtn').addEventListener('click',async()=>{const email=document.getElementById('admEmail').value.trim();const pass=document.getElementById('admPass').value;try{const cred=await signInWithEmailAndPassword(auth,email,pass);await sendEmailVerification(cred.user);await signOut(auth);setLoginOk('E-mail de validation renvoyé. Clique le lien, puis reconnecte-toi.');document.getElementById('admResendBtn').style.display='none';}catch(e){setLoginErr(e.message);}});
+document.getElementById('admLogout').addEventListener('click',async()=>{await signOut(auth);showLogin();});
+onAuthStateChanged(auth,async(u)=>{if(!u){showLogin();return;}await u.reload();if(!u.emailVerified){showLogin();document.getElementById('admResendBtn').style.display='block';setLoginErr('Valide ton e-mail via le lien reçu, puis reconnecte-toi.');return;}const ok=await isPlatformAdmin(u.uid);if(!ok){await signOut(auth);showLogin();setLoginErr('Compte non autorisé.');return;}showApp(u);});
+function show(id){if(!adminReady)return;document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.getAttribute('data-p')===id));const panel=document.getElementById('panel-'+id);if(panel)panel.classList.add('on');if(id==='dash')loadStats();if(id==='products')loadProducts();if(id==='orders')loadOrders();if(id==='categories')loadCats();if(id==='boutiques')loadBoutiques();if(id==='ads')loadAds();if(id==='reports')loadReports();if(id==='blocks')loadBlocks();}
+document.querySelectorAll('.nav button').forEach(btn=>{btn.addEventListener('click',()=>show(btn.getAttribute('data-p')));});
+async function loadStats(){try{const[ps,os,cs,bs]=await Promise.all([getDocs(collection(db,'products')),getDocs(collection(db,'orders')),getDocs(collection(db,'categories')),getDocs(collection(db,'boutiques'))]);document.getElementById('stats').innerHTML='Produits: <b>'+ps.size+'</b><br>Commandes: <b>'+os.size+'</b><br>Catégories: <b>'+cs.size+'</b><br>Boutiques: <b>'+bs.size+'</b>';}catch(e){document.getElementById('stats').textContent=e.message;}}
+async function loadProducts(){try{const s=await getDocs(collection(db,'products'));document.getElementById('prodList').innerHTML=s.docs.map(d=>{const p=d.data();return '<div class="item"><b>'+esc(p.name)+'</b> — '+(p.price||0)+' F</div>';}).join('')||'<div class="muted">Aucun</div>';}catch(e){}}
+async function loadOrders(){try{const s=await getDocs(collection(db,'orders'));document.getElementById('orderList').innerHTML=s.docs.map(d=>{const o=d.data();return '<div class="item"><b>#'+esc(o.orderNumber||d.id.slice(0,8))+'</b> · '+(o.total||0)+' F</div>';}).join('')||'<div class="muted">Aucune</div>';}catch(e){}}
+async function loadCats(){try{const s=await getDocs(collection(db,'categories'));document.getElementById('catList').innerHTML=s.docs.map(d=>'<div class="item">'+esc(d.data().name)+'</div>').join('')||'<div class="muted">Aucune</div>';}catch(e){}}
+document.getElementById('btnAddCat').addEventListener('click',async()=>{const name=document.getElementById('newCat').value.trim();if(!name)return;await addDoc(collection(db,'categories'),{name,createdAt:serverTimestamp()});document.getElementById('newCat').value='';loadCats();});
+async function loadBoutiques(){const listEl=document.getElementById('boutList');try{const s=await getDocs(collection(db,'boutiques'));listEl.innerHTML=s.docs.map(d=>{const b=d.data();return '<div class="item"><b>'+esc(b.name||'')+'</b><br/>'+esc(b.email)+' <button type="button" class="sm danger" data-del="'+d.id+'">Suppr</button></div>';}).join('')||'<div class="muted">Aucune</div>';listEl.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',async()=>{if(!confirm('Supprimer?'))return;await deleteDoc(doc(db,'boutiques',btn.getAttribute('data-del')));loadBoutiques();}));}catch(e){listEl.innerHTML='<div class="err">'+esc(e.message)+'</div>';}}
+document.getElementById('btnCreateBout').addEventListener('click',async()=>{const err=document.getElementById('boutErr');const email=(document.getElementById('bEmail').value||'').trim().toLowerCase();const name=(document.getElementById('bName').value||'').trim()||'Boutique';const tempPass=(document.getElementById('bTempPass').value||'').trim();if(!email||tempPass.length<6){err.textContent='Email + mdp 6+';err.style.display='block';return;}try{const {initializeApp:init2,getApp}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');const {getAuth:getAuth2,createUserWithEmailAndPassword:create2,signOut:signOut2}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');let secondary;try{secondary=getApp('Secondary');}catch(e){secondary=init2(firebaseConfig,'Secondary');}const auth2=getAuth2(secondary);const cred=await create2(auth2,email,tempPass);await addDoc(collection(db,'boutiques'),{email,name,tempPassword:tempPass,passwordChanged:false,ownerUid:cred.user.uid,description:'',logo:'',banner:'',followersCount:0,active:true,createdAt:serverTimestamp()});await signOut2(auth2);document.getElementById('bEmail').value='';document.getElementById('bName').value='';document.getElementById('bTempPass').value='';err.style.display='none';alert('Boutique créée');loadBoutiques();}catch(e){err.textContent=e.message;err.style.display='block';}});
+let adImageData='';
+document.getElementById('adLinkType').addEventListener('change',function(){const v=this.value;document.getElementById('adLinkUrl').style.display=v==='url'?'block':'none';document.getElementById('adLinkId').style.display=(v==='product'||v==='boutique')?'block':'none';});
+document.getElementById('adImg').addEventListener('change',async function(e){const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async function(){const img=new Image();img.onload=async function(){const c=document.createElement('canvas');let w=img.width,h=img.height,max=900;if(w>max){h=Math.round(h*max/w);w=max;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);const dataUrl=c.toDataURL('image/jpeg',0.7);adImageData=dataUrl;try{const blob=await(await fetch(dataUrl)).blob();const file=new File([blob],'ad.jpg',{type:'image/jpeg'});const fd=new FormData();fd.append('file',file);const token = await auth.currentUser.getIdToken();
+
+const res = await fetch(MEDIA_WORKER+'/upload', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${token}`
+  },
+  body: fd
+});const data=await res.json();if(res.ok&&data.url&&String(data.url).indexOf('/file/img/')>=0)adImageData=data.url;}catch(err){}document.getElementById('adPreview').innerHTML='<img src="'+adImageData+'" style="max-width:100%;max-height:120px;border-radius:8px"/>';};img.src=r.result;};r.readAsDataURL(f);});
+document.getElementById('adSave').addEventListener('click',async function(){const msg=document.getElementById('adMsg');if(!adImageData){msg.textContent='Choisis une image';return;}try{await addDoc(collection(db,'ads'),{type:document.getElementById('adType').value,image:adImageData,linkType:document.getElementById('adLinkType').value,linkUrl:document.getElementById('adLinkUrl').value.trim(),linkId:document.getElementById('adLinkId').value.trim(),active:document.getElementById('adActive').checked,createdAt:serverTimestamp()});adImageData='';document.getElementById('adPreview').innerHTML='';document.getElementById('adImg').value='';msg.textContent='Pub enregistrée';loadAds();}catch(e){msg.textContent=e.message;}});
+async function loadAds(){const el=document.getElementById('adList');try{const s=await getDocs(collection(db,'ads'));el.innerHTML=s.docs.map(d=>{const a=d.data();return '<div class="item"><img src="'+(a.image||'')+'" style="width:80px;height:40px;object-fit:cover;border-radius:4px;vertical-align:middle"/> <b>'+(a.type||'')+'</b> · '+(a.active?'actif':'off')+' <button type="button" class="sm danger" data-ad-del="'+d.id+'">Suppr</button></div>';}).join('')||'<div class="muted">Aucune pub</div>';el.querySelectorAll('[data-ad-del]').forEach(btn=>btn.addEventListener('click',async()=>{if(!confirm('Supprimer?'))return;await deleteDoc(doc(db,'ads',btn.getAttribute('data-ad-del')));loadAds();}));}catch(e){el.innerHTML='<div class="err">'+e.message+'</div>';}}
+async function loadReports(){const el=document.getElementById('reportList');try{const s=await getDocs(collection(db,'reports'));if(!s.size){el.innerHTML='<div class="muted">Aucun signalement</div>';return}el.innerHTML=s.docs.map(d=>{const r=d.data();const dt=r.createdAt&&r.createdAt.toDate?r.createdAt.toDate().toLocaleString('fr-FR'):'';return '<div class="item"><b>'+esc(r.boutiqueName||r.boutiqueId||'?')+'</b> <span class="muted">('+esc(r.reason||'')+')</span><br/><span class="muted">Par: '+esc(r.userEmail||r.userId||'anonyme')+' · '+dt+'</span>'+(r.details?'<br/><i>'+esc(r.details)+'</i>':'')+'<br/><span class="muted">Statut: '+esc(r.status||'pending')+'</span></div>';}).join('');}catch(e){el.innerHTML='<div class="err">'+esc(e.message)+'</div>';}}
+async function loadBlocks(){const el=document.getElementById('blockList');try{const s=await getDocs(collection(db,'blocks'));if(!s.size){el.innerHTML='<div class="muted">Aucun blocage</div>';return}el.innerHTML=s.docs.map(d=>{const b=d.data();const dt=b.createdAt&&b.createdAt.toDate?b.createdAt.toDate().toLocaleString('fr-FR'):'';return '<div class="item"><b>'+esc(b.boutiqueName||b.boutiqueId||'?')+'</b><br/><span class="muted">Bloqué par: '+esc(b.userId||'?')+' · '+dt+'</span></div>';}).join('');}catch(e){el.innerHTML='<div class="err">'+esc(e.message)+'</div>';}}
+// Données chargées après auth (showApp → show dash)
+</script>
+</body>
+</html>
