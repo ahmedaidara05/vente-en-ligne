@@ -2100,10 +2100,14 @@ var badgesHtml=''
 
   // === Structure : HEADER fixe + BODY scrollable + FOOTER fixe ===
   var html='<div id="variantSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:flex;align-items:flex-end">'
-    +'<div style="background:#fff;width:100%;max-height:85vh;border-radius:16px 16px 0 0;position:relative;display:flex;flex-direction:column;overflow:hidden;padding:0">'
+    +'<div id="vsSheetPanel" style="background:#fff;width:100%;max-height:85vh;border-radius:16px 16px 0 0;position:relative;display:flex;flex-direction:column;overflow:hidden;padding:0;transform:translateY(0);transition:transform .2s ease">'
 
     // === HEADER FIXE (bandeau + bouton ×) ===
       // === HEADER FIXE (bandeau + bouton × en dessous, séparés) ===
+ // === BARRE POUR FAIRE GLISSER LA FENÊTRE ===
+ 
+
+// === HEADER FIXE (bandeau + bouton ×) ===
     +'<div style="flex-shrink:0">'
       +delivBanner
     +'</div>'
@@ -2213,6 +2217,64 @@ var badgesHtml=''
       }
     });
   }
+ // === FERMETURE EN GLISSANT SUR LE BANDEAU LIVRAISON ===
+(function(){
+  var panel=document.getElementById('vsSheetPanel');
+  var banner=document.getElementById('vsDelivBanner');
+  var overlay=document.getElementById('variantSheet');
+
+  if(!panel || !banner || !overlay)return;
+
+  var startY=0;
+  var currentY=0;
+  var dragging=false;
+  var moved=false;
+
+  banner.style.touchAction='none';
+
+  banner.addEventListener('touchstart',function(e){
+    startY=e.touches[0].clientY;
+    currentY=0;
+    dragging=true;
+    moved=false;
+    panel.style.transition='none';
+  },{passive:true});
+
+  banner.addEventListener('touchmove',function(e){
+    if(!dragging)return;
+
+    currentY=Math.max(0,e.touches[0].clientY-startY);
+
+    if(currentY>5)moved=true;
+
+    panel.style.transform='translateY('+currentY+'px)';
+  },{passive:true});
+
+  banner.addEventListener('touchend',function(){
+    if(!dragging)return;
+    dragging=false;
+
+    if(currentY>100){
+      panel.style.transition='transform .18s ease';
+      panel.style.transform='translateY(100%)';
+
+      setTimeout(function(){
+        overlay.remove();
+      },180);
+    }else{
+      panel.style.transition='transform .22s ease';
+      panel.style.transform='translateY(0)';
+    }
+  });
+
+  banner.addEventListener('click',function(e){
+    if(moved){
+      e.preventDefault();
+      e.stopPropagation();
+      moved=false;
+    }
+  },true);
+})();
   // === Clic sur le bandeau livraison → modifier l'adresse ===
   var delivAddrEl=document.getElementById('vsDelivAddr');
   if(delivAddrEl){
