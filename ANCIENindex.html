@@ -4436,20 +4436,46 @@ var chkHeader='<div class="chk-topbar">'
   // Bouton annuler (rouge, sans fond)
  
 
-  var placeBtn = document.getElementById('btnPlace');
+var placeBtn = document.getElementById('btnPlace');
 
-if(placeBtn){
-  placeBtn.addEventListener('click',function(e){
+if (placeBtn) {
+  placeBtn.addEventListener('click', async function(e) {
     e.preventDefault();
-    if(!currentUser){
-      var authSubmit=document.querySelector('#chkIdaCardBox .auth-submit');
-      if(authSubmit){authSubmit.scrollIntoView({behavior:'smooth',block:'center'});authSubmit.click();}
+    e.stopPropagation();
+
+    // Vérifier la connexion
+    if (!currentUser) {
+      var authBox = document.getElementById('chkIdaCardBox');
+
+      if (authBox) {
+        authBox.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+
+      toast('Connectez-vous avant de valider votre commande.');
       return;
     }
-    placeOrder();
+
+    // Éviter les doubles clics
+    if (placeBtn.disabled) return;
+
+    placeBtn.disabled = true;
+    placeBtn.textContent = 'Vérification...';
+
+    try {
+      await placeOrder();
+    } catch (error) {
+      console.error('Erreur validation commande :', error);
+      toast(error.message || 'Erreur lors de la commande');
+    } finally {
+      placeBtn.disabled = false;
+      placeBtn.textContent = 'Valider la commande';
+    }
   });
-}else{
-  toast('ERREUR : bouton de commande introuvable');
+} else {
+  console.error('Bouton btnPlace introuvable');
 }
     // === +/- quantité sur le checkout ===
   document.querySelectorAll('[data-chk-plus]').forEach(function(b){
