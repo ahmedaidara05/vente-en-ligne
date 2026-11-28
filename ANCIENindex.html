@@ -78,7 +78,7 @@ button{cursor:pointer}
   color:#00A854 !important;
 }
   /* === FORMULAIRE ADRESSE (Lot 2A) === */
-.addr-box{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:350;display:flex;align-items:center;justify-content:center;padding:16px}
+.addr-box{position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:16px}
 .addr-card{background:#fff;border-radius:12px;width:100%;max-width:380px;max-height:90vh;overflow:auto;padding:16px}
 .addr-title{font-size:15px;font-weight:700;display:block;margin-bottom:4px}
 .addr-sub{font-size:12px;color:#666;margin-bottom:12px}
@@ -831,16 +831,17 @@ body.video-controls-hidden .bn{
 .account-section-head{display:flex;align-items:center;justify-content:space-between;margin:23px 2px 11px}
 .account-section-head h2{font-size:15px;font-weight:800;color:#1b2921}
 .account-section-head>span{font-size:11px;color:#8b9690}
-.account-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-.account-shortcut{position:relative;min-width:0;min-height:126px;padding:13px 10px 12px;background:#fff;border:1px solid #edf0ed;border-radius:15px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;box-shadow:0 3px 12px rgba(25,55,37,.035);transition:transform .15s,border-color .15s}
+.account-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.account-shortcut{position:relative;min-width:0;min-height:88px;padding:10px 5px 9px;background:#fff;border:1px solid #edf0ed;border-radius:15px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;box-shadow:0 3px 12px rgba(25,55,37,.035);transition:transform .15s,border-color .15s}
 .account-shortcut:active{transform:scale(.98)}
-.account-shortcut-icon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:11px}
+.account-shortcut-icon{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:11px}
 .account-shortcut-icon.messages{background:#e9f4ff;color:#2876c7}
 .account-shortcut-icon.favorites{background:#fff0f1;color:#e45a70}
 .account-shortcut-icon.follows{background:#e8fff1;color:#00A854}
-.account-shortcut strong{font-size:12px;color:#1d2922;line-height:1.25}
-.account-shortcut small{font-size:10px;color:#89938d;margin-top:5px;line-height:1.3}
-.account-chevron{position:absolute;right:10px;top:17px;font-size:10px;color:#aab3ad}
+.account-shortcut strong{font-size:10px;color:#1d2922;line-height:1.2;overflow-wrap:anywhere}
+.account-shortcut small{display:none!important}
+.account-chevron{display:none!important}
+.account-shortcut .shortcut-badge{position:absolute;top:5px;right:4px;min-width:17px;height:17px;padding:0 4px;border-radius:20px;background:#E02E24;color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .account-options-head{margin-top:24px}
 .account-options{background:#fff;border:1px solid #edf0ed;border-radius:15px;overflow:hidden;box-shadow:0 3px 12px rgba(25,55,37,.035)}
 .account-option-row{display:flex;align-items:center;gap:12px;padding:13px 14px;min-height:65px}
@@ -853,7 +854,7 @@ body.video-controls-hidden .bn{
 .account-logout{width:100%;height:47px;margin-top:17px;border:1px solid #f3dede;border-radius:13px;background:#fff;color:#d94b4b;font-size:13px;font-weight:750;display:flex;align-items:center;justify-content:center;gap:9px}
 .account-logout:active{background:#fff5f5}
 .account-footer{text-align:center;color:#a0aaa3;font-size:10px;margin-top:20px;letter-spacing:.2px}
-@media(max-width:380px){.account-page{padding-left:12px;padding-right:12px}.account-shortcuts{gap:6px}.account-shortcut{padding:11px 8px;min-height:120px}.account-shortcut strong{font-size:11px}.account-shortcut small{font-size:9px}}
+@media(max-width:380px){.account-page{padding-left:10px;padding-right:10px}.account-shortcuts{gap:5px}.account-shortcut{padding:9px 3px;min-height:82px}.account-shortcut strong{font-size:9px}.account-shortcut-icon{width:30px;height:30px;font-size:14px}}
 .ct-header {
   display: flex;
   align-items: center;
@@ -2011,6 +2012,286 @@ body.page-orders-active #ordRecoGrid{
 @media(min-width:768px){.auth-page-wrap{padding:42px 24px 60px}.auth-card{padding:26px 30px}}
 @media(max-width:480px){.auth-page-wrap{padding:20px 12px 40px}.auth-card{padding:17px 14px;border-radius:13px}}
 
+
+/* Correctifs demandés : carte client, navigation vidéo et activité */
+.pvc-info-line .pvc-nowrap{white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important;display:inline-block;max-width:100%;font-size:clamp(7px,2.25vw,11px);letter-spacing:-.25px;line-height:1.15}
+.ida-pvc-card .pvc-infos{right:7%!important}
+.ida-pvc-card .pvc-info-line{overflow:visible!important;text-overflow:clip!important}
+.pvc-info-line .pvc-email{font-size:clamp(5.5px,1.7vw,9px);letter-spacing:-.4px}
+.pvc-info-line{display:flex;align-items:baseline;gap:2px;white-space:nowrap}
+.pvc-info-line .v{min-width:0}
+.account-shortcut{justify-content:flex-start;align-items:center;text-align:center}
+.account-shortcut-icon{margin:0 auto 7px}
+.account-shortcut strong{display:block;width:100%;text-align:center}
+/* Le formulaire d'adresse doit passer au-dessus de la fiche produit */
+#addrBox{z-index:2147483647!important}
+/* Vidéo immersive : commandes en surimpression et navigation sombre seulement en pause */
+@media(max-width:768px){#page-video,#vidPage{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;max-height:none!important;margin:0!important;padding:0!important;border-radius:0!important;overflow:hidden!important;background:#000!important;z-index:2147483000!important}#vidPage .vid-stage{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}#vidPage #vidEl{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important}#vidPage .vid-top{top:calc(env(safe-area-inset-top,0px) + 4px)!important;padding:8px 14px!important;z-index:30!important;background:transparent!important}#vidPage .vid-top button{background:rgba(0,0,0,.18)!important;text-shadow:0 1px 5px #000!important}}
+body:has(#vidPage) .bn{background:#111!important;border-top:1px solid #292929!important;transition:opacity .2s,visibility .2s}
+body:has(#vidPage) .bn button{color:#bdbdbd!important;background:transparent!important}
+body:has(#vidPage) .bn button.on{color:#00A854!important}
+body:has(#vidPage):not(.video-paused) .bn{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+body:has(#vidPage).video-paused .bn{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+
+
+
+/* ==========================================================
+   IDA — ADAPTATION GRANDS ÉCRANS (Fold ouvert, tablette, PC)
+   Couche responsive uniquement : identité visuelle et logique
+   existantes conservées. Les règles mobiles restent intactes.
+   ========================================================== */
+@media (min-width:600px){
+  :root{--nav-h:64px}
+  body{font-size:15px}
+  .hi{max-width:1480px;margin:0 auto;padding:12px 24px 4px}
+  .logo-img{height:38px;max-width:150px}
+  .sp{height:42px;max-width:760px}
+  .sp input{font-size:14px}
+  .hi2{width:44px;height:42px;font-size:20px}
+  .ct{justify-content:center;padding:0 18px}
+  .ctb{padding:13px 20px 11px;font-size:14px}
+  .page{min-height:calc(100vh - 130px)}
+  .pg{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:18px 22px;max-width:1480px;margin:0 auto}
+  .pc{border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.045);transition:transform .18s,box-shadow .18s}
+  .pc:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.09)}
+  .pc .bd{padding:10px 12px 13px}
+  .pc .tt{font-size:14px}
+  .pc .px{font-size:19px}
+  .chk-page{max-width:900px;padding:24px 28px 110px}
+  .chk-section{padding:20px;border-radius:14px;margin-bottom:14px}
+  .ord-card{max-width:1000px;margin:10px auto;padding:14px 16px}
+  .ord-detail{max-width:1000px;margin:0 auto;padding:20px 24px}
+  .sv-list{max-width:1100px;margin:0 auto;padding:12px 18px}
+  .sv-card{padding:16px;margin:12px 0;align-items:center}
+  .sv-card img{width:84px;height:84px}
+  .account-page{max-width:900px;padding:30px 28px 42px}
+  .account-intro h1{font-size:30px}
+  .account-profile{padding:22px;border-radius:20px}
+  .account-avatar{width:64px;height:64px;flex-basis:64px}
+  .account-shortcuts{gap:12px}
+  .account-shortcut{min-height:112px;padding:15px 12px;border-radius:16px}
+  .account-shortcut-icon{width:42px;height:42px;font-size:18px;margin-bottom:12px}
+  .account-shortcut strong{font-size:13px}
+  .account-options{border-radius:16px}
+  .account-option-row{padding:16px 18px;min-height:72px}
+  .msg-row{padding:15px 20px}
+  .msg-row .mr-ava{width:52px;height:52px}
+  .msg-row .mr-name{font-size:15px}
+  .msg-row .mr-last{font-size:13px}
+  .msg-head,.ct-header,.notif-history-head{padding-left:22px;padding-right:22px}
+  .notif-history-list{max-width:1050px;margin:0 auto}
+  .bq-hero{height:230px}
+  .bq-logo-wrap{width:120px;height:120px;right:max(24px,calc((100vw - 1200px)/2));bottom:-48px}
+  .bq-head,.bq-actions{padding-left:max(28px,calc((100vw - 1200px)/2));padding-right:max(28px,calc((100vw - 1200px)/2))}
+  .bq-head{padding-top:56px}
+  .bq-name{font-size:30px}
+  .cart-pro-list{max-width:1100px;margin:0 auto;padding:18px 24px 130px}
+  .cart-pro-item{gap:16px;padding:14px 8px}
+  .cart-pro-item .cpi-img{width:100px;height:100px}
+  .cart-pro-item .cpi-title{font-size:15px;white-space:normal;padding-right:70px}
+  .cart-pro-item .cpi-desc,.cart-pro-item .cpi-variants{font-size:12px}
+  .cart-pro-item .cpi-price{font-size:17px}
+  .cart-pro-summary{max-width:1050px;margin:0 auto 70px;padding:22px 26px;border:1px solid #eee;border-radius:14px}
+  .cart-pro-btn-fixed{left:50%;right:auto;transform:translateX(-50%);width:min(100%,1050px);bottom:0;padding:0 0 env(safe-area-inset-bottom,0px);border-radius:12px 12px 0 0;overflow:hidden}
+  .cart-pro-btn-fixed button{height:60px;border-radius:0}
+  .bn{height:calc(var(--nav-h) + var(--safe-b));padding-left:max(0px,calc((100vw - 900px)/2));padding-right:max(0px,calc((100vw - 900px)/2));justify-content:center}
+  .bn button{flex:0 1 150px;height:var(--nav-h);font-size:11px;gap:4px}
+  .bn button i{font-size:21px}
+}
+
+/* Fold déplié et tablettes en portrait/paysage */
+@media (min-width:760px){
+  .pg{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding:20px 26px}
+  .pc .im{aspect-ratio:1/1.05}
+  .account-page{max-width:980px}
+  .account-shortcut{min-height:120px}
+  .chk-page{max-width:980px}
+}
+
+/* PC et grands écrans : espace utile optimisé, sans étirer les contenus */
+@media (min-width:1100px){
+  #app{width:100%;min-height:100vh}
+  .hi{padding-left:36px;padding-right:36px}
+  .pg{grid-template-columns:repeat(5,minmax(0,1fr));gap:18px;padding:24px 36px;max-width:1600px}
+  .pc{border-radius:12px}
+  .pc .bd{padding:12px 14px 15px}
+  .pc .tt{font-size:14px}
+  .pc .px{font-size:20px}
+  .chk-page{max-width:1050px;padding-top:30px}
+  .account-page{max-width:1050px;padding-top:34px}
+  .ord-card{max-width:1100px}
+  .ord-detail{max-width:1100px}
+  .sv-list{max-width:1200px}
+  .notif-history-list{max-width:1150px}
+  .cart-pro-list{max-width:1200px}
+  .cart-pro-summary,.cart-pro-btn-fixed{max-width:1100px}
+  .msg-row{max-width:1100px;margin-left:auto;margin-right:auto;border-left:1px solid #f1f1f1;border-right:1px solid #f1f1f1}
+  .bq-hero{height:280px}
+  .bq-head,.bq-actions{padding-left:max(36px,calc((100vw - 1280px)/2));padding-right:max(36px,calc((100vw - 1280px)/2))}
+  .bq-logo-wrap{right:max(36px,calc((100vw - 1280px)/2));width:132px;height:132px;bottom:-52px}
+}
+
+@media (min-width:1500px){
+  .pg{grid-template-columns:repeat(6,minmax(0,1fr));max-width:1760px;gap:20px;padding-left:44px;padding-right:44px}
+  .hi{max-width:1680px}
+}
+
+/* Fenêtres de taille intermédiaire : éviter les colonnes trop étroites */
+@media (min-width:600px) and (max-width:759px){
+  .pg{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:14px}
+  .pc .tt{font-size:12px}
+  .pc .px{font-size:16px}
+  .account-page{padding:22px 18px 34px}
+  .bn button{flex-basis:112px}
+}
+
+/* Le mode vidéo conserve son affichage immersif sur tous les formats */
+@media (min-width:600px){
+  #page-video:has(.vid-stage),#vidPage{background:#000}
+  #vidPage .vid-stage{max-width:none}
+}
+
+
+/* ==========================================================
+   IDA — FINITION RESPONSIVE GRANDS ÉCRANS
+   Desktop / tablette large / Fold ouvert uniquement.
+   Aucun changement HTML, JavaScript, donnée ou fonctionnalité.
+   Les règles du format mobile (<= 899px) restent inchangées.
+   ========================================================== */
+@media (min-width:900px){
+  :root{--nav-h:68px;--ida-wide:1540px;--ida-content:1240px}
+  html,body{min-width:0;min-height:100%;}
+  body{padding-bottom:100px;background:#f4f4f4}
+  #app{min-height:100vh}
+
+  /* Barre supérieure et catégories : alignement cohérent sur toute la largeur */
+  .header{z-index:500;box-shadow:0 2px 12px rgba(0,0,0,.045)}
+  .hi{max-width:var(--ida-wide);margin:0 auto;padding:14px 34px 10px}
+  .sr{gap:22px}
+  .logo-img{height:42px;max-width:170px}
+  .sp{height:44px;max-width:780px;margin:0 auto;padding:0 18px}
+  .sp input{font-size:14px}
+  .hi2{width:46px;height:44px;border-radius:12px}
+  .ct{max-width:var(--ida-wide);margin:0 auto;padding:0 28px;justify-content:center;gap:8px}
+  .ctb{padding:13px 18px 11px;font-size:13px}
+  .ad-banner{max-width:var(--ida-wide);margin:14px auto 0}
+
+  /* Contenu global : ne pas étirer les textes ni les formulaires */
+  .page{min-height:calc(100vh - 190px);padding-bottom:26px}
+  #page-home,#page-catalog,#page-favorites,#page-follows,#page-saved-checkouts{width:100%}
+  .pg{max-width:var(--ida-wide);margin:0 auto;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;padding:26px 34px}
+  .pc{border:1px solid rgba(0,0,0,.045);border-radius:13px}
+  .pc .im{aspect-ratio:1/1}
+  .pc .tt{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:2.7em;line-height:1.35}
+
+  /* Navigation basse : dock centré, confortable au pointeur et au clavier */
+  .bn{left:50%;right:auto;bottom:18px;transform:translateX(-50%);width:min(760px,calc(100vw - 48px));height:72px;padding:5px 12px;background:rgba(255,255,255,.97);border:1px solid rgba(0,0,0,.07);border-radius:20px;box-shadow:0 12px 38px rgba(0,0,0,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);gap:6px;z-index:1200}
+  .bn button{height:60px;flex:1 1 0;min-width:0;border-radius:14px;font-size:12px;font-weight:650;gap:5px;transition:background .18s,color .18s}
+  .bn button i{font-size:20px}
+  .bn button.on{background:#eafff2;color:var(--red)}
+  .bn button:hover{background:#f3faf5;color:var(--red)}
+  .bn .tracking-notif-badge{top:5px;right:calc(50% - 28px)}
+  body:has(#vidPage) .bn{bottom:18px;width:min(760px,calc(100vw - 48px));height:72px}
+  body:has(#vidPage):not(.video-paused) .bn{opacity:0!important;visibility:hidden!important}
+
+  /* Pages de détail produit : galerie et informations côte à côte */
+  #page-product{max-width:var(--ida-content);margin:26px auto 36px;padding:0 28px;display:none}
+  #page-product.on{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(380px,.92fr);align-items:start;gap:34px}
+  #page-product .pd-top{grid-column:1/-1;width:100%;margin-bottom:-12px}
+  #page-product .gal{grid-column:1;grid-row:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-content:start;overflow:visible}
+  #page-product .gal img{width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;background:#f7f7f7;border-radius:14px}
+  #page-product .gal img:first-child{grid-column:1/-1;aspect-ratio:1/1.02}
+  #page-product .gal+div{grid-column:2;grid-row:2;position:sticky;top:132px;margin:0!important;padding:26px!important;border-radius:16px;box-shadow:0 5px 24px rgba(0,0,0,.055);border:1px solid #eee;min-width:0}
+  #page-product .gal+div>div:first-child{font-size:32px!important}
+  #page-product .pd-description{line-height:1.75;font-size:14px}
+  #page-product .pd-actions{gap:10px;position:static!important;margin-top:24px}
+  #page-product .pd-actions button{min-height:46px}
+
+  /* Panier et validation : colonnes équilibrées */
+  #page-cart .cart-pro-topbar,#page-cart .cart-topbar{max-width:var(--ida-content);margin:0 auto;padding-left:28px;padding-right:28px}
+  .cart-pro-list{max-width:var(--ida-content);padding:24px 28px 36px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
+  .cart-pro-item{height:100%;min-width:0;background:#fff;border:1px solid #eee;border-radius:14px;padding:14px;gap:14px}
+  .cart-pro-item .cpi-img{width:108px;height:108px;flex:0 0 108px;border-radius:10px}
+  .cart-pro-summary{max-width:var(--ida-content);margin:18px auto 30px;padding:24px 28px}
+  .cart-pro-btn-fixed{position:static!important;transform:none!important;left:auto!important;right:auto!important;width:min(var(--ida-content),calc(100% - 56px))!important;margin:0 auto 32px!important;max-width:none!important;border-radius:14px!important;box-shadow:none!important}
+  .cart-pro-btn-fixed button{border-radius:12px!important}
+  .chk-page{max-width:1120px;padding:28px 32px 50px}
+  #page-checkout .chk-page{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:18px;align-items:start}
+  #page-checkout .chk-page>.chk-section{margin:0}
+  #page-checkout .chk-page>.chk-section:first-child{grid-row:span 2}
+  .chk-section{padding:22px;border-radius:15px}
+  .chk-topbar{padding:12px max(28px,calc((100vw - 1120px)/2))}
+  .chk-fixed-actions{position:static!important;max-width:1120px;margin:18px auto 36px;padding:0 32px;box-shadow:none!important;background:transparent!important}
+
+  /* Commandes et détail : panneaux plus lisibles */
+  .ord-head{padding:16px max(32px,calc((100vw - 1120px)/2));}
+  .ord-head b{font-size:18px}
+  .ord-status-filters{max-width:1120px;margin:12px auto;padding-left:28px;padding-right:28px}
+  .ord-card{max-width:1120px;margin:12px auto;padding:16px 20px;border-radius:14px;transition:box-shadow .18s,transform .18s}
+  .ord-card:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(0,0,0,.07)}
+  .ord-detail{max-width:1120px;margin:0 auto;padding:24px 28px 42px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+  .ord-detail-section{padding:20px;border-radius:15px;margin:0;min-width:0}
+  .ord-detail-section:first-child{grid-column:1/-1}
+  .ord-item img{width:72px;height:72px}
+  .ord-item .oi-name{font-size:14px}
+  .ord-item .oi-price{font-size:14px}
+  .sv-list{max-width:1120px;padding:22px 28px 40px}
+  .sv-card{border-radius:14px;margin:12px 0;padding:18px}
+
+  /* Compte, authentification et activité */
+  .account-page{max-width:1080px;padding:34px 34px 46px}
+  .account-profile{display:flex;align-items:center;gap:22px}
+  .account-shortcuts{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+  .account-shortcut{min-height:128px;justify-content:center}
+  .account-options{overflow:hidden}
+  .account-option-row{transition:background .15s}
+  .account-option-row:hover{background:#f8fbf9}
+  .auth-page-wrap{padding:48px 28px 64px}
+  .auth-shell{max-width:580px}
+  .auth-card{padding:30px 34px;border-radius:18px}
+  .notif-history-head{max-width:1120px;margin:0 auto;padding:18px 28px}
+  .notif-history-list{max-width:1120px;padding:0 28px 40px}
+
+  /* Boutique : hero, infos et produits organisés sur une même largeur */
+  #page-boutique .bq-hero{height:320px}
+  #page-boutique .bq-head,#page-boutique .bq-actions{max-width:var(--ida-wide);margin-left:auto;margin-right:auto}
+  #page-boutique .bq-head{padding-top:62px}
+  #page-boutique .bq-name{font-size:34px}
+  #page-boutique .pg{padding-top:24px}
+
+  /* Messagerie : liste confortable, fil centré et zone de saisie alignée */
+  #page-chat,#page-messages{max-width:1120px;margin:0 auto;padding:12px 28px 30px}
+  .msg-head,.ct-header{max-width:1120px;margin:0 auto;padding:16px 22px}
+  .msg-row{max-width:100%;margin:0 auto;padding:16px 20px;border-radius:10px}
+  .msg-row:hover{background:#f8fbf9}
+  #page-chat-thread.on{max-width:1120px;margin:18px auto 40px;padding:0 28px;min-height:calc(100vh - 230px);display:flex;flex-direction:column}
+  #page-chat-thread .ct-header{width:100%;border:1px solid #eee;border-radius:14px 14px 0 0}
+  #page-chat-thread #ctBox{width:100%;min-height:420px;flex:1;padding:22px 26px 110px!important;background:#f8faf8;border-left:1px solid #eee;border-right:1px solid #eee}
+  #page-chat-thread #ctBar{position:relative;width:100%;margin:0 auto}
+  #page-chat-thread #ctBar>div{position:static!important;left:auto!important;right:auto!important;bottom:auto!important;padding:14px 18px!important;border:1px solid #eee;border-top:0;border-radius:0 0 14px 14px;box-shadow:0 8px 24px rgba(0,0,0,.045)}
+  #page-chat-thread #ctBar input{min-width:0;font-size:14px}
+  #page-chat-thread #ctBar button{flex:0 0 auto}
+  .chat-prod-float{right:max(28px,calc((100vw - 1120px)/2));bottom:112px;width:190px}
+
+  /* Favoris, abonnements, notifications et pages utilitaires */
+  #page-favorites .pg,#page-follows .pg,#page-saved-checkouts .pg{max-width:var(--ida-wide)}
+  #page-notifications{max-width:1120px;margin:0 auto;padding:12px 28px 40px}
+  #page-notifications .notif-history-list{max-width:none;padding-left:0;padding-right:0}
+  #page-auth{min-height:calc(100vh - 190px)}
+  #catalogScrollTop{right:34px;bottom:112px}
+}
+
+@media (min-width:1200px){
+  .pg{grid-template-columns:repeat(5,minmax(0,1fr));gap:22px;padding:30px 42px}
+  #page-home .pg,#page-catalog .pg{max-width:1640px}
+  .cart-pro-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #page-chat-thread.on{min-height:calc(100vh - 250px)}
+}
+@media (min-width:1600px){
+  .pg{grid-template-columns:repeat(6,minmax(0,1fr));max-width:1780px}
+  #page-product{max-width:1380px}
+}
+
 </style>
 </head>
 <body>
@@ -2283,7 +2564,7 @@ function setChrome(hide,headerOnly){
 function showPage(page,data,skipHistory){var prev=document.querySelector('.page.on');if(!skipHistory&&prev&&prev.id){var name=prev.id.replace('page-','');if(name!==page)pageHistory.push({page:name,data:lastPageArgs[name]!=null?lastPageArgs[name]:null})}if(arguments.length>1)lastPageArgs[page]=data;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});var el=$('page-'+page);if(el)el.classList.add('on');document.querySelectorAll('.bn button').forEach(function(b){b.classList.toggle('on',b.dataset.page===page)});if(page==='chat'||page==='messages'||page==='notifications'){
   setChrome(true);
 }else{setChrome(page==='product'||page==='boutique'||page==='chat-thread'||page==='favorites'||page==='follows'||page==='video')}document.body.classList.toggle('page-account-active', page === 'account');document.body.classList.toggle('page-cart-active', page === 'cart');
-document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='notifications')renderTrackingNotificationHistory();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows();else if(page==='orders')renderOrders();else if(page==='order-detail'&&data)renderOrderDetail(data);else if(page==='saved-checkouts')renderSavedCheckouts()}
+document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');document.body.classList.toggle('page-orders-active', page === 'orders' || page === 'order-detail' || page === 'saved-checkouts');if(page!=='video'){document.body.classList.remove('video-paused','video-controls-hidden')}if(page!=='product'){var vf=document.getElementById('vidFloat');if(vf)vf.remove()}if(page!=='chat-thread'){var cf=document.getElementById('chatProdFloat');if(cf)cf.remove();_chatProdContext=null}window.scrollTo(0,0);if(page==='home')renderHome();else if(page==='catalog')renderCatalog();else if(page==='product'&&data)renderProduct(data);else if(page==='cart')renderCart();else if(page==='checkout')renderCheckout();else if(page==='account')renderAccount();else if(page==='auth')renderAuth();else if(page==='video')renderVideos();else if(page==='favorites')renderFavorites();else if(page==='boutique'&&data)renderBoutiquePage(data);else if(page==='messages')renderMessagesList();else if(page==='notifications')renderTrackingNotificationHistory();else if(page==='chat-thread'&&data)renderChatThread(data);else if(page==='chat')renderMessagesList();else if(page==='follows')renderFollows();else if(page==='orders')renderOrders();else if(page==='order-detail'&&data)renderOrderDetail(data);else if(page==='saved-checkouts')renderSavedCheckouts()}
 function goBack(){
     var fs=document.getElementById('fsViewer');
     if(fs){fs.remove();return}
@@ -4692,8 +4973,8 @@ function renderAccount(){
     <div class="pvc-infos">
       <div class="pvc-info-line"><span class="k">Nom : </span><span class="v">${escapeHtml(trunc27(prof.name || 'Client IDA'))}</span></div>
       <div class="pvc-info-line"><span class="k">Adresse : </span><span class="v">${escapeHtml(trunc27(prof.address || '—'))}</span></div>
-      <div class="pvc-info-line"><span class="k">Téléphone : </span><span class="v">${escapeHtml(prof.phone || '—')}</span></div>
-      <div class="pvc-info-line"><span class="k">Adresse mail : </span><span class="v">${escapeHtml(trunc27(email))}</span></div>
+      <div class="pvc-info-line"><span class="k">Téléphone : </span><span class="v pvc-nowrap">${escapeHtml(prof.phone || '—')}</span></div>
+      <div class="pvc-info-line"><span class="k">Adresse mail : </span><span class="v pvc-nowrap pvc-email">${escapeHtml(email)}</span></div>
     </div>
     <!-- 7. Vague -->
     <svg class="pvc-wave" viewBox="0 0 856 170" preserveAspectRatio="none">
@@ -4717,12 +4998,12 @@ function renderAccount(){
   </div>
 </div>
 
-    <div class="account-section-head"><h2>Mon activité</h2><span>Accès rapide</span></div>
+    <div class="account-section-head"><h2>Mon activité</h2></div>
     <section class="account-shortcuts">
-      <button type="button" class="account-shortcut" id="btnOrders2"><span class="account-shortcut-icon messages"><i class="fa-solid fa-receipt"></i></span><strong>Mes commandes</strong><small>Vos commandes passées</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
-      <button type="button" class="account-shortcut" id="btnSavedChk"><span class="account-shortcut-icon" style="background:#FFF7E6;color:#E02E24"><i class="fa-regular fa-bookmark"></i></span><strong>Paniers sauvegardés</strong><small>Vos commandes en attente</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
-      <button type="button" class="account-shortcut" id="btnFavs"><span class="account-shortcut-icon favorites"><i class="fa-regular fa-heart"></i></span><strong>Favoris</strong><small>Produits enregistrés</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
-      <button type="button" class="account-shortcut" id="btnFollows"><span class="account-shortcut-icon follows"><i class="fa-solid fa-store"></i></span><strong>Liste de suivi</strong><small>Vos boutiques suivies</small><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+      <button type="button" class="account-shortcut" id="btnOrders2"><span class="account-shortcut-icon messages"><i class="fa-solid fa-receipt"></i></span><strong>Mes commandes</strong><span class="shortcut-badge" id="accOrdersBadge" style="display:none"></span><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+      <button type="button" class="account-shortcut" id="btnSavedChk"><span class="account-shortcut-icon" style="background:#FFF7E6;color:#E02E24"><i class="fa-regular fa-bookmark"></i></span><strong>Paniers sauvegardés</strong><span class="shortcut-badge" id="accSavedBadge" style="display:none"></span><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+      <button type="button" class="account-shortcut" id="btnFavs"><span class="account-shortcut-icon favorites"><i class="fa-regular fa-heart"></i></span><strong>Favoris</strong><span class="shortcut-badge" id="accFavBadge" style="display:none"></span><i class="fa-solid fa-chevron-right account-chevron"></i></button>
+      <button type="button" class="account-shortcut" id="btnFollows"><span class="account-shortcut-icon follows"><i class="fa-solid fa-store"></i></span><strong>Liste de suivi</strong><span class="shortcut-badge" id="accFollowBadge" style="display:none"></span><i class="fa-solid fa-chevron-right account-chevron"></i></button>
     </section>
 
     <div class="account-section-head account-options-head"><h2>Compte et sécurité</h2></div>
@@ -4744,6 +5025,16 @@ function renderAccount(){
   document.getElementById('btnSavedChk').addEventListener('click',function(){showPage('saved-checkouts')});
   document.getElementById('btnFavs').addEventListener('click',function(){showPage('favorites')});
   document.getElementById('btnFollows').addEventListener('click',function(){showPage('follows')});
+  // Badges rouges des raccourcis : uniquement lorsqu'il existe un élément à consulter.
+  (function(){
+    function setShortcutBadge(id,count){var el=document.getElementById(id);if(!el)return;count=Math.max(0,Number(count)||0);el.textContent=count>99?'99+':String(count);el.style.display=count?'flex':'none'}
+    var unreadOrders=(trackingNotifications||[]).filter(function(n){return n.read!==true}).length;
+    setShortcutBadge('accOrdersBadge',unreadOrders);
+    setShortcutBadge('accSavedBadge',loadSavedCheckouts().length);
+    setShortcutBadge('accFavBadge',favorites.length);
+    setShortcutBadge('accFollowBadge',0);
+    getDocs(query(collection(db,'follows'),where('userId','==',currentUser.uid))).then(function(snap){setShortcutBadge('accFollowBadge',snap.size)}).catch(function(){});
+  })();
   document.getElementById('btnOut').addEventListener('click',function(){signOut(auth).catch(function(e){toast(e.message)})});
     // === Bouton Confidentialité (eyebrow) ===
   var accConf=document.getElementById('accConfBtn');
@@ -4882,14 +5173,25 @@ function renderAccount(){
       var pe=document.getElementById('idaCardPhotoEmpty');
       if(pe)pe.style.opacity='0';
       try{
-        var canvas=await html2canvas(card,{scale:3,useCORS:true,backgroundColor:null});
-        var a=document.createElement('a');
+        var canvas=await html2canvas(card,{scale:3,useCORS:true,allowTaint:false,backgroundColor:null,logging:false});
         var p=loadLocalProfile();
-        var safe=((p.name||'client')+'').toLowerCase().replace(/\s+/g,'_');
-        a.download='carte_ida_'+safe+'.png';
-        a.href=canvas.toDataURL('image/png');
-        a.click();
-        toast('Carte téléchargée');
+        var safe=((p.name||'client')+'').toLowerCase().replace(/[^a-z0-9_-]+/g,'_');
+        var fileName='carte_ida_'+safe+'.png';
+        var blob=await new Promise(function(resolve){canvas.toBlob(resolve,'image/png',1)});
+        if(!blob)throw new Error('Impossible de créer l’image');
+        var file=new File([blob],fileName,{type:'image/png'});
+        // iPhone/iPad et Android : ouvre la feuille de partage système, qui permet
+        // d'enregistrer l'image dans Photos/Galerie ou dans les fichiers.
+        if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
+          await navigator.share({files:[file],title:'Ma carte client IDA'});
+          toast('Choisissez Enregistrer l’image ou Ajouter aux Photos');
+        }else{
+          var url=URL.createObjectURL(blob);
+          var a=document.createElement('a');a.href=url;a.download=fileName;
+          a.style.display='none';document.body.appendChild(a);a.click();a.remove();
+          setTimeout(function(){URL.revokeObjectURL(url)},15000);
+          toast('Image enregistrée dans les téléchargements');
+        }
       }catch(e){
         console.error(e);toast('Erreur export');
       }finally{
@@ -5522,6 +5824,8 @@ function updateTrackingNotifBadge(){
   var unread = trackingNotifications.filter(function(n){
     return n.read !== true;
   }).length;
+  var accountBadge=document.getElementById('accOrdersBadge');
+  if(accountBadge){accountBadge.textContent=unread>99?'99+':String(unread);accountBadge.style.display=unread?'flex':'none'}
 
   if(unread > 0){
     badge.style.display = 'flex';
@@ -5577,6 +5881,20 @@ function startTrackingNotifications(){
       trackingNotifications.sort(function(a,b){
         return (b.createdAtMs || 0) - (a.createdAtMs || 0);
       });
+
+      // Les notifications de commande utilisent le logo de la boutique concernée.
+      (async function(){
+        var seen={};
+        for(var i=0;i<trackingNotifications.length;i++){
+          var n=trackingNotifications[i];
+          if(n.boutiqueLogo||!n.boutiqueId||seen[n.boutiqueId])continue;
+          seen[n.boutiqueId]=true;
+          try{n.boutiqueLogo=await getBoutiqueLogo(n.boutiqueId)}catch(e){}
+        }
+        var activePage=document.querySelector('.page.on');
+        if(activePage&&activePage.id==='page-notifications')renderTrackingNotificationHistory();
+        else if(activePage&&(activePage.id==='page-chat'||activePage.id==='page-messages'))renderTrackingNotifications();
+      })();
 
       updateTrackingNotifBadge();
 
@@ -5648,12 +5966,13 @@ function trackingNotifCardHtml(n){
   html += 'align-items:flex-start;gap:11px;padding:13px 14px;';
   html += 'border-bottom:1px solid #eee;cursor:pointer">';
 
-  html += '<div style="width:42px;height:42px;flex:0 0 42px;';
-  html += 'border-radius:50%;overflow:hidden">';
-
-  html += '<img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" ';
-  html += 'style="width:100%;height:100%;object-fit:cover">';
-
+  html += '<div style="width:42px;height:42px;flex:0 0 42px;border-radius:50%;overflow:hidden;background:#E8FFF0">';
+  var notifBoutiqueLogo=n.boutiqueLogo||getCachedBoutiqueLogo(n.boutiqueId)||'';
+  if(notifBoutiqueLogo){
+    html += '<img src="'+escapeHtml(notifBoutiqueLogo)+'" alt="'+escapeHtml(boutiqueName)+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'">';
+  }else{
+    html += '<span style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#00A854;font-weight:800">'+escapeHtml((boutiqueName||'B').charAt(0).toUpperCase())+'</span>';
+  }
   html += '</div>';
 
   html += '<div style="flex:1;min-width:0">';
@@ -5964,6 +6283,8 @@ var target=document.querySelector('.page.on')||$('page-messages');
 if(!currentUser){renderAuthPanelInto(target.id,'messages');return}
 var archived=loadArchived();var pinned=loadPinned();var deleted=loadDeleted();
 var cached=loadConvCache();
+function uniqueBoutiqueConversations(list){var byBoutique={};list.forEach(function(c){var key=c.boutiqueId||('conv:'+c.id);var old=byBoutique[key];if(!old||(c.updatedAt||0)>(old.updatedAt||0))byBoutique[key]=c});return Object.keys(byBoutique).map(function(k){return byBoutique[k]})}
+cached=uniqueBoutiqueConversations(cached);
 var html='<div class="msg-head">'
   +'<div class="ct-logo" style="width:36px;flex-shrink:0">'
     +'<img src="'+escapeHtml(getSiteLogo())+'" alt="IDA" style="height:26px;width:auto;max-width:90px;object-fit:contain;display:block"/>'
@@ -6012,6 +6333,7 @@ var cf=document.getElementById('msgConfirmSel');if(cf)cf.addEventListener('click
 try{
   var s=await getDocs(query(collection(db,'conversations'),where('userId','==',currentUser.uid)));
   var rawList=s.docs.map(function(d){var c=d.data();return{id:d.id,boutiqueId:c.boutiqueId||'',boutiqueName:c.boutiqueName||'Boutique',lastMessage:c.lastMessage||'',updatedAt:c.updatedAt&&c.updatedAt.toMillis?c.updatedAt.toMillis():0}});
+  rawList=uniqueBoutiqueConversations(rawList);
 
   // === Logos depuis le cache local UNIQUEMENT (aucun appel Firestore si déjà en cache) ===
   var missing=[];
@@ -6034,6 +6356,7 @@ try{
   rawList.forEach(function(c){if(!c.boutiqueLogo)c.boutiqueLogo=getCachedBoutiqueLogo(c.boutiqueId)||''});
 
   var list=rawList;
+  list=uniqueBoutiqueConversations(list);
   saveConvCache(list);
   var box=document.getElementById('msgList');
   if(box){
@@ -6468,7 +6791,7 @@ function showVidState(playing){
 
 }
 
-video.play().catch(function(){});
+video.play().then(function(){document.body.classList.remove('video-paused')}).catch(function(){document.body.classList.add('video-paused')});
                                                   var vidMuteBtn = document.getElementById('vidMute');
 
 function updateVideoSoundIcon(){
@@ -6518,6 +6841,7 @@ function scheduleVideoControlsHide(){
 // Lorsque la vidéo démarre
 video.addEventListener('play',function(){
 
+  document.body.classList.remove('video-paused');
   showVideoControls();
 
   scheduleVideoControlsHide();
@@ -6527,6 +6851,7 @@ video.addEventListener('play',function(){
 // Lorsque la vidéo est mise en pause
 video.addEventListener('pause',function(){
 
+  document.body.classList.add('video-paused');
   clearTimeout(videoHideTimer);
 
   showVideoControls();
