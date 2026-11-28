@@ -47,11 +47,12 @@ button{cursor:pointer}
   /* === BADGES LIVRAISON PANIER PRODUIT (Lot 1) === */
 .vs-deliv-row{
   display:flex;
-  flex-wrap:wrap;           /* passe à la ligne si pas de place */
+  flex-wrap:nowrap;
   align-items:center;
-  justify-content:flex-end; /* aligné à droite */
-  gap:6px;
-  margin-top:6px;
+  justify-content:flex-end;
+  gap:4px;
+  white-space:nowrap;
+  overflow-x:auto;
 }
 .vs-deliv-text{
   font-size:12px;
@@ -61,18 +62,21 @@ button{cursor:pointer}
 .vs-badge{
   display:inline-flex;
   align-items:center;
-  gap:4px;
-  padding:3px 9px;
-  border-radius:999px;
-  font-size:10px;
-  font-weight:700;
-  color:#444;
-  background:#F5F5F5;
-  border:1px solid #E0E0E0;
+  gap:3px;
+  padding:2px 5px;
+  border-radius:0 !important;
+  font-size:9px;
+  font-weight:600;
+  color:#00A854 !important;
+  background:transparent !important;
+  border:1px solid #00A854 !important;
   white-space:nowrap;
-  line-height:1.3;
+  line-height:1.2;
 }
-.vs-badge i{font-size:10px;color:#666}
+.vs-badge i{
+  font-size:9px;
+  color:#00A854 !important;
+}
   /* === FORMULAIRE ADRESSE (Lot 2A) === */
 .addr-box{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:350;display:flex;align-items:center;justify-content:center;padding:16px}
 .addr-card{background:#fff;border-radius:12px;width:100%;max-width:380px;max-height:90vh;overflow:auto;padding:16px}
@@ -343,7 +347,7 @@ body.page-cart-active .bn {
 }
 .to2{position:fixed;left:50%;bottom:calc(var(--nav-h)+20px+var(--safe-b));transform:translateX(-50%);background:#333;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s}.to2.on{opacity:1}
 .br{background:var(--danger);color:#fff;height:44px;border-radius:22px;width:100%;font-weight:700;display:flex;align-items:center;justify-content:center}
-.ba{background:#E8FFF0;color:var(--red);border:1px solid #A7F3D0;height:40px;border-radius:20px;flex:1;font-weight:700}
+.ba{background:#E8FFF0;color:var(--red);border:1px solid #A7F3D0;height:40px;border-radius:4px;flex:1;font-weight:700}
   /* === DESCRIPTION COMPLETE DU PRODUIT === */
 .pd-description{
   font-size:13px;
@@ -357,6 +361,9 @@ body.page-cart-active .bn {
 }
 .pd-actions{position:fixed;left:0;right:0;bottom:0;z-index:120;padding:8px 10px calc(8px + var(--safe-b));background:#fff;border-top:1px solid var(--border);display:flex;gap:6px;align-items:center}
 .pd-ico{width:42px;height:42px;border-radius:10px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .pd-actions .pd-ico i{
+  color:#00A854 !important;
+}
 .pd-top{position:fixed;top:0;left:0;right:0;z-index:120;display:flex;justify-content:space-between;padding:10px 12px;pointer-events:none}
 .pd-top button{pointer-events:auto;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff}
 .gal{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -386,16 +393,157 @@ body.page-cart-active .bn {
 .vid-card .badge{background:#E02E24;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
 .vid-card .title{font-size:13px;font-weight:700}
 .vid-card .price{color:#E02E24;font-weight:800}
-.vid-card .cta{margin-left:auto;display:flex;flex-direction:column;gap:4px}
-.vid-card .cta button{padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700}
-.vid-card .cta .buy{background:#E02E24;color:#fff}
-.vid-card .cta .cart{background:#fff;color:#E02E24;border:1px solid #E02E24}
+/* BOUTONS ACHETER ET PANIER */
+.vid-card .cta{
+  margin-left:auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  align-self:stretch;
+  gap:5px;
+}
+
+.vid-card .cta button{
+  width:78px;
+  height:29px;
+  padding:0 8px;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  outline:none !important;
+  font-size:11px;
+  font-weight:700;
+}
+
+.vid-card .cta .buy{
+  background:#E02E24;
+  color:#fff;
+}
+
+.vid-card .cta .cart{
+  background:#F1F1F1;
+  color:#E02E24;
+}
+  /* === NOUVEL AFFICHAGE CARTE PRODUIT VIDEO === */ 
+
+.vid-card .vid-info{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  gap:3px;
+}
+
+.vid-card .vid-badges{
+  display:flex;
+  align-items:center;
+  flex-wrap:nowrap;
+  gap:5px;
+  margin-bottom:2px;
+  white-space:nowrap;
+  width:100%;
+}
+
+.vid-card .vid-badges .badge,
+.vid-card .vid-badges .vid-free-badge{
+  flex-shrink:0;
+  white-space:nowrap;
+}
+
+.vid-card .badge{
+  display:inline-flex;
+  align-items:center;
+  background:#E02E24;
+  color:#fff;
+  font-size:9px;
+  font-weight:800;
+  padding:3px 6px;
+  border-radius:4px;
+}
+
+.vid-card .vid-free-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 6px;
+  border:1px solid #00A854;
+  border-radius:4px;
+  color:#008C45;
+  background:#E8FFF0;
+  font-size:9px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.vid-card .title{
+  font-size:13px;
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.vid-card .vid-description{
+  font-size:10px;
+  color:#777;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.vid-card .vid-price-row{
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:3px;
+}
+
+.vid-card .price{
+  font-size:17px;
+  font-weight:900;
+  color:#E02E24;
+}
+
+.vid-card .vid-old-price{
+  font-size:11px;
+  color:#999;
+  text-decoration:line-through;
+  font-weight:500;
+}
 .vid-top{position:absolute;top:0;left:0;right:0;z-index:6;padding:12px}
 .vid-top button{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.4);color:#fff}
 .vid-hide-ui .vid-top,.vid-hide-ui .vid-card,.vid-hide-ui .vid-side{opacity:0;pointer-events:none;transition:opacity .3s}
+  /* Masquer les 5 boutons de navigation pendant la lecture vidéo */
+body.video-controls-hidden .bn{
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+  transition:opacity .3s,visibility .3s;
+}
+  /* NAVIGATION SOMBRE SUR LA PAGE VIDEO */
+body:has(#vidPage) .bn{
+  background:#111 !important;
+  border-top:1px solid #292929 !important;
+}
+
+body:has(#vidPage) .bn button{
+  color:#bdbdbd !important;
+  background:transparent !important;
+}
+
+body:has(#vidPage) .bn button.on{
+  color:#00A854 !important;
+}
+
+/* Garder le masquage pendant la lecture */
+body.video-controls-hidden .bn{
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
 .vid-float{position:fixed;width:110px;height:180px;border-radius:12px;overflow:hidden;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.35);background:#000;border:2px solid #fff;right:12px;bottom:90px;touch-action:none}
 .vid-float video{width:100%;height:100%;object-fit:cover}
-.vid-float .vf-x{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff}
+.vid-float .vf-x{position:absolute;top:4px;right:4px;width:24px;height:24px;padding:0;border:0;border-radius:0;background:transparent;color:#fff;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:none;cursor:pointer}
 .ad-banner{background:#fff;overflow:hidden;position:relative}
 .ad-banner-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .ad-banner-track::-webkit-scrollbar{display:none}
@@ -409,7 +557,8 @@ body.page-cart-active .bn {
 .bq-hero{position:relative;height:160px;background:#e9e9e9;overflow:visible}
 .bq-hero-clip{position:absolute;inset:0;overflow:hidden}
 .bq-hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-mask-image:linear-gradient(to bottom,#000 60%,transparent 100%);mask-image:linear-gradient(to bottom,#000 60%,transparent 100%)}
-.bq-hero-frost{position:absolute;left:0;right:0;bottom:0;height:70%;pointer-events:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);-webkit-mask-image:linear-gradient(to top,#000 0%,#000 40%,transparent 100%);mask-image:linear-gradient(to top,#000 0%,#000 40%,transparent 100%)}
+.bq-hero-frost{position:absolute;left:0;right:0;bottom:0;height:70%;pointer-events:none;backdrop-filter:none;
+-webkit-backdrop-filter:none;-webkit-mask-image:linear-gradient(to top,#000 0%,#000 40%,transparent 100%);mask-image:linear-gradient(to top,#000 0%,#000 40%,transparent 100%)}
 .bq-logo-wrap{position:absolute;right:14px;bottom:-42px;width:104px;height:104px;border-radius:50%;background:#fff;border:4px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.2);overflow:hidden;display:flex;align-items:center;justify-content:center;z-index:5}
 .bq-logo-wrap img{width:100%;height:100%;object-fit:contain;background:#fff}
 .bq-logo-fallback{font-size:38px;font-weight:800;color:var(--red)}
@@ -1656,6 +1805,212 @@ body.page-orders-active #ordRecoGrid{
 #catalogScrollTop.show{
   display:flex;
 }
+  
+/* =====================================
+   COMMENTAIRES - BOTTOM SHEET STYLE TIKTOK
+===================================== */
+
+#vidComments.vid-comments{
+  position:fixed !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100dvh !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+
+  z-index:100001 !important;
+
+  display:block !important;
+  background:rgba(0,0,0,0) !important;
+
+  opacity:0;
+  pointer-events:none;
+
+  transform:none !important;
+  transition:background .3s ease, opacity .3s ease !important;
+}
+
+#vidComments.vid-comments.open{
+  opacity:1;
+  pointer-events:auto;
+  background:rgba(0,0,0,.38) !important;
+}
+
+/* Panneau blanc */
+#vidComments .vid-comments-sheet{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+
+  height:58vh;
+  height:58dvh;
+  max-height:650px;
+  min-height:300px;
+
+  display:flex;
+  flex-direction:column;
+
+  background:#fff;
+  border-radius:20px 20px 0 0;
+
+  overflow:hidden;
+
+  padding-bottom:env(safe-area-inset-bottom,0px);
+
+  transform:translateY(100%);
+  transition:transform .48s cubic-bezier(.22,1,.36,1);
+
+  box-shadow:0 -5px 25px rgba(0,0,0,.12);
+
+  touch-action:pan-y;
+}
+
+#vidComments.open .vid-comments-sheet{
+  transform:translateY(0);
+}
+
+/* En-tête */
+#vidComments .vid-comments-head{
+  flex-shrink:0;
+  min-height:52px;
+  padding:12px 18px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  border-bottom:1px solid #eee;
+  font-weight:800;
+}
+
+/* Liste */
+#vidComments .vid-comments-list{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:16px;
+}
+
+/* Zone de saisie */
+#vidComments .vid-comments-in{
+  flex-shrink:0;
+  padding:10px 12px;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
+
+  background:#fff;
+  border-top:1px solid #eee;
+}
+
+/* =====================================
+   VIDEO QUI REMONTE ET SE REDUIT
+===================================== */
+
+/* VIDEO ENTIÈREMENT VISIBLE AU-DESSUS DES COMMENTAIRES */
+
+#vidPage .vid-stage{
+  position:absolute !important;
+  top:0 !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  width:100% !important;
+  height:100% !important;
+  transform:none !important;
+  transition:height .48s cubic-bezier(.22,1,.36,1) !important;
+  background:#000 !important;
+  overflow:hidden !important;
+}
+
+#vidPage .vid-stage video,
+#vidPage #vidEl{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  background:#000 !important;
+}
+
+#vidPage.comments-open .vid-stage{
+  top:0 !important;
+  bottom:auto !important;
+  height:42vh !important;
+  height:42dvh !important;
+  transform:none !important;
+}
+/* COMMENTAIRES OUVERTS : MASQUER TOUTE L'INTERFACE VIDEO */
+
+/* Cacher les commandes et informations superposées */
+#vidPage.comments-open .vid-side,
+#vidPage.comments-open .vid-card,
+#vidPage.comments-open .vid-top,
+#vidPage.comments-open .vid-bottom,
+#vidPage.comments-open .vid-controls,
+#vidPage.comments-open .vid-actions,
+#vidPage.comments-open .vid-catalog,
+#vidPage.comments-open .vid-back,
+#vidPage.comments-open .vid-sound,
+#vidPage.comments-open .vid-account,
+#vidPage.comments-open .vid-caption,
+#vidPage.comments-open .vid-toolbar,
+#vidPage.comments-open .vid-nav,
+#vidPage.comments-open .vid-menu {
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+
+/* Garder la vidéo lumineuse et normale */ 
+#vidPage.comments-open .vid-stage,
+#vidPage.comments-open #vidEl,
+#vidPage.comments-open .vid-stage video {
+  filter:none !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+
+/* Ne pas assombrir la vidéo avec un voile */
+#vidPage.comments-open::before,
+#vidPage.comments-open .vid-stage::before,
+#vidPage.comments-open .vid-stage::after {
+  display:none !important;
+  opacity:0 !important;
+  background:transparent !important;
+}
+  #variantSheet #vsDelivBanner {
+  width: 100% !important;
+  max-width: 100% !important;
+  border: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Authentification IDA : formulaire, aperçu carte et mentions légales */
+.auth-page-wrap{padding:28px 14px 50px;background:#f3f6f4;min-height:100%}
+.auth-shell{width:100%;max-width:520px;margin:0 auto}
+.auth-heading{margin:0 0 16px}.auth-heading h2{font-size:22px;font-weight:850;color:#17251c}.auth-heading p{font-size:13px;color:#7b877f;margin-top:6px;line-height:1.5}
+.auth-card{background:#fff;border:1px solid #e8eee9;border-radius:16px;padding:20px;box-shadow:0 10px 28px rgba(20,50,30,.05)}
+.auth-group-title{font-size:11px;font-weight:800;color:#00A854;text-transform:uppercase;letter-spacing:.7px;margin:18px 0 11px}
+.auth-field{margin-bottom:12px}.auth-field label{display:block;font-size:12px;font-weight:700;color:#354239;margin-bottom:6px}
+.auth-input-wrap{min-height:46px;display:flex;align-items:center;gap:10px;padding:0 12px;border:1px solid #e1e8e2;border-radius:9px;background:#fbfcfb}
+.auth-input-wrap:focus-within{border-color:#00A854;box-shadow:0 0 0 3px rgba(0,168,84,.08);background:#fff}
+.auth-input-wrap i{color:#91a096;font-size:13px;width:16px;text-align:center;flex-shrink:0}
+.auth-input-wrap input,.auth-input-wrap select{width:100%;min-width:0;height:44px;border:0;outline:0;background:transparent;color:#25332a;font-size:13px}
+.auth-submit{width:100%;height:48px;margin-top:8px;border-radius:9px;background:#00A854;color:#fff;font-size:14px;font-weight:800}
+.auth-submit:disabled{opacity:.6}.auth-reset{display:block;width:100%;margin-top:13px;background:transparent;color:#008f47;font-size:12px;font-weight:700;text-decoration:underline}
+.auth-status{min-height:18px;margin-top:10px;font-size:12px;line-height:1.45;color:#b42318}
+.auth-security{text-align:center;margin-top:15px;color:#89958d;font-size:10px}.auth-security i{color:#00A854;margin-right:5px}
+.auth-terms{text-align:center;font-size:11px;color:#818b84;margin:16px 0 25px}.auth-terms a{color:#008f47;font-weight:800;text-decoration:underline}
+.auth-card-preview-title{font-size:14px;font-weight:800;color:#26352b;margin:0 0 10px;text-align:center}
+@media(min-width:768px){.auth-page-wrap{padding:42px 24px 60px}.auth-card{padding:26px 30px}}
+@media(max-width:480px){.auth-page-wrap{padding:20px 12px 40px}.auth-card{padding:17px 14px;border-radius:13px}}
+
 </style>
 </head>
 <body>
@@ -1687,6 +2042,7 @@ body.page-orders-active #ordRecoGrid{
 <div id="page-account" class="page"></div>
 <div id="page-auth" class="page"></div>
 <div id="page-chat" class="page"></div>
+<div id="page-chat-thread" class="page"></div>
 <div id="page-video" class="page"></div>
 <div id="page-favorites" class="page"></div>
 <div id="page-boutique" class="page"></div>
@@ -1711,12 +2067,45 @@ body.page-orders-active #ordRecoGrid{
 </div>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-  
+
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  signInAnonymously
+} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+  writeBatch
+} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';  
 const firebaseConfig={apiKey:"AIzaSyDkKvnL5_pHGraCFMcfXvueywwujCIG8SE",authDomain:"idus-a87a6.firebaseapp.com",projectId:"idus-a87a6",storageBucket:"idus-a87a6.firebasestorage.app",messagingSenderId:"284785552985",appId:"1:284785552985:web:4cb12a71465a0e167bcb48",measurementId:"G-M0EKXCDV3R"};
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
 setPersistence(auth,browserLocalPersistence).catch(function(){});
+  // Authentification anonyme indépendante pour les interactions vidéo
+const videoAnonApp = initializeApp(firebaseConfig,'videoAnon');
+const videoAnonAuth = getAuth(videoAnonApp);
+
+setPersistence(videoAnonAuth,browserLocalPersistence).catch(function(){});
 // Précharge le logo du site une seule fois (cache localStorage)   
 setTimeout(function(){ prefetchSiteLogo(); }, 0);
   // Applique le logo du site mis en cache dès que possibl 
@@ -1731,6 +2120,20 @@ setTimeout(function(){
 let favorites=JSON.parse(localStorage.getItem('vl_favs')||'[]');
 let currentUser=null,cart=JSON.parse(localStorage.getItem('vl_cart')||'[]'),products=[],categories=[],settings={shippingFee:1500},currentProduct=null,selectedVariants={},qty=1,searchTerm='',sheetMode='cart',pageHistory=[];
 let videoFeed=[],videoFeedIdx=0,videoHideTimer=null;
+
+let videoAnonUser=videoAnonAuth.currentUser;
+let videoStatsUnsubs=[];
+let videoStatsPid=null;
+
+let authReadyResolve=null;
+
+const authReadyPromise=new Promise(function(resolve){
+  authReadyResolve=resolve;
+});
+
+onAuthStateChanged(videoAnonAuth,function(u){
+  videoAnonUser=u;
+});
 let ads=[];
   let searchHistory=JSON.parse(localStorage.getItem('vl_search_history')||'[]');
 let viewedProducts=JSON.parse(localStorage.getItem('vl_viewed_products')||'[]');
@@ -1909,12 +2312,14 @@ document.querySelectorAll('.bn button').forEach(function(btn){btn.addEventListen
 async function loadCategories(){try{var s=await getDocs(collection(db,'categories'));categories=s.docs.map(function(d){return{id:d.id,...d.data()}})}catch(e){categories=[]}}
 async function loadProducts(){try{var s=await getDocs(query(collection(db,'products'),where('published','==',true)));products=s.docs.map(function(d){return{id:d.id,...d.data()}});saveProductCache(products)}catch(e){console.warn('loadProducts',e);if(!products.length)products=loadProductCache()}return products}
 function productCard(p){var promo=p.promoPrice&&p.promoPrice<p.price;var price=minProductPrice(p);var img=(p.images&&p.images[0])||'';var deliv=p.deliveryTime||'2 jours';
-var freeDeliv=p.fastDelivery===true;var showStock=p.showStock!==false;var struck=promo?' <span style="text-decoration:line-through;color:#999;font-size:11px">'+formatPrice(p.price)+' F</span>':'';var stockLine=showStock?'<div style="font-size:10px;color:#888">Stock: '+(p.stock!=null?p.stock:0)+'</div>':'';return'<div class="pc" data-pid="'+p.id+'"><div class="im">'+(img?'<img src="'+escapeHtml(img)+'" loading="lazy" onerror="this.onerror=null;this.style.background=\'#eee\'"/>':'')+'</div><div class="bd"><div class="tt">'+escapeHtml((p.name||'').length>20?(p.name||'').slice(0,19)+'…':(p.name||''))+'</div><div style="font-size:11px;color:#00A854;margin-bottom:4px">'+(freeDeliv?'<span class="free-deliv"><span>Livraison Gratuite</span></span>':'Livraison:')+' '+escapeHtml(deliv)+'</div>'+stockLine+'<div><span class="px">'+formatPrice(price)+' F</span>'+struck+'</div></div></div>'}
+var freeDeliv=p.fastDelivery===true;var showStock=p.showStock!==false;var struck=promo?' <span style="text-decoration:line-through;color:#999;font-size:11px">'+formatPrice(p.price)+' F</span>':'';var codBadge=(p.paymentMode||'cod')==='cod'?'<span style="font-size:8px;font-weight:400;color:#008C45;white-space:normal;text-align:right">Achete maintenant, paie apres</span>':'';var stockLine=(showStock||codBadge)?'<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:3px 5px;font-size:10px;color:#888;min-height:14px">'+(showStock?'<span>Stock: '+(p.stock!=null?p.stock:0)+'</span>':'')+codBadge+'</div>':'';return'<div class="pc" data-pid="'+p.id+'"><div class="im">'+(img?'<img src="'+escapeHtml(img)+'" loading="lazy" onerror="this.onerror=null;this.style.background=\'#eee\'"/>':'')+'</div><div class="bd"><div class="tt">'+escapeHtml((p.name||'').length>20?(p.name||'').slice(0,19)+'…':(p.name||''))+'</div><div style="font-size:11px;color:#00A854;margin-bottom:4px">'+(freeDeliv?'<span class="free-deliv"><span>Livraison Gratuite</span></span>':'Livraison:')+' '+escapeHtml(deliv)+'</div>'+stockLine+'<div><span class="px">'+formatPrice(price)+' F</span>'+struck+'</div></div></div>'}
 function diversifyProducts(list){var sorted=list.slice().sort(function(a,b){var ta=(a.createdAt&&a.createdAt.seconds)?a.createdAt.seconds*1000:(a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0);var tb=(b.createdAt&&b.createdAt.seconds)?b.createdAt.seconds*1000:(b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0);if(ta===0)ta=(a.updatedAt&&a.updatedAt.seconds)?a.updatedAt.seconds*1000:0;if(tb===0)tb=(b.updatedAt&&b.updatedAt.seconds)?b.updatedAt.seconds*1000:0;return tb-ta});var byCat={};var noCat=[];sorted.forEach(function(p){var c=p.categoryId||'_none';if(c==='_none')noCat.push(p);else{if(!byCat[c])byCat[c]=[];byCat[c].push(p)}});var cats=Object.keys(byCat);var result=[];var maxLen=0;cats.forEach(function(c){if(byCat[c].length>maxLen)maxLen=byCat[c].length});for(var i=0;i<maxLen;i++){cats.forEach(function(c){if(byCat[c][i])result.push(byCat[c][i])})}noCat.forEach(function(p){result.push(p)});return result}
 function paintHomeProducts(g,list){if(!g)return;g.innerHTML=list.length?list.map(productCard).join(''):'<div class="em" style="grid-column:1/-1"><p>Aucun produit</p></div>';g.querySelectorAll('[data-pid]').forEach(function(el){el.addEventListener('click',function(){showPage('product',el.getAttribute('data-pid'))})})}
 async function renderHome(){var cached=loadProductCache();if(cached.length&&!products.length)products=cached;$('page-home').innerHTML='<div class="pg" id="homeProducts"></div>';var g=$('homeProducts');if(products.length){paintHomeProducts(g,diversifyProducts(products))}else{g.innerHTML='<div class="em" style="grid-column:1/-1"><p>Chargement…</p></div>'}if(!products.length){try{await loadProducts();var g2=$('homeProducts');if(g2)paintHomeProducts(g2,diversifyProducts(products))}catch(e){}}setTimeout(async function(){try{await loadProducts();var g3=$('homeProducts');if(g3)paintHomeProducts(g3,diversifyProducts(products))}catch(e){}},100)}
 async function renderCatalog(){await loadProducts();var list=products.slice();if(searchTerm){var t=searchTerm.toLowerCase();list=list.filter(function(p){return((p.name||'')+(p.description||'')).toLowerCase().includes(t)})}$('page-catalog').innerHTML='<div class="pg">'+(list.length?list.map(productCard).join(''):'<div class="em" style="grid-column:1/-1"><p>Aucun</p></div>')+'</div>';$('page-catalog').querySelectorAll('[data-pid]').forEach(function(el){el.addEventListener('click',function(){showPage('product',el.getAttribute('data-pid'))})})}
-async function renderProduct(id){try{var p=products.find(function(x){return x.id===id});if(!p){var s=await getDoc(doc(db,'products',id));if(!s.exists()){$('page-product').innerHTML='<div class="em"><p>Introuvable</p></div>';return}p={id:s.id,...s.data()}}currentProduct=p;saveViewedProduct(p.id);selectedVariants={};qty=1;(p.variantGroups||[]).forEach(function(g){if(g.options&&g.options.length)selectedVariants[g.name]=g.options[0].label});var price=minProductPrice(p);var images=(p.images&&p.images.length)?p.images.filter(Boolean):[];if(!images.length)images=['data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="#eee" width="400" height="400"/></svg>')];var deliv=p.deliveryTime||'2 jours';var freeDeliv=p.fastDelivery===true;var showStock=p.showStock!==false;var promo=p.promoPrice&&p.promoPrice<p.price;var struck=promo?' <span style="text-decoration:line-through;color:#999;font-size:14px">'+formatPrice(p.price)+' F</span>':'';var imgHtml='<div class="gal" id="prodGal">'+images.map(function(im,i){return'<img src="'+escapeHtml(im)+'" data-img-i="'+i+'" loading="'+(i===0?'eager':'lazy')+'" onerror="this.onerror=null;this.style.background=\'#eee\'"/>'}).join('')+'</div>';$('page-product').innerHTML='<div class="pd-top"><button type="button" id="pdBack"><i class="fa-solid fa-arrow-left"></i></button></div>'+imgHtml+'<div style="background:#fff;padding:12px;margin-bottom:70px"><div style="font-size:26px;font-weight:800;color:#E02E24">'+formatPrice(price)+' F'+struck+'</div><div style="font-weight:600;margin:8px 0">'+escapeHtml(p.name)+'</div><div style="font-size:12px;color:#00A854">'+(freeDeliv?'<span class="free-deliv"><span>Livraison Gratuite</span></span> ':'Livraison: ')+escapeHtml(deliv)+'</div>'+(showStock?'<div style="font-size:12px;color:#888">Stock: '+(p.stock!=null?p.stock:0)+'</div>':'')+'<div class="pd-description">'+escapeHtml(p.description||'')+'</div><div class="pd-actions"><button type="button" class="pd-ico" id="btnShop"><i class="fa-solid fa-store"></i></button><button type="button" class="pd-ico" id="btnFav"><i class="'+(isFav(p.id)?'fa-solid':'fa-regular')+' fa-heart" style="'+(isFav(p.id)?'color:#E02E24':'')+'"></i></button><button type="button" class="pd-ico" id="btnChatProd"><i class="fa-regular fa-comment-dots"></i></button><button type="button" class="ba" id="btnAddCart" style="flex:1">Panier</button><button type="button" class="br" style="flex:1.2;margin:0;height:40px;border-radius:20px" id="btnBuy">Acheter</button></div>';document.getElementById('pdBack').addEventListener('click',goBack);document.getElementById('btnAddCart').addEventListener('click',function(){openVariantSheet('cart')});document.getElementById('btnBuy').addEventListener('click',function(){openVariantSheet('buy')});document.getElementById('btnShop').addEventListener('click',function(){if(p.boutiqueId)showPage('boutique',p.boutiqueId)});document.getElementById('btnFav').addEventListener('click',function(){toggleFav(p.id);var ic=this.querySelector('i');var now=isFav(p.id);ic.className=(now?'fa-solid':'fa-regular')+' fa-heart';ic.style.color=now?'#E02E24':'';});document.getElementById('btnChatProd').addEventListener('click',function(){openChatWithProduct(p)});document.getElementById('btnChatProd').addEventListener('click',function(){openChatWithProduct(p)});document.querySelectorAll('#prodGal img').forEach(function(im){im.addEventListener('click',function(){openFullscreen(p,+im.getAttribute('data-img-i'))})});if(p.videoUrl)showFloatingVideo(p)}catch(e){$('page-product').innerHTML='<div class="em"><p>'+escapeHtml(e.message)+'</p></div>'}}
+async function renderProduct(id){try{var p=products.find(function(x){return x.id===id});if(!p){var s=await getDoc(doc(db,'products',id));if(!s.exists()){$('page-product').innerHTML='<div class="em"><p>Introuvable</p></div>';return}p={id:s.id,...s.data()}}currentProduct=p;saveViewedProduct(p.id);selectedVariants={};qty=1;(p.variantGroups||[]).forEach(function(g){if(g.options&&g.options.length)selectedVariants[g.name]=g.options[0].label});var price=minProductPrice(p);var images=(p.images&&p.images.length)?p.images.filter(Boolean):[];if(!images.length)images=['data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="#eee" width="400" height="400"/></svg>')];var deliv=p.deliveryTime||'2 jours';var freeDeliv=p.fastDelivery===true;var showStock=p.showStock!==false;var promo=p.promoPrice&&p.promoPrice<p.price;var struck=promo?' <span style="text-decoration:line-through;color:#999;font-size:14px">'+formatPrice(p.price)+' F</span>':'';var imgHtml='<div class="gal" id="prodGal">'+images.map(function(im,i){return'<img src="'+escapeHtml(im)+'" data-img-i="'+i+'" loading="'+(i===0?'eager':'lazy')+'" onerror="this.onerror=null;this.style.background=\'#eee\'"/>'}).join('')+'</div>';$('page-product').innerHTML='<div class="pd-top"><button type="button" id="pdBack"><i class="fa-solid fa-arrow-left"></i></button></div>'+imgHtml+'<div style="background:#fff;padding:12px;margin-bottom:70px"><div style="font-size:26px;font-weight:800;color:#E02E24">'+formatPrice(price)+' F'+struck+'</div><div style="font-weight:600;margin:8px 0">'+escapeHtml(p.name)+'</div><div style="font-size:12px;color:#00A854">'+(freeDeliv?'<span class="free-deliv"><span>Livraison Gratuite</span></span> ':'Livraison: ')+escapeHtml(deliv)+'</div>'+(showStock?'<div style="font-size:12px;color:#888">Stock: '+(p.stock!=null?p.stock:0)+'</div>':'')+'<div class="pd-description">'+escapeHtml(p.description||'')+'</div><div class="pd-actions"><button type="button" class="pd-ico" id="btnShop"><i class="fa-solid fa-store"></i></button><button type="button" class="pd-ico" id="btnFav"><i class="'+(isFav(p.id)?'fa-solid':'fa-regular')+' fa-heart" style="'+(isFav(p.id)?'color:#E02E24':'')+'"></i></button><button type="button" class="pd-ico" id="btnChatProd"><i class="fa-regular fa-comment-dots"></i></button><button type="button" class="ba" id="btnAddCart" style="flex:1">Panier</button><button type="button" class="br" style="flex:1.2;margin:0;height:40px;border-radius:4px" id="btnBuy">Acheter</button></div>';document.getElementById('pdBack').addEventListener('click',goBack);document.getElementById('btnAddCart').addEventListener('click',function(){openVariantSheet('cart')});document.getElementById('btnBuy').addEventListener('click',function(){openVariantSheet('buy')});document.getElementById('btnShop').addEventListener('click',function(){if(p.boutiqueId)showPage('boutique',p.boutiqueId)});document.getElementById('btnFav').addEventListener('click',function(){toggleFav(p.id);var ic=this.querySelector('i');var now=isFav(p.id);ic.className=(now?'fa-solid':'fa-regular')+' fa-heart';ic.style.color=now?'#E02E24':'';});document.getElementById('btnChatProd').addEventListener('click',function(){
+  openChatWithProduct(p);
+});document.querySelectorAll('#prodGal img').forEach(function(im){im.addEventListener('click',function(){openFullscreen(p,+im.getAttribute('data-img-i'))})});if(p.videoUrl)showFloatingVideo(p)}catch(e){$('page-product').innerHTML='<div class="em"><p>'+escapeHtml(e.message)+'</p></div>'}}
 function openFullscreen(p,startIdx){
   var images=(p.images&&p.images.length)?p.images.filter(Boolean):[];
   if(!images.length)return;
@@ -2053,7 +2458,7 @@ function openVariantSheet(mode){
   // === Bandeau livraison (plein écran, sans bords, vert si gratuite / rouge sinon) ===
    // === Bandeau livraison (compact, sans gras, sans marge) ===
   var bannerBg=freeDeliv?'#00A854':'#E02E24';
-  var delivBanner='<div id="vsDelivBanner" style="width:100%;padding:6px 10px;font-size:11px;font-weight:400;color:#fff;display:flex;align-items:center;gap:6px;border:none;border-radius:0;margin:0;box-sizing:border-box;line-height:1.2;'
+  var delivBanner='<div id="vsDelivBanner" style="width:100%;padding:6px 10px;font-size:11px;font-weight:400;color:#fff;display:flex;align-items:center;gap:6px;border-left:none;border-right:none;border-top:none;border-bottom:none;border-radius:0;margin:0;box-sizing:border-box;line-height:1.2;'
     +'background:'+bannerBg
     +'">'
     +'<i class="fa-solid fa-truck-fast" style="flex-shrink:0;font-size:11px"></i>'
@@ -2117,7 +2522,7 @@ var badgesHtml=''
     +'</div>';
 
   // === Structure : HEADER fixe + BODY scrollable + FOOTER fixe ===
-  var html='<div id="variantSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:flex;align-items:flex-end">'
+  var html='<div id="variantSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:2147483647;display:flex;align-items:flex-end">'
     +'<div id="vsSheetPanel" style="background:#fff;width:100%;max-height:85vh;border-radius:16px 16px 0 0;position:relative;display:flex;flex-direction:column;overflow:hidden;padding:0;transform:translateY(0);transition:transform .2s ease">'
 
     // === HEADER FIXE (bandeau + bouton ×) ===
@@ -2136,21 +2541,7 @@ var badgesHtml=''
       +header
       +optsHtml
       +qtyHtml
-      +'<div id="vsPayBox">'
-      +(()=>{
-        var pm=computePaymentForItem({productId:p.id,price:calcVariantPrice(p,selectedVariants),qty:qty});
-        var inner='<div class="pay-box"><div class="pay-box-title"><i class="fa-solid fa-credit-card"></i>'+escapeHtml(pm.label)+'</div>';
-        if(pm.mode==='cod'){
-          inner+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">0 F</span></div>';
-          inner+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(pm.payLater)+' F</span></div>';
-        }else{
-          inner+='<div class="pay-row"><span class="lbl">À payer maintenant</span><span class="val">'+formatPrice(pm.payNow)+' F</span></div>';
-          if(pm.payLater>0)inner+='<div class="pay-row"><span class="lbl">À la livraison</span><span class="val red">'+formatPrice(pm.payLater)+' F</span></div>';
-          if(pm.mobileMoney)inner+='<div class="pay-mobile"><i class="fa-solid fa-mobile-screen"></i> '+escapeHtml(pm.mobileMoney)+'</div>';
-        }
-        return inner+'</div>';
-      })()
-      +'</div>'
+     +'<div id="vsPayBox" style="display:none"></div>' 
     +'</div>'
 
     // === FOOTER FIXE (bouton Acheter/Ajouter) ===
@@ -2563,7 +2954,6 @@ function renderCart(){
 
   var bc=document.getElementById('btnCheckout');
   if(bc)bc.addEventListener('click',function(){
-    if(!currentUser){showPage('auth');return}
     showPage('checkout');
   });
 
@@ -3443,7 +3833,11 @@ var chkHeader='<div class="chk-topbar">'
 if(placeBtn){
   placeBtn.addEventListener('click',function(e){
     e.preventDefault();
-    toast('Clic détecté : traitement de la commande lancé');
+    if(!currentUser){
+      var authSubmit=document.querySelector('#chkIdaCardBox .auth-submit');
+      if(authSubmit){authSubmit.scrollIntoView({behavior:'smooth',block:'center'});authSubmit.click();}
+      return;
+    }
     placeOrder();
   });
 }else{
@@ -3480,8 +3874,12 @@ if(placeBtn){
   (function(){
     var box=document.getElementById('chkIdaCardBox');
     if(!box)return;
-    var prof2=loadLocalProfile();
-    box.innerHTML=buildSimpleIdaCard(prof2, userEmail);
+    if(!currentUser){
+      renderAuthPanelInto('chkIdaCardBox','checkout');
+    }else{
+      var prof2=loadLocalProfile();
+      box.innerHTML=buildSimpleIdaCard(prof2, userEmail);
+    }
   })();
     // === Reco produits en bas du checkout ===
   (function(){
@@ -4614,6 +5012,8 @@ function saveLocalProfile(data){
     if(data.address)p.address=data.address;
     if(data.country)p.country=data.country;
     if(data.region)p.region=data.region;
+    if(data.fullAddress)p.fullAddress=data.fullAddress;
+    if(data.email)p.email=data.email;
     if(data.citation)p.citation=data.citation;
     if(data.photo!==undefined)p.photo=data.photo;
     localStorage.setItem('vl_profile',JSON.stringify(p));
@@ -4805,73 +5205,189 @@ document.querySelectorAll('[data-use-idx]').forEach(function(el){
   });
 }
    
-function renderAuth(){
-  $('page-auth').innerHTML=
-    '<div style="padding:16px;background:#fff;margin:8px;border-radius:8px">'
-    +'<div style="font-size:13px;color:#666;margin-bottom:10px">Informations personnelles</div>'
-    +'<input id="authName" placeholder="Nom complet" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px"/>'
-    +'<input id="authPhone" placeholder="Téléphone" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px"/>'
-    +'<input id="authAddr" placeholder="Adresse de livraison" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:12px;border-radius:6px"/>'
-    +'<div style="font-size:13px;color:#666;margin-bottom:10px">Connexion</div>'
-    +'<input id="authEmail" type="email" placeholder="Email" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px"/>'
-    +'<input id="authPass" type="password" placeholder="Mot de passe" style="width:100%;padding:10px;border:1px solid #ddd;margin-bottom:12px;border-radius:6px"/>'
-    +'<button type="button" class="br" id="btnLogin">Connexion</button>'
-    +'<button type="button" class="ba" id="btnReg" style="margin-top:8px">Créer un compte</button>'
+function renderAuthPanelInto(targetId, successPage){
+  var target=document.getElementById(targetId);
+  if(!target)return;
+  var prefix='idaAuth_'+targetId.replace(/[^a-z0-9]/gi,'_');
+  var ids={name:prefix+'_name',phone:prefix+'_phone',country:prefix+'_country',city:prefix+'_city',address:prefix+'_address',email:prefix+'_email',pass:prefix+'_pass',submit:prefix+'_submit',reset:prefix+'_reset',card:prefix+'_card',status:prefix+'_status'};
+  var prof=loadLocalProfile();
+  var countries=['Sénégal','France','Niger','Mali','Côte d’Ivoire','Autre'];
+  target.innerHTML=''
+    +'<div class="auth-shell">'
+      +'<div class="auth-heading"><h2>Inscription / Connexion</h2><p>Renseignez vos informations pour accéder à votre espace client IDA.</p></div>'
+      +'<div class="auth-card">'
+        +'<div class="auth-group-title">Informations personnelles</div>'
+        +'<div class="auth-field"><label>Nom complet</label><div class="auth-input-wrap"><i class="fa-regular fa-user"></i><input id="'+ids.name+'" placeholder="Votre nom complet" autocomplete="name" value="'+escapeHtml(prof.name||'')+'"></div></div>'
+        +'<div class="auth-field"><label>Téléphone</label><div class="auth-input-wrap"><i class="fa-solid fa-phone"></i><input id="'+ids.phone+'" type="tel" placeholder="Votre numéro" autocomplete="tel" value="'+escapeHtml(prof.phone||'')+'"></div></div>'
+        +'<div class="auth-field"><label>Pays</label><div class="auth-input-wrap"><i class="fa-solid fa-globe"></i><select id="'+ids.country+'">'+countries.map(function(c){return '<option value="'+escapeHtml(c)+'" '+((prof.country||'Sénégal')===c?'selected':'')+'>'+escapeHtml(c)+'</option>'}).join('')+'</select></div></div>'
+        +'<div class="auth-field"><label>Ville</label><div class="auth-input-wrap"><i class="fa-solid fa-city"></i><input id="'+ids.city+'" placeholder="Votre ville" value="'+escapeHtml(prof.region||'')+'"></div></div>'
+        +'<div class="auth-field"><label>Adresse complète</label><div class="auth-input-wrap"><i class="fa-solid fa-location-dot"></i><input id="'+ids.address+'" placeholder="Quartier, rue, numéro, bâtiment…" value="'+escapeHtml(prof.fullAddress||'')+'"></div></div>'
+        +'<div class="auth-group-title">Identifiants de connexion</div>'
+        +'<div class="auth-field"><label>Adresse e-mail</label><div class="auth-input-wrap"><i class="fa-regular fa-envelope"></i><input id="'+ids.email+'" type="email" placeholder="exemple@email.com" autocomplete="email" value="'+escapeHtml(prof.email||'')+'"></div></div>'
+        +'<div class="auth-field"><label>Mot de passe</label><div class="auth-input-wrap"><i class="fa-solid fa-lock"></i><input id="'+ids.pass+'" type="password" placeholder="Votre mot de passe" autocomplete="current-password"></div></div>'
+        +'<button type="button" class="auth-submit" id="'+ids.submit+'">Continuer <i class="fa-solid fa-arrow-right"></i></button>'
+        +'<button type="button" class="auth-reset" id="'+ids.reset+'">Mot de passe oublié ? Réinitialiser par e-mail</button>'
+        +'<div id="'+ids.status+'" class="auth-status" aria-live="polite"></div>'
+        +'<div class="auth-security"><i class="fa-solid fa-shield-halved"></i> Connexion sécurisée par Firebase</div>'
+      +'</div>'
+      +'<div class="auth-terms">En vous connectant, vous acceptez les <a href="#" data-auth-terms="1">conditions de IDA</a>.</div>'
+      +'<div class="auth-card-preview-title">Votre carte client IDA</div>'
+      +'<div id="'+ids.card+'">'+buildSimpleIdaCard(prof,prof.email||'')+'</div>'
     +'</div>';
 
-  // Charge les infos locales si dispo
-  var saved=loadLocalProfile();
-  if(saved.name)$('authName').value=saved.name;
-  if(saved.phone)$('authPhone').value=saved.phone;
-  if(saved.address)$('authAddr').value=saved.address;
-
-  document.getElementById('btnLogin').addEventListener('click',async function(){
-    try{
-      var email=$('authEmail').value.trim();
-      var pass=$('authPass').value;
-      if(!email||!pass){toast('Email et mot de passe requis');return;}
-      await signInWithEmailAndPassword(auth,email,pass);
-      // Sauvegarde locale des infos tapées (si présentes)
-      saveLocalProfile({
-        name:$('authName').value.trim(),
-        phone:$('authPhone').value.trim(),
-        address:$('authAddr').value.trim()
-      });
-      showPage('account');
-    }catch(e){toast(e.message)}
+  var $id=function(k){return document.getElementById(ids[k])};
+  var fields=['name','phone','country','city','address','email'];
+  function readProfile(){
+    var country=$id('country').value;
+    var city=$id('city').value.trim();
+    var full=$id('address').value.trim();
+    var combined=[country,city,full].filter(Boolean).join(' · ');
+    return {name:$id('name').value.trim(),phone:$id('phone').value.trim(),country:country,region:city,fullAddress:full,address:combined,email:$id('email').value.trim()};
+  }
+  function refreshCard(){
+    var data=readProfile();
+    $id('card').innerHTML=buildSimpleIdaCard(data,data.email);
+  }
+  fields.forEach(function(k){$id(k).addEventListener('input',refreshCard);$id(k).addEventListener('change',refreshCard)});
+  target.querySelector('[data-auth-terms]').addEventListener('click',function(e){e.preventDefault();openPrivacyModal()});
+  $id('reset').addEventListener('click',async function(){
+    var email=$id('email').value.trim();
+    if(!email){$id('status').textContent='Saisissez votre adresse e-mail.';return}
+    try{await sendPasswordResetEmail(auth,email);$id('status').textContent='Un e-mail de réinitialisation vient de vous être envoyé. Vérifiez aussi vos courriers indésirables.';toast('E-mail de réinitialisation envoyé');}
+    catch(e){$id('status').textContent=e.code==='auth/user-not-found'?'Aucun compte trouvé avec cette adresse e-mail.':'Impossible d’envoyer le lien : '+e.message;}
   });
-
-document.getElementById('btnReg').addEventListener('click',async function(){
-  try{
-    var email=$('authEmail').value.trim();
-    var pass=$('authPass').value;
-    var name=$('authName').value.trim();
-    var phone=$('authPhone').value.trim();
-    var address=$('authAddr').value.trim();
-    if(!email||!pass){toast('Email et mot de passe requis');return;}
-    if(!name||!phone||!address){toast('Nom, téléphone et adresse requis');return;}
-    
-    // 1) Créer le compte
-    var cred = await createUserWithEmailAndPassword(auth,email,pass);
-    
-    // 2) Envoyer l'email de vérification Firebase
+  $id('submit').addEventListener('click',async function(){
+    var data=readProfile(),pass=$id('pass').value;
+    if(!data.email||!pass){$id('status').textContent='L’adresse e-mail et le mot de passe sont obligatoires.';return}
+    var btn=$id('submit');btn.disabled=true;btn.textContent='Vérification…';$id('status').textContent='';
     try{
-      await sendEmailVerification(cred.user);
-      toast('Compte créé ! Vérifiez votre email.');
-    }catch(verifErr){
-      toast('Compte créé, mais email de vérification non envoyé.');
-    }
-    
-    // 3) Sauvegarder localement
-    saveLocalProfile({name:name,phone:phone,address:address});
-    showPage('account');
-  }catch(e){toast(e.message)}
-});
+      // On tente d'abord la connexion. Un e-mail inconnu déclenche la création du compte.
+      try{
+        await signInWithEmailAndPassword(auth,data.email,pass);
+        saveLocalProfile({name:data.name,phone:data.phone,country:data.country,region:data.region,fullAddress:data.fullAddress,email:data.email,address:(data.region||data.fullAddress)?data.address:''});
+        toast('Connexion réussie');
+      }catch(loginErr){
+        if(loginErr.code==='auth/user-not-found'){
+          if(!data.name||!data.phone||!data.country||!data.region||!data.fullAddress){
+            throw new Error('Pour créer votre compte, renseignez votre nom, téléphone, pays, ville et adresse complète.');
+          }
+          var cred=await createUserWithEmailAndPassword(auth,data.email,pass);
+          saveLocalProfile(data);
+          try{await sendEmailVerification(cred.user);toast('Compte créé. Un e-mail de vérification vous a été envoyé.');}
+          catch(verifErr){toast('Compte créé. L’envoi de l’e-mail de vérification a échoué.');}
+        }else if(loginErr.code==='auth/wrong-password'||loginErr.code==='auth/invalid-credential'){
+          // Avec la protection anti-énumération Firebase, ce code peut couvrir aussi un e-mail inconnu.
+          // On tente la création : si l'adresse existe déjà, Firebase refuse et on propose la réinitialisation.
+          try{
+            if(!data.name||!data.phone||!data.country||!data.region||!data.fullAddress)throw loginErr;
+            var newCred=await createUserWithEmailAndPassword(auth,data.email,pass);
+            saveLocalProfile(data);
+            try{await sendEmailVerification(newCred.user)}catch(ignoreVerif){}
+            toast('Compte créé. Vérifiez votre boîte e-mail.');
+          }catch(createErr){
+            if(createErr.code==='auth/email-already-in-use'||createErr.code==='auth/invalid-credential'||createErr.code==='auth/wrong-password'){
+              throw new Error('Mot de passe incorrect. Utilisez « Mot de passe oublié ? » pour recevoir un lien Firebase de réinitialisation.');
+            }
+            throw createErr;
+          }
+        }else{throw loginErr}
+      }
+      if(successPage==='checkout')showPage('checkout');
+      else if(successPage==='messages'||successPage==='chat')showPage(successPage==='chat'?'chat':'messages');
+      else showPage('account');
+    }catch(e){
+      $id('status').textContent=e.message||'Une erreur est survenue.';
+      if(e.code==='auth/weak-password')$id('status').textContent='Le mot de passe doit contenir au moins 6 caractères.';
+      if(e.code==='auth/email-already-in-use')$id('status').textContent='Cette adresse existe déjà. Vérifiez votre mot de passe ou réinitialisez-le par e-mail.';
+      toast($id('status').textContent);
+    }finally{btn.disabled=false;btn.innerHTML='Continuer <i class="fa-solid fa-arrow-right"></i>'}
+  });
 }
+function renderAuth(){
+  $('page-auth').innerHTML='<div class="auth-page-wrap" id="authMainPanel"></div>';
+  renderAuthPanelInto('authMainPanel','account');
+}
+
 function renderFavorites(){var list=products.filter(function(p){return isFav(p.id)});$('page-favorites').innerHTML='<div style="position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid #eee"><div style="display:flex;align-items:center;gap:10px"><button type="button" id="favBack" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#333"><i class="fa-solid fa-arrow-left"></i></button><b style="font-size:16px">Favoris</b></div><div class="logo" style="font-size:20px;font-weight:800;color:#00A854">IDA</div></div><div class="pg">'+(list.length?list.map(productCard).join(''):'<div class="em" style="grid-column:1/-1"><p>Aucun favori</p></div>')+'</div>';document.getElementById('favBack').addEventListener('click',goBack);$('page-favorites').querySelectorAll('[data-pid]').forEach(function(el){el.addEventListener('click',function(){showPage('product',el.getAttribute('data-pid'))})})}
 
-async function isFollowing(boutiqueId){if(!currentUser)return false;try{var qy=await getDoc(doc(db,'follows',currentUser.uid+'_'+boutiqueId));return qy.exists()}catch(e){return false}}
-async function setFollow(boutiqueId,follow){if(!currentUser)return;var id=currentUser.uid+'_'+boutiqueId;try{if(follow){await setDoc(doc(db,'follows',id),{userId:currentUser.uid,boutiqueId:boutiqueId,createdAt:serverTimestamp()})}else{await deleteDoc(doc(db,'follows',id))}}catch(e){toast(e.message)}}
+async function isFollowing(boutiqueId){
+
+  if(!asyncHasRealUser())return false;
+
+  try{
+
+    var id=currentUser.uid+'_'+boutiqueId;
+
+    var snap=await getDoc(doc(db,'follows',id));
+
+    return snap.exists();
+
+  }catch(e){
+
+    return false;
+
+  }
+
+}
+
+
+async function setFollow(boutiqueId,follow){
+
+  if(!asyncHasRealUser())return false;
+
+  var uid=currentUser.uid;
+
+  var id=uid+'_'+boutiqueId;
+
+  var privateRef=doc(db,'follows',id);
+
+  var publicRef=doc(
+    db,
+    'publicFollows',
+    String(boutiqueId),
+    'users',
+    uid
+  );
+
+  try{
+
+    var batch=writeBatch(db);
+
+    if(follow){
+
+      batch.set(privateRef,{
+        userId:uid,
+        boutiqueId:boutiqueId,
+        createdAt:serverTimestamp()
+      });
+
+      batch.set(publicRef,{
+        userId:uid,
+        boutiqueId:String(boutiqueId),
+        createdAt:serverTimestamp()
+      });
+
+    }else{
+
+      batch.delete(privateRef);
+
+      batch.delete(publicRef);
+
+    }
+
+    await batch.commit();
+
+    return true;
+
+  }catch(e){
+
+    toast('Erreur abonnement : '+e.message);
+
+    return false;
+
+  }
+
+}
 function boutiqueLogoHtml(b){if(b.logo)return'<img src="'+escapeHtml(b.logo)+'" onerror="this.style.display=\'none\';this.parentNode.innerHTML=\'<span class=&quot;bq-logo-fallback&quot;>'+escapeHtml((b.name||'?')[0].toUpperCase())+'</span>\'"/>';return'<span class="bq-logo-fallback">'+escapeHtml((b.name||'?')[0].toUpperCase())+'</span>'}
   /* === Points relais (Lot 2C) === */
 async function loadPickupPoints(boutiqueId){
@@ -5444,8 +5960,8 @@ function renderTrackingNotificationHistory(){
  
 
 async function renderMessagesList(){
-if(!currentUser){$('page-messages').innerHTML='<div class="em"><p>Connectez-vous</p></div>';$('page-chat').innerHTML='<div class="em"><p>Connectez-vous</p></div>';return}
 var target=document.querySelector('.page.on')||$('page-messages');
+if(!currentUser){renderAuthPanelInto(target.id,'messages');return}
 var archived=loadArchived();var pinned=loadPinned();var deleted=loadDeleted();
 var cached=loadConvCache();
 var html='<div class="msg-head">'
@@ -5778,7 +6294,24 @@ async function renderVideos(){
 if(!products.length){var cached=loadProductCache();if(cached.length)products=cached}
 /* 2) affichage immédiat si products existe */
 var list=products.filter(function(p){return p.videoUrl&&p.published!==false});
-if(list.length){videoFeed=list;videoFeedIdx=0;paintVideoPlayer(videoFeed[0]);}
+if(list.length){
+
+  videoFeed=list;
+
+  var requested=window._videoRequestedProductId||'';
+
+  var requestedIndex=requested
+    ?list.findIndex(function(x){
+        return String(x.id)===String(requested);
+      })
+    :-1;
+
+  videoFeedIdx=requestedIndex>=0?requestedIndex:0;
+
+  window._videoRequestedProductId=null;
+
+  paintVideoPlayer(videoFeed[videoFeedIdx]);
+}
 else{$('page-video').innerHTML='<div class="em"><p>Chargement…</p></div>'}
 /* 3) si products est vide, on attend loadProducts puis on affiche */
 if(!products.length){
@@ -5788,8 +6321,112 @@ if(!products.length){
 /* 4) sinon refresh en arrière-plan (au cas où de nouvelles vidéos existent) */
 try{await loadProducts();var fresh=products.filter(function(p){return p.videoUrl&&p.published!==false});var same=fresh.length===videoFeed.length&&fresh[0]&&videoFeed[0]&&fresh[0].id===videoFeed[0].id;if(!same&&fresh.length){videoFeed=fresh;videoFeedIdx=0;paintVideoPlayer(videoFeed[0])}}catch(e){}
 }
-async function paintVideoPlayer(p,enterDirection){var price=minProductPrice(p);var img=(p.images&&p.images[0])||'';var liked=isVideoLiked(p.id);var likeCount=getLikeCount(p.id);var commentCount=getCommentCount(p.id);var logoHtml='';var isFol=false;if(p.boutiqueId){try{isFol=await isFollowing(p.boutiqueId)}catch(e){}logoHtml='<div class="vid-logo-wrap"><button type="button" id="vidBoutLogo" style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:#fff;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00A854;box-shadow:0 2px 8px rgba(0,0,0,.3)"><i class="fa-solid fa-store"></i></button><button type="button" id="vidFollowBtn" class="vid-follow'+(isFol?' following':'')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>'}
-$('page-video').innerHTML='<div class="vid-page" id="vidPage"><div class="vid-top"><button type="button" id="vidBack"><i class="fa-solid fa-arrow-left"></i></button><button type="button" id="vidMute"><i class="fa-solid fa-volume-high"></i></button></div><div class="vid-stage"><video id="vidEl" src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay></video><div class="vid-side">'+logoHtml+'<button type="button" id="vidLike" class="'+(liked?'liked':'')+'"><i class="'+(liked?'fa-solid':'fa-regular')+' fa-thumbs-up"></i><span>'+likeCount+'</span></button><button type="button" id="vidComment"><i class="fa-regular fa-comment"></i><span>'+commentCount+'</span></button><button type="button" id="vidShare"><i class="fa-solid fa-share"></i></button></div><div class="vid-card" id="vidCard">'+(img?'<img src="'+escapeHtml(img)+'" onerror="this.style.display=\'none\'"/>':'')+'<div style="flex:1;min-width:0"><span class="badge">Offre exclusive</span><div class="title">'+escapeHtml(String(p.name||'').length>20?String(p.name||'').substring(0,19)+'…':String(p.name||''))+'</div><div class="price">'+formatPrice(price)+' F</div></div><div class="cta"><button type="button" class="buy" id="vidBuy">Acheter</button><button type="button" class="cart" id="vidCart">Panier</button></div></div></div></div>';var page=$('vidPage'),video=$('vidEl');
+async function paintVideoPlayer(p,enterDirection){
+
+var price=minProductPrice(p);
+var promo=p.promoPrice&&p.promoPrice<p.price;
+var oldPrice=p.price||0;
+var freeDeliv=p.fastDelivery===true;
+
+var img=(p.images&&p.images[0])||'';
+var desc=(p.description||'').trim();
+var shortName=String(p.name||'').length>30
+  ?String(p.name||'').slice(0,30)+'…'
+  :String(p.name||'');
+
+var shortDesc=desc.length>30
+  ?desc.slice(0,30)+'…'
+  :desc;
+
+var liked=isVideoLiked(p.id);
+var likeCount=getLikeCount(p.id);
+var commentCount=getCommentCount(p.id);
+var shareCount=getShareCount(p.id);var shareCount=getShareCount(p.id);
+var followerCount=p.boutiqueId?getFollowCount(p.boutiqueId):0;var logoHtml='';
+var isFol=false;
+var followerCount=0;
+
+if(p.boutiqueId){
+  try{
+    isFol=await isFollowing(p.boutiqueId);
+    followerCount=getFollowCount(p.boutiqueId);
+  }catch(e){}
+
+  logoHtml=
+    '<div class="vid-logo-wrap">'+
+      '<button type="button" id="vidBoutLogo" style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:#fff;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00A854;box-shadow:0 2px 8px rgba(0,0,0,.3)">'+
+        '<i class="fa-solid fa-store"></i>'+
+      '</button>'+
+      '<button type="button" id="vidFollowBtn" class="vid-follow'+(isFol?' following':'')+'">'+
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'+
+      '</button>'+
+      '<span id="vidFollowCount">'+followerCount+'</span>'+
+    '</div>';
+}
+
+$('page-video').innerHTML=
+'<div class="vid-page" id="vidPage">'+
+'<div class="vid-top">'+
+'<button type="button" id="vidBack"><i class="fa-solid fa-arrow-left"></i></button>'+
+'<button type="button" id="vidMute"><i class="fa-solid fa-volume-high"></i></button>'+
+'</div>'+
+'<div class="vid-stage">'+
+'<video id="vidEl" src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay muted></video>'+
+'<div class="vid-side">'+logoHtml+
+'<button type="button" id="vidLike" class="'+(liked?'liked':'')+'"><i class="'+(liked?'fa-solid':'fa-regular')+' fa-thumbs-up"></i><span>'+likeCount+'</span></button>'+
+'<button type="button" id="vidComment"><i class="fa-regular fa-comment"></i><span>'+commentCount+'</span></button>'+
+'<button type="button" id="vidShare"><i class="fa-solid fa-share"></i><span>'+shareCount+'</span></button>'+
+'</div>'+
+
+'<div class="vid-card" id="vidCard">'+
+(img
+?'<img src="'+escapeHtml(img)+'" onerror="this.style.display=\'none\'"/>'
+:'')+
+'<div class="vid-info" style="flex:1;min-width:0">'+
+'<div class="vid-badges">'+
+(promo?'<span class="badge">Offre exclusive</span>':'')+
+(freeDeliv?'<span class="vid-free-badge"><i class="fa-solid fa-truck-fast"></i> Livraison gratuite</span>':'')+
+'</div>'+
+'<div class="title">'+escapeHtml(shortName)+'</div>'+
+(shortDesc?'<div class="vid-description">'+escapeHtml(shortDesc)+'</div>':'')+
+'<div class="vid-price-row">'+
+'<span class="price">'+formatPrice(price)+' F</span>'+
+(promo?'<span class="vid-old-price">'+formatPrice(oldPrice)+' F</span>':'')+
+'</div>'+
+'</div>'+
+'<div class="cta">'+
+'<button type="button" class="buy" id="vidBuy">Acheter</button>'+
+'<button type="button" class="cart" id="vidCart">Panier</button>'+
+'</div>'+
+'</div>'+
+'</div>'+
+'</div>';
+
+var page=$('vidPage'),video=$('vidEl');
+
+// Récupérer le lecteur déjà activé depuis le petit format
+if(
+  window._videoActiveElement &&
+  window._videoActiveProductId===String(p.id)
+){
+
+  var previewVideo=window._videoActiveElement;
+
+  previewVideo.id='vidEl';
+  previewVideo.muted=false;
+  previewVideo.removeAttribute('muted');
+
+  // Remplacer le nouveau lecteur par celui qui joue déjà avec le son
+  video.replaceWith(previewVideo);
+
+  video=previewVideo;
+
+  window._videoActiveElement=null;
+  window._videoActiveProductId=null;
+
+  var floating=document.getElementById('vidFloat');
+  if(floating)floating.remove();
+}
 
 // Animation d'arrivée de la nouvelle vidéo
 if(enterDirection){
@@ -5818,23 +6455,286 @@ function showVidState(playing){
     vidIndicator.classList.remove('show');
   },700);
 }
-video.play().catch(function(){});video.addEventListener('play',function(){clearTimeout(videoHideTimer);videoHideTimer=setTimeout(function(){page.classList.add('vid-hide-ui')},15000)});page.addEventListener('click',function(e){if(e.target.closest('.vid-card,.vid-side,.vid-top,.vid-comments'))return;if(page.classList.contains('vid-hide-ui')){page.classList.remove('vid-hide-ui');clearTimeout(videoHideTimer);videoHideTimer=setTimeout(function(){page.classList.add('vid-hide-ui')},15000)}else{
-  if(video.paused){
-    video.play().then(function(){
-      showVidState(true);
-    }).catch(function(){});
-  }else{
-    video.pause();
-    showVidState(false);
+ if(window._videoOpenedWithSound){
+
+  video.muted=false;
+  video.volume=1;
+
+  window._videoOpenedWithSound=false;
+
+}else{
+
+  video.muted=true;
+
+}
+
+video.play().catch(function(){});
+                                                  var vidMuteBtn = document.getElementById('vidMute');
+
+function updateVideoSoundIcon(){
+  if(!vidMuteBtn)return;
+  vidMuteBtn.innerHTML = video.muted
+    ? '<i class="fa-solid fa-volume-xmark"></i>'
+    : '<i class="fa-solid fa-volume-high"></i>';
+}
+
+// Afficher toutes les commandes
+function showVideoControls(){
+
+  page.classList.remove('vid-hide-ui');
+
+  document.body.classList.remove('video-controls-hidden');
+
+}
+
+// Cacher toutes les commandes
+function hideVideoControls(){
+
+  page.classList.add('vid-hide-ui');
+
+  document.body.classList.add('video-controls-hidden');
+
+}
+
+// Programmer le masquage après 5 secondes
+function scheduleVideoControlsHide(){
+
+  clearTimeout(videoHideTimer);
+
+  if(video.paused)return;
+
+  videoHideTimer=setTimeout(function(){
+
+    if(!video.paused){
+
+      hideVideoControls();
+
+    }
+
+  },5000);
+
+}
+
+// Lorsque la vidéo démarre
+video.addEventListener('play',function(){
+
+  showVideoControls();
+
+  scheduleVideoControlsHide();
+
+});
+
+// Lorsque la vidéo est mise en pause
+video.addEventListener('pause',function(){
+
+  clearTimeout(videoHideTimer);
+
+  showVideoControls();
+
+});
+
+// Interaction avec l'écran
+page.addEventListener('click',function(e){
+
+  if(e.target.closest('.vid-card,.vid-side,.vid-top,.vid-comments'))return;
+
+  // Si les commandes sont cachées :
+  // les faire réapparaître sans arrêter la vidéo
+  if(
+    page.classList.contains('vid-hide-ui') ||
+    document.body.classList.contains('video-controls-hidden')
+  ){
+
+    showVideoControls();
+
+    scheduleVideoControlsHide();
+
+    return;
+
   }
-}});var pressTimer=null;var pressStart=0;var wasLongPress=false;page.addEventListener('pointerdown',function(e){if(e.target.closest('.vid-card,.vid-side,.vid-top,.vid-comments'))return;pressStart=Date.now();wasLongPress=false;pressTimer=setTimeout(function(){video.playbackRate=2;wasLongPress=true},200)});page.addEventListener('pointerup',function(){clearTimeout(pressTimer);video.playbackRate=1;if(Date.now()-pressStart<200)wasLongPress=false});page.addEventListener('pointercancel',function(){clearTimeout(pressTimer);video.playbackRate=1;wasLongPress=false});page.addEventListener('pointerleave',function(){clearTimeout(pressTimer);video.playbackRate=1;wasLongPress=false});document.getElementById('vidBack').addEventListener('click',function(e){e.stopPropagation();clearTimeout(videoHideTimer);goBack()});var vidMuteBtn=document.getElementById('vidMute');
+
+  // Si la vidéo est en pause, reprendre
+  if(video.paused){
+
+    video.play().then(function(){
+
+      showVidState(true);
+
+    }).catch(function(){});
+
+  }else{
+
+    video.pause();
+
+    showVidState(false);
+
+  }
+
+});
+
+// Chaque interaction avec les commandes
+// relance le délai de 5 secondes
+page.addEventListener('pointerdown',function(){
+
+  if(video.paused)return;
+
+  showVideoControls();
+
+  scheduleVideoControlsHide();
+
+},true);
+
+var pressTimer=null;var pressStart=0;var wasLongPress=false;page.addEventListener('pointerdown',function(e){if(e.target.closest('.vid-card,.vid-side,.vid-top,.vid-comments'))return;pressStart=Date.now();wasLongPress=false;pressTimer=setTimeout(function(){video.playbackRate=2;wasLongPress=true},200)});page.addEventListener('pointerup',function(){clearTimeout(pressTimer);video.playbackRate=1;if(Date.now()-pressStart<200)wasLongPress=false});page.addEventListener('pointercancel',function(){clearTimeout(pressTimer);video.playbackRate=1;wasLongPress=false});page.addEventListener('pointerleave',function(){clearTimeout(pressTimer);video.playbackRate=1;wasLongPress=false});document.getElementById('vidBack').addEventListener('click',function(e){
+
+  e.stopPropagation();
+
+  clearTimeout(videoHideTimer);
+
+  document.body.classList.remove('video-controls-hidden');
+
+  page.classList.remove('vid-hide-ui');
+
+  goBack();
+
+});var vidMuteBtn=document.getElementById('vidMute');
 vidMuteBtn.addEventListener('click',function(e){
   e.stopPropagation();
   video.muted=!video.muted;
   vidMuteBtn.innerHTML=video.muted
     ?'<i class="fa-solid fa-volume-xmark"></i>'
     :'<i class="fa-solid fa-volume-high"></i>';
-});document.getElementById('vidCard').addEventListener('click',function(e){e.stopPropagation();if(e.target.closest('#vidBuy,#vidCart'))return;currentProduct=p;showPage('product',p.id)});document.getElementById('vidBuy').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('buy')});document.getElementById('vidCart').addEventListener('click',function(e){e.stopPropagation();currentProduct=p;openVariantSheet('cart')});if(p.boutiqueId){var bl=document.getElementById('vidBoutLogo');if(bl){bl.addEventListener('click',function(e){e.stopPropagation();showPage('boutique',p.boutiqueId)});getDoc(doc(db,'boutiques',p.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();if(b.logo)bl.innerHTML='<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>'}}).catch(function(){})}var fb=document.getElementById('vidFollowBtn');if(fb){fb.addEventListener('click',async function(e){e.stopPropagation();if(!currentUser){showPage('auth');return}var nowFol=fb.classList.contains('following');await setFollow(p.boutiqueId,!nowFol);if(!nowFol){fb.classList.add('following');toast('Abonné')}else{fb.classList.remove('following');toast('Désabonné')}})}}document.getElementById('vidLike').addEventListener('click',function(e){e.stopPropagation();toggleVideoLike(p.id);var btn=this;var nowLiked=isVideoLiked(p.id);btn.classList.toggle('liked',nowLiked);btn.querySelector('i').className=(nowLiked?'fa-solid':'fa-regular')+' fa-thumbs-up';btn.querySelector('span').textContent=getLikeCount(p.id)});document.getElementById('vidComment').addEventListener('click',function(e){e.stopPropagation();openComments(p.id)});document.getElementById('vidShare').addEventListener('click',function(e){e.stopPropagation();shareProduct(p)});// === DEFILEMENT VIDEO FLUIDE COMME TIKTOK ===
+});document.getElementById('vidCard').addEventListener('click',function(e){e.stopPropagation();if(e.target.closest('#vidBuy,#vidCart'))return;currentProduct=p;showPage('product',p.id)});// === BOUTON ACHETER DE LA CARTE VIDEO ===
+
+
+// === PREPARATION DU PRODUIT VIDEO ===
+
+// ==========================================
+// BOUTONS PRODUIT VIDEO : ACHETER ET PANIER
+// Ouverture directe de la fenêtre des options
+// ==========================================
+
+function prepareVideoProduct(){
+  currentProduct = p;
+  selectedVariants = {};
+  qty = 1;
+
+  (p.variantGroups || []).forEach(function(g){
+    if(g.options && g.options.length){
+      selectedVariants[g.name] = g.options[0].label;
+    }
+  });
+}
+
+// Fonction commune pour ouvrir les options
+function openVideoProductOptions(mode, e){
+  if(e){
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  prepareVideoProduct();
+
+  // Fermer une éventuelle ancienne fenêtre
+  var oldSheet = document.getElementById('variantSheet');
+  if(oldSheet) oldSheet.remove();
+
+  // Ouvrir directement la fenêtre utilisée
+  // sur la fiche détaillée du produit
+  openVariantSheet(mode);
+}
+
+// BOUTON ACHETER
+var vidBuyBtn = document.getElementById('vidBuy');
+
+if(vidBuyBtn){
+  vidBuyBtn.addEventListener('click', function(e){
+    openVideoProductOptions('buy', e);
+  });
+}
+
+// BOUTON PANIER
+var vidCartBtn = document.getElementById('vidCart');
+
+if(vidCartBtn){
+  vidCartBtn.addEventListener('click', function(e){
+    openVideoProductOptions('cart', e);
+  });
+}
+
+// ==========================================
+// FIN DES BOUTONS PRODUIT VIDEO
+// ==========================================
+
+  if(p.boutiqueId){var bl=document.getElementById('vidBoutLogo');if(bl){bl.addEventListener('click',function(e){e.stopPropagation();showPage('boutique',p.boutiqueId)});getDoc(doc(db,'boutiques',p.boutiqueId)).then(function(bd){if(bd.exists()){var b=bd.data();if(b.logo)bl.innerHTML='<img src="'+escapeHtml(b.logo)+'" style="width:100%;height:100%;object-fit:cover"/>'}}).catch(function(){})}var fb=document.getElementById('vidFollowBtn');
+
+if(fb){
+  fb.addEventListener('click',async function(e){
+    e.stopPropagation();
+
+    if(!currentUser){
+      showPage('auth');
+      return;
+    }
+
+    var nowFol=fb.classList.contains('following');
+
+    await setFollow(p.boutiqueId,!nowFol);
+
+    if(!nowFol){
+      fb.classList.add('following');
+      toast('Abonné');
+    }else{
+      fb.classList.remove('following');
+      toast('Désabonné');
+    }
+
+    var countEl=document.getElementById('vidFollowCount');
+
+    if(countEl){
+      countEl.textContent=getFollowCount(p.boutiqueId);
+    }
+  });
+}}
+// === BOUTON J'AIME ===
+document.getElementById('vidLike').addEventListener('click',async function(e){
+  e.stopPropagation();
+
+  var btn=this;
+  btn.disabled=true;
+
+  try{
+    await toggleVideoLike(p.id);
+  }finally{
+    btn.disabled=false;
+  }
+});
+
+// === BOUTON COMMENTAIRES ===
+document.getElementById('vidComment').addEventListener('click',function(e){
+  e.preventDefault();
+  e.stopPropagation();
+
+  openComments(p.id);
+});
+
+// === BOUTON PARTAGE ===
+document.getElementById('vidShare').addEventListener('click',async function(e){
+  e.preventDefault();
+  e.stopPropagation();
+
+  var btn=this;
+  btn.disabled=true;
+
+  try{
+    await shareProduct(p);
+  }catch(err){
+    console.error('Erreur partage :',err);
+    toast('Impossible de partager ce produit');
+  }finally{
+    btn.disabled=false;
+  }
+});
+// === DEFILEMENT VIDEO FLUIDE COMME TIKTOK ===
 var swipeStartY=0;
 var swipeDeltaY=0;
 var swipeActive=false;
@@ -5910,19 +6810,869 @@ page.addEventListener('pointercancel',function(){
   swipePointerId=null;
   page.style.transition='transform .2s ease';
   page.style.transform='translateY(0)';
-});if(window._vidKeyHandler)document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=function(e){if(!document.getElementById('vidPage')){document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=null;return}if(e.key==='ArrowDown'){e.preventDefault();if(videoFeedIdx<videoFeed.length-1){videoFeedIdx++;paintVideoPlayer(videoFeed[videoFeedIdx])}}else if(e.key==='ArrowUp'){e.preventDefault();if(videoFeedIdx>0){videoFeedIdx--;paintVideoPlayer(videoFeed[videoFeedIdx])}}};document.addEventListener('keydown',window._vidKeyHandler)}
-function likeKey(pid){return 'vl_like_'+(currentUser?currentUser.uid:'anon')+'_'+pid}
-function isVideoLiked(pid){try{return localStorage.getItem(likeKey(pid))==='1'}catch(e){return false}}
-function toggleVideoLike(pid){try{if(isVideoLiked(pid)){localStorage.removeItem(likeKey(pid))}else{localStorage.setItem(likeKey(pid),'1')}}catch(e){}}
-function getLikeCount(pid){try{var c=parseInt(localStorage.getItem('vl_likecount_'+pid)||'0');return c+(isVideoLiked(pid)?1:0)}catch(e){return isVideoLiked(pid)?1:0}}
-function commentsKey(pid){return 'vl_comments_'+pid}
-function getComments(pid){try{return JSON.parse(localStorage.getItem(commentsKey(pid))||'[]')}catch(e){return[]}}
-function saveComments(pid,list){try{localStorage.setItem(commentsKey(pid),JSON.stringify(list.slice(-200)))}catch(e){}}
-function getCommentCount(pid){return getComments(pid).length}
-function openComments(pid){var old=document.getElementById('vidComments');if(old)old.remove();var comments=getComments(pid);var html='<div class="vid-comments" id="vidComments"><div class="vid-comments-head"><span>Commentaires ('+comments.length+')</span><button type="button" id="vcClose" style="font-size:20px">×</button></div><div class="vid-comments-list" id="vcList">'+comments.map(function(c){return'<div class="vid-comment"><div class="vc-ava">'+escapeHtml((c.name||'A')[0].toUpperCase())+'</div><div class="vc-body"><div class="vc-name">'+escapeHtml(c.name||'Anonyme')+'</div><div class="vc-text">'+escapeHtml(c.text||'')+'</div></div></div>'}).join('')+(comments.length?'':'<div class="em"><p>Aucun commentaire</p></div>')+'</div><div class="vid-comments-in"><input id="vcIn" placeholder="Ajouter un commentaire…"/><button type="button" id="vcSend">Envoyer</button></div></div>';document.body.insertAdjacentHTML('beforeend',html);setTimeout(function(){document.getElementById('vidComments').classList.add('open')},10);document.getElementById('vcClose').addEventListener('click',function(){var el=document.getElementById('vidComments');el.classList.remove('open');setTimeout(function(){el.remove()},250)});document.getElementById('vcSend').addEventListener('click',async function(){var inp=document.getElementById('vcIn');var text=(inp.value||'').trim();if(!text)return;var name=currentUser?currentUser.email.split('@')[0]:'Anonyme';var list=getComments(pid);list.push({name:name,text:text,ts:Date.now()});saveComments(pid,list);inp.value='';var cntBtn=document.getElementById('vidComment');if(cntBtn){var sp=cntBtn.querySelector('span');if(sp)sp.textContent=list.length}openComments(pid);try{if(currentUser)await addDoc(collection(db,'videoComments'),{productId:pid,userId:currentUser.uid,name:name,text:text,createdAt:serverTimestamp()})}catch(e){}})}
-function shareProduct(p){var link=location.href.split('#')[0]+'#product='+p.id;if(navigator.share){navigator.share({title:p.name,text:'Découvre ce produit sur IDA',url:link}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(link).then(function(){toast('Lien copié')}).catch(function(){toast('Lien: '+link)})}else{toast('Lien: '+link)}}
-function showFloatingVideo(p){var old=document.getElementById('vidFloat');if(old)old.remove();if(!p.videoUrl)return;var el=document.createElement('div');el.className='vid-float';el.id='vidFloat';el.innerHTML='<video src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay muted></video><button type="button" class="vf-x" id="vfClose">×</button>';document.body.appendChild(el);document.getElementById('vfClose').addEventListener('click',function(){el.remove()});el.addEventListener('click',function(e){if(e.target.id==='vfClose')return;showPage('video')});var dragging=false,ox=0,oy=0;el.addEventListener('touchstart',function(e){dragging=true;ox=e.touches[0].clientX-el.offsetLeft;oy=e.touches[0].clientY-el.offsetTop},{passive:true});el.addEventListener('touchmove',function(e){if(!dragging)return;el.style.left=(e.touches[0].clientX-ox)+'px';el.style.top=(e.touches[0].clientY-oy)+'px';el.style.right='auto';el.style.bottom='auto'},{passive:true});el.addEventListener('touchend',function(){dragging=false})}
-function adSeenKey(id){return 'ad_seen_'+id}
+});if(window._vidKeyHandler)document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=function(e){if(!document.getElementById('vidPage')){document.removeEventListener('keydown',window._vidKeyHandler);window._vidKeyHandler=null;return}if(e.key==='ArrowDown'){e.preventDefault();if(videoFeedIdx<videoFeed.length-1){videoFeedIdx++;paintVideoPlayer(videoFeed[videoFeedIdx])}}else if(e.key==='ArrowUp'){e.preventDefault();if(videoFeedIdx>0){videoFeedIdx--;paintVideoPlayer(videoFeed[videoFeedIdx])}}};document.addEventListener('keydown',window._vidKeyHandler);
+
+watchVideoStats(p.id,p.boutiqueId);
+
+}
+// ==========================================
+// IDENTIFICATION DES VISITEURS ET DES CLIENTS
+// ==========================================
+
+function asyncHasRealUser(){
+
+  return !!(
+    currentUser &&
+    currentUser.uid &&
+    !currentUser.isAnonymous &&
+    typeof currentUser.getIdToken==='function'
+  );
+
+}
+
+async function waitForRealUser(){
+
+  await authReadyPromise;
+
+  return asyncHasRealUser()?currentUser:null;
+
+}
+
+async function getVideoActor(){
+
+  // Client connecté
+  if(asyncHasRealUser())return currentUser;
+
+  // Visiteur anonyme déjà identifié
+  if(videoAnonAuth.currentUser)return videoAnonAuth.currentUser;
+
+  // Créer une identité anonyme
+  var cred=await signInAnonymously(videoAnonAuth);
+
+  videoAnonUser=cred.user;
+
+  return cred.user;
+
+}
+
+
+// ==========================================
+// ARRÊT DES ÉCOUTES FIRESTORE
+// ==========================================
+
+function stopVideoStats(){
+
+  videoStatsUnsubs.forEach(function(fn){
+    try{fn()}catch(e){}
+  });
+
+  videoStatsUnsubs=[];
+
+  videoStatsPid=null;
+
+}
+
+
+// ==========================================
+// COMPTEURS
+// ==========================================
+
+function updateVideoCountButton(id,count){
+
+  var btn=document.getElementById(id);
+
+  if(btn){
+
+    var sp=btn.querySelector('span');
+
+    if(sp)sp.textContent=String(count);
+
+  }
+
+}
+
+function getLikeCount(pid){
+
+  try{
+    return parseInt(localStorage.getItem('vl_likecount_'+pid)||'0',10)||0;
+  }catch(e){
+    return 0;
+  }
+
+}
+
+function getCommentCount(pid){
+
+  try{
+    return parseInt(localStorage.getItem('vl_commentcount_'+pid)||'0',10)||0;
+  }catch(e){
+    return 0;
+  }
+
+}
+
+function getShareCount(pid){
+
+  try{
+    return parseInt(localStorage.getItem('vl_sharecount_'+pid)||'0',10)||0;
+  }catch(e){
+    return 0;
+  }
+
+}
+
+function getFollowCount(bid){
+
+  try{
+    return parseInt(localStorage.getItem('vl_followcount_'+bid)||'0',10)||0;
+  }catch(e){
+    return 0;
+  }
+
+}
+
+
+// ==========================================
+// IDENTIFICATION DES J'AIME
+// ==========================================
+
+function likeKey(pid){
+
+  var uid=asyncHasRealUser()
+    ?currentUser.uid
+    :(videoAnonAuth.currentUser?videoAnonAuth.currentUser.uid:'anon');
+
+  return 'vl_like_'+uid+'_'+pid;
+
+}
+
+function isVideoLiked(pid){
+
+  try{
+    return localStorage.getItem(likeKey(pid))==='1';
+  }catch(e){
+    return false;
+  }
+
+}
+
+async function toggleVideoLike(pid){
+
+  try{
+
+    var actor=await getVideoActor();
+
+    var ref=doc(
+      db,
+      'videoLikes',
+      String(pid),
+      'users',
+      actor.uid
+    );
+
+    var existing=await getDoc(ref);
+
+    if(existing.exists()){
+
+      await deleteDoc(ref);
+
+      localStorage.removeItem('vl_like_'+actor.uid+'_'+pid);
+
+    }else{
+
+      await setDoc(ref,{
+        userId:actor.uid,
+        productId:String(pid),
+        createdAt:serverTimestamp()
+      });
+
+      localStorage.setItem('vl_like_'+actor.uid+'_'+pid,'1');
+
+    }
+
+  }catch(e){
+
+    toast('J’aime non enregistré : '+e.message);
+
+  }
+
+}
+
+
+// ==========================================
+// COMMENTAIRES
+// ==========================================
+
+function commentsKey(pid){
+  return 'vl_comments_'+pid;
+}
+
+function getComments(pid){
+
+  try{
+    return JSON.parse(localStorage.getItem(commentsKey(pid))||'[]');
+  }catch(e){
+    return [];
+  }
+
+}
+
+function saveComments(pid,list){
+
+  try{
+    localStorage.setItem(
+      commentsKey(pid),
+      JSON.stringify(list.slice(-200))
+    );
+  }catch(e){}
+
+}
+
+function renderVideoCommentsList(pid,comments){
+
+  var listEl=document.getElementById('vcList');
+
+  var head=document.querySelector(
+    '#vidComments .vid-comments-head span'
+  );
+
+  if(head){
+    head.textContent='Commentaires ('+comments.length+')';
+  }
+
+  if(!listEl)return;
+
+  listEl.innerHTML=comments.map(function(c){
+
+    return '<div class="vid-comment">'+
+      '<div class="vc-ava">'+
+        escapeHtml((c.name||'A')[0].toUpperCase())+
+      '</div>'+
+      '<div class="vc-body">'+
+        '<div class="vc-name">'+escapeHtml(c.name||'Client')+'</div>'+
+        '<div class="vc-text">'+escapeHtml(c.text||'')+'</div>'+
+      '</div>'+
+    '</div>';
+
+  }).join('')+
+  (comments.length?'':'<div class="em"><p>Aucun commentaire</p></div>');
+
+}
+
+
+// ==========================================
+// FENÊTRE DES COMMENTAIRES
+// ==========================================
+async function openComments(pid){
+
+  // Attendre que Firebase ait déterminé la vraie connexion
+  await authReadyPromise;
+
+  var old=document.getElementById('vidComments');
+
+  if(old)old.remove();
+
+  window._openVideoCommentsPid=pid;
+
+  var comments=getComments(pid);
+
+  var canComment=asyncHasRealUser();
+
+  var inputHtml=canComment
+
+    ?'<div class="vid-comments-in">'+
+       '<input id="vcIn" placeholder="Ajouter un commentaire…"/>'+
+       '<button type="button" id="vcSend">Envoyer</button>'+
+     '</div>'
+
+    :'<div class="vid-comments-in">'+
+       '<button type="button" id="vcLogin" style="width:100%;height:42px;border-radius:22px;background:#00A854;color:#fff;font-weight:700">'+
+         'Connectez-vous d’abord'+
+       '</button>'+
+     '</div>';
+
+  var html=
+    '<div class="vid-comments" id="vidComments">'+
+
+      '<div class="vid-comments-head">'+
+        '<span>Commentaires ('+comments.length+')</span>'+
+        '<button type="button" id="vcClose" style="font-size:20px">×</button>'+
+      '</div>'+
+
+      '<div class="vid-comments-list" id="vcList">'+
+
+        comments.map(function(c){
+
+          return '<div class="vid-comment">'+
+            '<div class="vc-ava">'+
+              escapeHtml((c.name||'A')[0].toUpperCase())+
+            '</div>'+
+            '<div class="vc-body">'+
+              '<div class="vc-name">'+escapeHtml(c.name||'Client')+'</div>'+
+              '<div class="vc-text">'+escapeHtml(c.text||'')+'</div>'+
+            '</div>'+
+          '</div>';
+
+        }).join('')+
+
+        (comments.length?'':'<div class="em"><p>Aucun commentaire</p></div>')+
+
+      '</div>'+
+
+      inputHtml+
+
+    '</div>';
+
+  document.body.insertAdjacentHTML('beforeend',html);
+
+  var el=document.getElementById('vidComments');
+  var videoPage=document.getElementById('vidPage');
+
+  if(!el)return;
+
+  // Créer le panneau inférieur
+  var sheet=document.createElement('div');
+  sheet.className='vid-comments-sheet';
+
+  while(el.firstChild){
+    sheet.appendChild(el.firstChild);
+  }
+
+  el.appendChild(sheet);
+
+  // Réduire et faire remonter la vidéo
+  if(videoPage){
+    videoPage.classList.add('comments-open');
+  }
+
+  // Fonction de fermeture
+  var closing=false;
+
+  function closeVideoComments(){
+
+    if(closing)return;
+
+    closing=true;
+
+    window._openVideoCommentsPid=null;
+
+    if(videoPage){
+      videoPage.classList.remove('comments-open');
+    }
+
+    el.classList.remove('open');
+
+    setTimeout(function(){
+      el.remove();
+    },380);
+
+  }
+
+  // Ouvrir avec animation
+  requestAnimationFrame(function(){
+
+    requestAnimationFrame(function(){
+      el.classList.add('open');
+    });
+
+  });
+
+  // Fermer en cliquant à l'extérieur
+  el.addEventListener('click',function(e){
+
+    if(e.target===el){
+      closeVideoComments();
+    }
+
+  });
+
+  // Bouton fermer
+  document.getElementById('vcClose').addEventListener('click',function(e){
+
+    e.stopPropagation();
+
+    closeVideoComments();
+
+  });
+
+  // Glisser vers le bas pour fermer
+  var dragStartY=0;
+  var dragCurrentY=0;
+  var dragging=false;
+
+  var head=document.querySelector('#vidComments .vid-comments-head');
+
+  if(head){
+
+    head.addEventListener('pointerdown',function(e){
+
+      dragStartY=e.clientY;
+      dragCurrentY=0;
+      dragging=true;
+
+      sheet.style.transition='none';
+
+    });
+
+    head.addEventListener('pointermove',function(e){
+
+      if(!dragging)return;
+
+      dragCurrentY=Math.max(0,e.clientY-dragStartY);
+
+      sheet.style.transform='translateY('+dragCurrentY+'px)';
+
+    });
+
+    function endSheetDrag(){
+
+      if(!dragging)return;
+
+      dragging=false;
+
+      sheet.style.transition='';
+
+      if(dragCurrentY>100){
+
+        closeVideoComments();
+
+      }else{
+
+        sheet.style.transform='';
+
+      }
+
+      dragCurrentY=0;
+
+    }
+
+    head.addEventListener('pointerup',endSheetDrag);
+    head.addEventListener('pointercancel',endSheetDrag);
+
+  }
+
+  // Visiteur non connecté
+  if(!canComment){
+
+    document.getElementById('vcLogin').addEventListener('click',function(){
+
+      closeVideoComments();
+
+      showPage('auth');
+
+    });
+
+    return;
+
+  }
+
+  var inp=document.getElementById('vcIn');
+
+  // Limite de 50 caractères
+  inp.addEventListener('input',function(){
+
+    if(inp.value.length>50){
+
+      inp.value=inp.value.slice(0,50);
+
+      toast('50 caractères maximum');
+
+    }
+
+  });
+
+  // Envoyer
+  document.getElementById('vcSend').addEventListener('click',async function(){
+
+    var user=await waitForRealUser();
+
+    if(!user){
+
+      closeVideoComments();
+
+      showPage('auth');
+
+      return;
+
+    }
+
+    var text=(inp.value||'').trim();
+
+    if(!text)return;
+
+    if(text.length>50){
+
+      toast('50 caractères maximum');
+
+      return;
+
+    }
+
+    var name=(user.displayName||user.email||'Client').split('@')[0];
+
+    var sendBtn=document.getElementById('vcSend');
+
+    sendBtn.disabled=true;
+
+    try{
+
+      await addDoc(collection(db,'videoComments'),{
+
+        productId:String(pid),
+        userId:user.uid,
+        name:name,
+        text:text,
+        createdAt:serverTimestamp()
+
+      });
+
+      inp.value='';
+
+    }catch(e){
+
+      toast('Commentaire non envoyé : '+e.message);
+
+      sendBtn.disabled=false;
+
+    }
+
+  });
+
+}
+// ==========================================
+// PARTAGES
+// ==========================================
+
+async function recordVideoShare(pid){
+
+  try{
+
+    var actor=await getVideoActor();
+
+    await addDoc(
+      collection(db,'videoShares',String(pid),'events'),
+      {
+        productId:String(pid),
+        userId:actor.uid,
+        createdAt:serverTimestamp()
+      }
+    );
+
+  }catch(e){
+
+    console.warn('Partage non comptabilisé',e);
+
+  }
+
+}
+
+async function shareProduct(p){
+
+  var link=location.href.split('#')[0]+'#product='+p.id;
+
+  if(navigator.share){
+
+    try{
+
+      await navigator.share({
+        title:p.name,
+        text:'Découvre ce produit sur IDA',
+        url:link
+      });
+
+      await recordVideoShare(p.id);
+
+    }catch(e){
+
+      if(e&&e.name!=='AbortError'){
+        toast('Partage impossible');
+      }
+
+    }
+
+  }else if(navigator.clipboard){
+
+    try{
+
+      await navigator.clipboard.writeText(link);
+
+      await recordVideoShare(p.id);
+
+      toast('Lien copié');
+
+    }catch(e){
+
+      toast('Copie impossible');
+
+    }
+
+  }else{
+
+    toast('Lien : '+link);
+
+  }
+
+}
+
+
+// ==========================================
+// COMPTEURS PUBLICS EN TEMPS RÉEL
+// ==========================================
+
+function watchVideoStats(pid,boutiqueId){
+
+  stopVideoStats();
+
+  videoStatsPid=pid;
+
+  getVideoActor().then(function(actor){
+
+    if(videoStatsPid!==pid)return;
+
+    // J'AIME
+    var likeCol=collection(
+      db,
+      'videoLikes',
+      String(pid),
+      'users'
+    );
+
+    videoStatsUnsubs.push(
+
+      onSnapshot(likeCol,function(snap){
+
+        if(videoStatsPid!==pid)return;
+
+        var count=snap.size;
+
+        localStorage.setItem(
+          'vl_likecount_'+pid,
+          String(count)
+        );
+
+        updateVideoCountButton('vidLike',count);
+
+        var liked=snap.docs.some(function(d){
+          return d.id===actor.uid;
+        });
+
+        var btn=document.getElementById('vidLike');
+
+        if(btn){
+
+          btn.classList.toggle('liked',liked);
+
+          var ic=btn.querySelector('i');
+
+          if(ic){
+            ic.className=(liked?'fa-solid':'fa-regular')+' fa-thumbs-up';
+          }
+
+        }
+
+        if(liked){
+          localStorage.setItem('vl_like_'+actor.uid+'_'+pid,'1');
+        }else{
+          localStorage.removeItem('vl_like_'+actor.uid+'_'+pid);
+        }
+
+      })
+
+    );
+
+
+    // COMMENTAIRES
+    var commentsQ=query(
+      collection(db,'videoComments'),
+      where('productId','==',String(pid))
+    );
+
+    videoStatsUnsubs.push(
+
+      onSnapshot(commentsQ,function(snap){
+
+        if(videoStatsPid!==pid)return;
+
+        var arr=snap.docs.map(function(d){
+
+          var x=d.data();
+
+          var ts=x.createdAt&&typeof x.createdAt.toMillis==='function'
+            ?x.createdAt.toMillis()
+            :0;
+
+          return {
+            id:d.id,
+            name:x.name||'Client',
+            text:x.text||'',
+            ts:ts
+          };
+
+        });
+
+        arr.sort(function(a,b){
+          return a.ts-b.ts;
+        });
+
+        saveComments(pid,arr);
+
+        localStorage.setItem(
+          'vl_commentcount_'+pid,
+          String(snap.size)
+        );
+
+        updateVideoCountButton('vidComment',snap.size);
+
+        if(window._openVideoCommentsPid===pid){
+
+          renderVideoCommentsList(pid,arr);
+
+        }
+
+      })
+
+    );
+
+
+    // PARTAGES
+    var shareCol=collection(
+      db,
+      'videoShares',
+      String(pid),
+      'events'
+    );
+
+    videoStatsUnsubs.push(
+
+      onSnapshot(shareCol,function(snap){
+
+        if(videoStatsPid!==pid)return;
+
+        localStorage.setItem(
+          'vl_sharecount_'+pid,
+          String(snap.size)
+        );
+
+        updateVideoCountButton('vidShare',snap.size);
+
+      })
+
+    );
+
+
+    // ABONNÉS DE LA BOUTIQUE
+    if(boutiqueId){
+
+      var followersCol=collection(
+        db,
+        'publicFollows',
+        String(boutiqueId),
+        'users'
+      );
+
+      videoStatsUnsubs.push(
+
+        onSnapshot(followersCol,function(snap){
+
+          if(videoStatsPid!==pid)return;
+
+          localStorage.setItem(
+            'vl_followcount_'+boutiqueId,
+            String(snap.size)
+          );
+
+          var countEl=document.getElementById('vidFollowCount');
+
+          if(countEl){
+            countEl.textContent=String(snap.size);
+          }
+
+        })
+
+      );
+
+    }
+
+  }).catch(function(e){
+
+    console.warn('Erreur statistiques vidéo :',e);
+
+  });
+
+}
+function showFloatingVideo(p){
+
+  var old=document.getElementById('vidFloat');
+  if(old)old.remove();
+
+  if(!p.videoUrl)return;
+
+  var el=document.createElement('div');
+  el.className='vid-float';
+  el.id='vidFloat';
+
+  el.innerHTML=
+    '<video src="'+escapeHtml(p.videoUrl)+'" playsinline loop autoplay muted></video>'+
+    '<button type="button" class="vf-x" id="vfClose" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>';
+
+  document.body.appendChild(el);
+
+  var previewVideo=el.querySelector('video');
+
+  // Fermer le petit lecteur
+  document.getElementById('vfClose').addEventListener('click',function(e){
+    e.stopPropagation();
+    el.remove();
+  });
+
+  // Ouvrir la vidéo en plein écran AVEC LE SON
+  el.addEventListener('click',function(e){
+
+    if(e.target.id==='vfClose')return;
+
+    // Le clic autorise immédiatement le son
+    previewVideo.muted=false;
+    previewVideo.volume=1;
+window._videoOpenedWithSound=true;
+    previewVideo.play().catch(function(){});
+
+    // Conserver le même élément vidéo
+    window._videoActiveElement=previewVideo;
+    window._videoActiveProductId=String(p.id);
+    window._videoRequestedProductId=String(p.id);
+
+    showPage('video');
+  });
+
+  // Déplacement du petit lecteur
+  var dragging=false,ox=0,oy=0;
+
+  el.addEventListener('touchstart',function(e){
+
+    if(e.target.id==='vfClose')return;
+
+    dragging=true;
+    ox=e.touches[0].clientX-el.offsetLeft;
+    oy=e.touches[0].clientY-el.offsetTop;
+
+  },{passive:true});
+
+  el.addEventListener('touchmove',function(e){
+
+    if(!dragging)return;
+
+    el.style.left=(e.touches[0].clientX-ox)+'px';
+    el.style.top=(e.touches[0].clientY-oy)+'px';
+    el.style.right='auto';
+    el.style.bottom='auto';
+
+  },{passive:true});
+
+  el.addEventListener('touchend',function(){
+    dragging=false;
+  });
+}
+  function adSeenKey(id){return 'ad_seen_'+id}
 function adSeen(id){try{return localStorage.getItem(adSeenKey(id))==='1'}catch(e){return false}}
 function markAdSeen(id){try{localStorage.setItem(adSeenKey(id),'1')}catch(e){}}
 function adLinkHandler(a){if(a.linkType==='url'&&a.linkUrl)return function(){location.href=a.linkUrl};if(a.linkType==='product'&&a.linkId)return function(){showPage('product',a.linkId)};if(a.linkType==='boutique'&&a.linkId)return function(){showPage('boutique',a.linkId)};return null}
@@ -5932,6 +7682,10 @@ function renderInappAds(){var list=ads.filter(function(a){return a.type==='inapp
 $('searchInput').addEventListener('input',function(e){clearTimeout(window._st);window._st=setTimeout(function(){searchTerm=e.target.value.trim();if(searchTerm)showPage('catalog')},300)});
 onAuthStateChanged(auth,function(u){
   currentUser=u;
+    if(authReadyResolve){
+    authReadyResolve(u);
+    authReadyResolve=null;
+  }
   updateCartBadge();
 
   if(u){
@@ -5972,7 +7726,7 @@ onAuthStateChanged(auth,function(u){
     if(!currentUser){
       currentUser={uid:cached.uid,email:cached.email,displayName:cached.displayName,photoURL:cached.photoURL};
     }
-    // Si l'utilisateur est sur une page qui nécessite une connexion au chargement,
+    // Si l'utilisateur est sur une page qui nécessite une connexion au chargement, 
     // on re-render après le DOMContentLoaded
     setTimeout(function(){
       var activePage=document.querySelector('.page.on');
@@ -5985,7 +7739,7 @@ onAuthStateChanged(auth,function(u){
     },50);
   }catch(e){}
 })();
-  /* === REMONTER EN HAUT DU CATALOGUE === */
+  /* === REMONTER EN HAUT DU CATALOGE === */
 
 (function(){
 
@@ -6064,3 +7818,4 @@ init();
 <script src="img-fix.js"></script>
 </body>                      
 </html>                            
+ 
