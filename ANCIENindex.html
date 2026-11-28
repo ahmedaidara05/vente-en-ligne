@@ -12,8 +12,8 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;font-family:system-ui,sans-serif;background:var(--bg);color:#1a1a1a;overflow-x:hidden}
 body{padding-bottom:calc(var(--nav-h)+var(--safe-b))}
-body.hide-chrome{padding-bottom:0}
-body.hide-chrome .header,body.hide-chrome .bn{display:none!important}
+body.hide-chrome{padding-bottom:calc(var(--nav-h)+var(--safe-b))}
+body.hide-chrome .header{display:none!important}
   /* Masque logo + recherche + panier uniquement sur la page Compte */
 body.page-account-active .logo,
 body.page-account-active .sp,
@@ -521,17 +521,17 @@ body.video-controls-hidden .bn{
   transition:opacity .3s,visibility .3s;
 }
   /* NAVIGATION SOMBRE SUR LA PAGE VIDEO */
-body:has(#vidPage) .bn{
+body:has(#page-video.on) .bn{
   background:#111 !important;
   border-top:1px solid #292929 !important;
 }
 
-body:has(#vidPage) .bn button{
+body:has(#page-video.on) .bn button{
   color:#bdbdbd !important;
   background:transparent !important;
 }
 
-body:has(#vidPage) .bn button.on{
+body:has(#page-video.on) .bn button.on{
   color:#00A854 !important;
 }
 
@@ -2027,11 +2027,11 @@ body.page-orders-active #ordRecoGrid{
 #addrBox{z-index:2147483647!important}
 /* Vidéo immersive : commandes en surimpression et navigation sombre seulement en pause */
 @media(max-width:768px){#page-video,#vidPage{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;max-height:none!important;margin:0!important;padding:0!important;border-radius:0!important;overflow:hidden!important;background:#000!important;z-index:2147483000!important}#vidPage .vid-stage{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}#vidPage #vidEl{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important}#vidPage .vid-top{top:calc(env(safe-area-inset-top,0px) + 4px)!important;padding:8px 14px!important;z-index:30!important;background:transparent!important}#vidPage .vid-top button{background:rgba(0,0,0,.18)!important;text-shadow:0 1px 5px #000!important}}
-body:has(#vidPage) .bn{background:#111!important;border-top:1px solid #292929!important;transition:opacity .2s,visibility .2s}
-body:has(#vidPage) .bn button{color:#bdbdbd!important;background:transparent!important}
-body:has(#vidPage) .bn button.on{color:#00A854!important}
-body:has(#vidPage):not(.video-paused) .bn{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
-body:has(#vidPage).video-paused .bn{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+body:has(#page-video.on) .bn{background:#111!important;border-top:1px solid #292929!important;transition:opacity .2s,visibility .2s}
+body:has(#page-video.on) .bn button{color:#bdbdbd!important;background:transparent!important}
+body:has(#page-video.on) .bn button.on{color:#00A854!important}
+body:has(#page-video.on):not(.video-paused) .bn{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+body:has(#page-video.on).video-paused .bn{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
 
 
 
@@ -2191,8 +2191,8 @@ body:has(#vidPage).video-paused .bn{opacity:1!important;visibility:visible!impor
   .bn button.on{background:#eafff2;color:var(--red)}
   .bn button:hover{background:#f3faf5;color:var(--red)}
   .bn .tracking-notif-badge{top:5px;right:calc(50% - 28px)}
-  body:has(#vidPage) .bn{bottom:18px;width:min(760px,calc(100vw - 48px));height:72px}
-  body:has(#vidPage):not(.video-paused) .bn{opacity:0!important;visibility:hidden!important}
+  body:has(#page-video.on) .bn{bottom:18px;width:min(760px,calc(100vw - 48px));height:72px}
+  body:has(#page-video.on):not(.video-paused) .bn{opacity:0!important;visibility:hidden!important}
 
   /* Pages de détail produit : galerie et informations côte à côte */
   #page-product{max-width:var(--ida-content);margin:26px auto 36px;padding:0 28px;display:none}
@@ -2292,6 +2292,315 @@ body:has(#vidPage).video-paused .bn{opacity:1!important;visibility:visible!impor
   #page-product{max-width:1380px}
 }
 
+
+/* ==========================================================
+   IDA — REFONTE VISUELLE DES 3 ÉCRANS (DESKTOP / TABLETTE)
+   CSS uniquement : aucune logique, donnée ou interaction modifiée.
+   Le rendu mobile existant est volontairement conservé.
+   ========================================================== */
+@media (min-width:900px){
+  :root{--ida-ink:#17251e;--ida-muted:#718078;--ida-green:#087b45;--ida-green-dark:#075b36;--ida-line:#e8eee9;--ida-soft:#f5f8f5;}
+
+  /* DÉTAIL PRODUIT */
+  #page-product.on{
+    max-width:1320px;grid-template-columns:minmax(0,1.12fr) minmax(420px,.88fr);
+    gap:42px;padding:8px 34px 46px;margin:22px auto 34px;
+  }
+  #page-product .pd-top{position:relative;top:auto;left:auto;right:auto;grid-column:1/-1;margin:0 0 -22px;padding:0;z-index:2}
+  #page-product .pd-top button{
+    width:44px;height:44px;border-radius:14px;background:#fff;color:#25352b;
+    border:1px solid var(--ida-line);box-shadow:0 5px 18px rgba(17,38,25,.08);
+    transition:transform .18s,box-shadow .18s;
+  }
+  #page-product .pd-top button:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(17,38,25,.12)}
+  #page-product .gal{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:0;}
+  #page-product .gal img{background:#f4f6f4;border:1px solid #edf1ed;border-radius:20px;transition:transform .2s,box-shadow .2s;cursor:zoom-in}
+  #page-product .gal img:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(15,35,22,.09)}
+  #page-product .gal img:first-child{border-radius:24px;aspect-ratio:1/1.02}
+  #page-product .gal+div{
+    position:sticky;top:28px;margin:0!important;padding:34px!important;border:1px solid var(--ida-line);
+    border-radius:24px;background:#fff;box-shadow:0 14px 44px rgba(19,43,28,.07);
+  }
+  #page-product .gal+div>div:first-child{font-size:34px!important;letter-spacing:-1.3px;color:#087b45!important;line-height:1.12;margin-bottom:12px}
+  #page-product .gal+div>div:nth-child(2){font-size:23px;font-weight:800;line-height:1.3;letter-spacing:-.5px;color:var(--ida-ink);margin:10px 0 16px!important}
+  #page-product .gal+div>div:nth-child(3){display:inline-flex;align-items:center;gap:7px;padding:8px 12px;background:#effaf3;border:1px solid #d9f0e1;border-radius:10px;font-size:12px!important;font-weight:750}
+  #page-product .gal+div>div:nth-child(4){margin-top:10px;font-size:12px!important;color:var(--ida-muted)!important}
+  #page-product .pd-description{margin-top:24px;padding-top:22px;border-top:1px solid var(--ida-line);font-size:14px;line-height:1.85;color:#526158;white-space:pre-line}
+  #page-product .pd-actions{display:grid;grid-template-columns:48px 48px 48px minmax(110px,1fr) minmax(130px,1.15fr);gap:9px;margin-top:28px;padding:0;background:transparent;border:0;box-shadow:none}
+  #page-product .pd-actions button{height:50px!important;min-height:50px;border-radius:13px!important;font-size:13px;font-weight:800;clip-path:none!important;box-shadow:none;transition:transform .16s,filter .16s}
+  #page-product .pd-actions button:hover{transform:translateY(-2px);filter:brightness(.97)}
+  #page-product .pd-actions .pd-ico{width:48px;background:#f3f7f4;color:#315340;border:1px solid #e5ede7}
+  #page-product .pd-actions #btnAddCart{background:#fff;color:#087b45;border:1px solid #b9ddc6}
+  #page-product .pd-actions #btnBuy{background:linear-gradient(135deg,#0b9253,#076c3e);color:#fff;border:1px solid #087b45}
+
+  /* VALIDATION DE COMMANDE */
+  #page-checkout .chk-page{
+    max-width:1180px;padding:28px 34px 34px;grid-template-columns:minmax(0,1.08fr) minmax(360px,.92fr);
+    gap:18px 22px;align-items:start;
+  }
+  #page-checkout .chk-page>.pay-box,
+  #page-checkout .chk-page>.chk-section#chkIdaCardBox,
+  #page-checkout .chk-page>#chkTermsLine,
+  #page-checkout .chk-page>#chkRecoBar,
+  #page-checkout .chk-page>#chkRecoGrid{grid-column:1/-1}
+  #page-checkout .chk-page>.chk-section{margin:0;min-width:0;padding:24px;border:1px solid var(--ida-line);border-radius:20px;background:#fff;box-shadow:0 6px 24px rgba(20,45,29,.035)}
+  #page-checkout .chk-page>.chk-section:nth-child(4){grid-column:1;grid-row:4}
+  #page-checkout .chk-page>.chk-section:nth-child(5){grid-column:2;grid-row:4}
+  #page-checkout .chk-page>#chkPickupBox{grid-column:2;grid-row:5}
+  #page-checkout .chk-page>.chk-section#chkIdaCardBox{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+  #page-checkout .chk-page .chk-section-title{font-size:15px;color:#1c3024;margin-bottom:18px;letter-spacing:-.2px}
+  #page-checkout .chk-page .chk-section-title i{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:#eaf7ee;color:#087b45;font-size:14px}
+  #page-checkout .chk-page .pay-box{padding:18px 22px!important;margin:0 0 2px!important;border:1px solid #d9eee0;border-radius:16px;background:linear-gradient(110deg,#f3fbf5,#fff);}
+  #page-checkout .chk-page .pay-box-title{font-size:13px;margin-bottom:10px}
+  #page-checkout .chk-page .pay-row{font-size:13px;padding:7px 0}
+  #page-checkout .chk-page .ord-item{padding:14px 0;border-bottom:1px solid #eff2ef;gap:14px}
+  #page-checkout .chk-page .ord-item:last-child{border-bottom:0;padding-bottom:0}
+  #page-checkout .chk-page .ord-item img{width:82px;height:82px;flex:0 0 82px;border-radius:13px;object-fit:cover;background:#f4f6f4}
+  #page-checkout .chk-page .oi-name{font-size:13px;line-height:1.45;color:#26372c}
+  #page-checkout .chk-page .oi-price{font-size:14px;font-weight:850;color:#087b45}
+  #page-checkout .chk-page .chk-row{padding:13px 0;border-bottom:1px solid #eef2ee;gap:12px}
+  #page-checkout .chk-page .chk-row:last-child{border-bottom:0}
+  #page-checkout .chk-page .lbl{font-size:12px;color:#66756c}
+  #page-checkout .chk-page .val{font-size:12px;font-weight:750;color:#26372c}
+  #page-checkout .chk-page #chkTermsLine{padding:12px 0 0!important;color:#829087!important;font-size:11px!important}
+  #page-checkout .chk-page #chkRecoBar{padding:20px 0 8px!important}
+  #page-checkout .chk-page #chkRecoBar span{font-size:15px;color:#24362a}
+  #page-checkout .chk-page #chkRecoGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:8px 0 26px!important}
+  #page-checkout .chk-fixed-actions{
+    position:relative!important;display:flex!important;align-items:center;gap:24px!important;
+    width:min(1112px,calc(100% - 68px))!important;max-width:1112px!important;margin:12px auto 42px!important;
+    padding:18px 20px!important;background:#fff!important;border:1px solid #e5eee7;border-radius:20px;
+    box-shadow:0 12px 36px rgba(20,45,29,.10)!important;
+  }
+  #page-checkout .chk-fixed-actions>div:first-child{padding:4px 10px!important}
+  #page-checkout .chk-fixed-actions>div:first-child>div:first-child{font-family:inherit!important;font-size:11px!important;font-weight:850!important;letter-spacing:1.1px!important;color:#758279!important}
+  #page-checkout .chk-fixed-actions>div:first-child>div:last-child{font-family:inherit!important;font-size:30px!important;font-weight:900!important;letter-spacing:-1px;color:#087b45!important;margin-top:7px!important}
+  #page-checkout .chk-fixed-actions #btnPlace{
+    min-width:250px!important;height:58px!important;padding:0 28px!important;border:0!important;border-radius:14px!important;
+    clip-path:none!important;background:linear-gradient(135deg,#0b9856,#076d3e)!important;
+    box-shadow:0 8px 18px rgba(0,137,72,.2)!important;font-size:14px!important;letter-spacing:.1px!important;
+    transition:transform .18s,box-shadow .18s;
+  }
+  #page-checkout .chk-fixed-actions #btnPlace:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(0,137,72,.25)!important}
+
+  /* COMPTE BOUTIQUE / COMPTE CLIENT */
+  #page-account .account-page{max-width:1160px;padding:38px 42px 52px;display:flex;flex-direction:column;}
+  #page-account .account-intro{align-items:flex-end;margin:0 0 28px;padding:0 0 22px;border-bottom:1px solid #e7eee8}
+  #page-account .account-eyebrow{font-size:11px;letter-spacing:1.2px;padding:8px 12px;border-radius:9px;background:#edf8f0;margin-bottom:12px}
+  #page-account .account-intro h1{font-size:34px;letter-spacing:-1.1px;color:#17291e}
+  #page-account .account-intro p{font-size:14px;margin-top:8px;color:#718078}
+  #page-account .ida-card-tools{gap:10px}
+  #page-account .ida-card-tools button{width:42px!important;height:42px!important;border-radius:12px!important;background:#f0f7f2!important;border:1px solid #e2eee5!important;font-size:16px}
+  #page-account .ida-card-wrap{max-width:760px;margin:4px auto 16px}
+  #page-account .ida-pvc-card{border-radius:22px;box-shadow:0 26px 60px rgba(10,62,34,.17),0 8px 22px rgba(10,62,34,.09),inset 0 0 0 1px rgba(255,255,255,.9)}
+  #page-account .account-section-head{margin:34px 0 14px;padding-bottom:12px;border-bottom:1px solid #e8eee9}
+  #page-account .account-section-head h2{font-size:18px;letter-spacing:-.35px;color:#1b3023}
+  #page-account .account-shortcuts{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+  #page-account .account-shortcut{min-height:142px;padding:20px;border:1px solid #e7eee8;border-radius:18px;align-items:flex-start;justify-content:center;gap:2px;box-shadow:0 5px 18px rgba(24,52,33,.035);transition:transform .18s,border-color .18s,box-shadow .18s}
+  #page-account .account-shortcut:hover{transform:translateY(-3px);border-color:#c9e3d1;box-shadow:0 12px 26px rgba(24,52,33,.08)}
+  #page-account .account-shortcut-icon{width:44px;height:44px;border-radius:14px;font-size:19px;margin:0 0 12px}
+  #page-account .account-shortcut strong{font-size:13px;line-height:1.35;color:#24372a}
+  #page-account .account-shortcut .shortcut-badge{top:14px;right:14px;min-width:22px;height:22px;font-size:10px}
+  #page-account .account-options{border:1px solid #e5ede7;border-radius:18px;box-shadow:0 5px 18px rgba(24,52,33,.035)}
+  #page-account .account-option-row{min-height:76px;padding:16px 20px;gap:16px}
+  #page-account .account-option-icon{width:42px;height:42px;flex-basis:42px;border-radius:13px;font-size:16px}
+  #page-account .account-option-copy strong{font-size:13px}
+  #page-account .account-option-copy small{font-size:12px}
+  #page-account .account-logout{width:auto;min-width:210px;align-self:flex-end;height:48px;margin-top:20px;padding:0 24px;border-radius:13px;font-size:13px;transition:background .18s,border-color .18s}
+  #page-account .account-logout:hover{background:#fff5f5;border-color:#efcaca}
+  #page-account .cart-reco-bar{margin-top:32px!important;padding:18px 0 8px!important;background:transparent;border:0}
+  #page-account #accRecoGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding:10px 0 30px!important}
+  #page-account .account-footer{padding-top:18px;border-top:1px solid #e9efea;font-size:11px}
+}
+
+@media (min-width:900px) and (max-width:1099px){
+  #page-product.on{grid-template-columns:minmax(0,1fr) minmax(340px,.92fr);gap:22px;padding-left:22px;padding-right:22px}
+  #page-product .gal+div{padding:22px!important}
+  #page-product .pd-actions{grid-template-columns:42px 42px 42px minmax(80px,1fr) minmax(100px,1.1fr);gap:6px}
+  #page-product .pd-actions .pd-ico{width:42px}
+  #page-checkout .chk-page{padding-left:22px;padding-right:22px;grid-template-columns:minmax(0,1fr) minmax(310px,.92fr)}
+  #page-checkout .chk-fixed-actions{width:calc(100% - 44px)!important}
+  #page-account .account-page{padding-left:26px;padding-right:26px}
+}
+/* IDA — BLOC TOTAL ET VALIDATION FIXÉ À DROITE SUR GRAND ÉCRAN */
+@media (min-width:1200px){
+
+  /* Réserver de l'espace à droite pour le bloc de validation */
+  #page-checkout .chk-page{
+    width:min(1120px, calc(100vw - 390px)) !important;
+    max-width:none !important;
+    margin-left:max(28px, calc((100vw - 1500px)/2)) !important;
+    margin-right:0 !important;
+  }
+
+  /* Bloc TOTAL + LIVRAISON + BOUTON */
+  #page-checkout .chk-fixed-actions{
+    position:fixed !important;
+    top:50% !important;
+    right:28px !important;
+    left:auto !important;
+    transform:translateY(-50%) !important;
+    z-index:1300 !important;
+
+    width:320px !important;
+    max-width:calc(100vw - 48px) !important;
+    margin:0 !important;
+    padding:24px !important;
+
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    gap:18px !important;
+
+    background:#fff !important;
+    border:1px solid #e1ece4 !important;
+    border-radius:20px !important;
+    box-shadow:0 18px 48px rgba(18,55,31,.16) !important;
+  }
+
+  /* Montant total */
+  #page-checkout .chk-fixed-actions>div:first-child{
+    width:100% !important;
+    padding:0 !important;
+  }
+
+  #page-checkout .chk-fixed-actions>div:first-child>div:first-child{
+    font-size:12px !important;
+    letter-spacing:1.2px !important;
+    color:#64756a !important;
+  }
+
+  #page-checkout .chk-fixed-actions>div:first-child>div:last-child{
+    font-size:34px !important;
+    line-height:1.15 !important;
+    margin-top:9px !important;
+    color:#087b45 !important;
+  }
+
+  /* Bouton Valider la commande */
+  #page-checkout .chk-fixed-actions #btnPlace{
+    width:100% !important;
+    min-width:0 !important;
+    height:58px !important;
+    border-radius:13px !important;
+    clip-path:none !important;
+    padding:0 16px !important;
+    font-size:14px !important;
+    white-space:normal !important;
+  }
+}
+
+/* Écrans très larges */  
+@media (min-width:1600px){
+  #page-checkout .chk-fixed-actions{
+    right:max(36px, calc((100vw - 1740px)/2)) !important;
+  }
+}
+  
+  /* =========================================
+   IDA — DESIGN INSCRIPTION DANS LA PAGE CHAT
+========================================= */
+
+#page-chat .auth-shell,
+#page-messages .auth-shell{
+  max-width:540px;
+  margin:22px auto 30px;
+}
+
+/* En-tête élégant */
+#page-chat .auth-heading,
+#page-messages .auth-heading{
+  position:relative;
+  text-align:center;
+  padding:25px 22px 23px;
+  margin:0 0 18px;
+  border:1px solid #e7eee9;
+  border-radius:18px;
+  background:linear-gradient(145deg,#ffffff 0%,#f4faf6 100%);
+  box-shadow:0 8px 25px rgba(20,70,40,.045);
+}
+
+/* Petite icône */
+#page-chat .auth-heading::before,
+#page-messages .auth-heading::before{
+  content:"\f086";
+  font-family:"Font Awesome 6 Free";
+  font-weight:900;
+  width:48px;
+  height:48px;
+  margin:0 auto 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:15px;
+  background:#e7f7ed;
+  color:#00A854;
+  font-size:21px;
+}
+
+/* Titre */
+#page-chat .auth-heading h2,
+#page-messages .auth-heading h2{
+  font-size:21px;
+  font-weight:850;
+  line-height:1.3;
+  letter-spacing:-.5px;
+  color:#17251c;
+  margin:0;
+}
+
+/* Description */
+#page-chat .auth-heading p,
+#page-messages .auth-heading p{
+  max-width:340px;
+  margin:9px auto 0;
+  font-size:13px;
+  line-height:1.6;
+  color:#718078;
+}
+
+/* Formulaire */
+#page-chat .auth-card,
+#page-messages .auth-card{
+  border:1px solid #e8eee9;
+  border-radius:17px;
+  box-shadow:0 10px 30px rgba(20,50,30,.055);
+}
+
+/* Adaptation mobile */
+@media(max-width:600px){
+  #page-chat .auth-shell,
+  #page-messages .auth-shell{
+    margin:12px 12px 25px;
+  }
+
+  #page-chat .auth-heading,
+  #page-messages .auth-heading{
+    padding:20px 14px 19px;
+    margin-bottom:14px;
+    border-radius:15px;
+  }
+
+  #page-chat .auth-heading::before,
+  #page-messages .auth-heading::before{
+    width:42px;
+    height:42px;
+    font-size:18px;
+    border-radius:13px;
+    margin-bottom:11px;
+  }
+
+  #page-chat .auth-heading h2,
+  #page-messages .auth-heading h2{
+    font-size:19px;
+  }
+
+  #page-chat .auth-heading p,
+  #page-messages .auth-heading p{
+    font-size:12px;
+    margin-top:7px;
+  }
+}
 </style>
 </head>
 <body>
@@ -5588,7 +5897,7 @@ function renderAuthPanelInto(targetId, successPage){
             toast('Compte créé. Vérifiez votre boîte e-mail.');
           }catch(createErr){
             if(createErr.code==='auth/email-already-in-use'||createErr.code==='auth/invalid-credential'||createErr.code==='auth/wrong-password'){
-              throw new Error('Mot de passe incorrect. Utilisez « Mot de passe oublié ? » pour recevoir un lien Firebase de réinitialisation.');
+              throw new Error('Mot de passe incorrect. Utilisez « Mot de passe oublié ? » pour recevoir un lien de réinitialisation dans votre Mail.');
             }
             throw createErr;
           }
